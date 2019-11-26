@@ -1,0 +1,101 @@
+<template>
+	<view class="userCode">
+		<view class="img"><image mode='widthFix' src="../../common/images/code.png" show-menu-by-longpress="true"></image></view>
+        <view class="text">长按或点击保存二维码添加客服微信</view>
+        <button class="btn" bindtap="previewImage">保存图片</button>
+	</view>
+</template>
+<script>
+	import wepy from 'wepy';
+	export default class userCode extends wepy.page {
+        config = {
+        	navigationBarTitleText: '联系客服',
+        	navigationBarTextStyle: 'black',
+        	navigationBarBackgroundColor: '#fff',
+        	usingComponents: {
+        	},
+        	enablePullDownRefresh: false,
+        }
+		methods = {
+			previewImage: function(e) {
+                let that = this;
+                wx.getSetting({
+                    success: (res) => {
+                        if (!res.authSetting['scope.writePhotosAlbum']) {
+                          wx.authorize({
+                            scope: 'scope.writePhotosAlbum',
+                            success:()=> {
+                              // 同意授权
+                              that.methods.saveImg1();
+                            },
+                            fail: (res) =>{
+                              console.log(res);
+                            }
+                          })
+                        }else{
+                          // 已经授权了
+                          that.methods.saveImg1();
+                        }
+                      },
+                      fail: (res) =>{
+                        console.log(res);
+                      }
+                })
+            },
+            saveImg1(){
+                let that = this;
+                wx.getImageInfo({
+                  src: '../../common/images/code.png',
+                  success:(res)=> {
+                    let path = res.path;
+                    wx.saveImageToPhotosAlbum({
+                      filePath:path,
+                      success:(res)=> {
+                        wx.showToast({
+                            title: '保存成功',
+                            duration: 2000
+                        })
+                      },
+                      fail:(res)=>{
+                        wx.showToast({
+                            title: '保存失败',
+                            duration: 2000
+                        })
+                      }
+                    })
+                  },
+                  fail:(res)=> {
+                    console.log(res);
+                  }
+                })
+              },
+		}
+	}
+</script>
+
+<style lang="less">
+    page {
+        height: 100%;
+    }
+	.userCode {
+        height: 100%;
+        .img {
+            width: 92%;
+            margin: 0 auto;
+
+            image {
+                width: 100%;
+                margin-top: 6%;
+            }
+        }
+        .text {
+            text-align: center;
+        }
+        .btn {
+            margin-top: 40rpx;
+            width: 80%;
+            background: #f1a93d;
+            color: #fff;
+        }
+    }
+</style>

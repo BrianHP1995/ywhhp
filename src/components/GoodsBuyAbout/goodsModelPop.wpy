@@ -1,0 +1,395 @@
+<template>
+    <view class="goodsModelPop">
+        <van-popup show="{{ isShowPop }}" closeable close-icon-position="top-right"
+         z-index="999999" bind:close="onClose" custom-style="width: 90%;border-radius: 8rpx;">
+            <view class="modelPopWrap pos-r">
+                <view class="closePop pos-a" bindtap="onClose">
+                    <image src="../../common/images/index/close_btn.png" mode="widthFix" />
+                </view>
+                <view class="goods_info pos-r">
+                    <view class="img pos-a"><image src="{{goodsPopInfo.logo}}" mode="widthFix"></image></view>
+                    <view class="info">
+                        <view class="title font-s38 c-000">{{goodsPopInfo.title}}</view>
+                        <view class="con font-s24 c-666">{{goodsPopInfo.introduce}}</view>
+                        <view class="price pos-r font-s36">￥{{goodsPopInfo.goods_list[0].price_selling}} <view class="pre_price center-y font-s22">原价￥{{goodsPopInfo.goods_list[0].price_market}}</view></view>
+                    </view>
+                </view>
+                <view class="params_selectDown font-s26 c-000 {{isGoodsParamsSpread?'on':''}}" bindtap="goodsParamsSpread">
+                    <view class="txt_all" wx:if="{{isGoodsParamsSpread}}">全部</view>
+                    <view class="txt">
+                        {{isGoodsParamsSpread?'收起':'展开'}}
+                        <view class="down_log">
+                            <image src="../../common/images/index/back.png" mode="widthFix"></image>
+                        </view>
+                    </view>
+                </view>
+                <view class="goods_params {{isGoodsParamsSpread?'on':''}}">
+                    <repeat for="{{goodsAttribute}}" index="dindex">
+                        <view class="goodsTemp" >
+                            <view class="paramsList pos-r">
+                                <view class="params_name pos-a">{{item.name}}</view>
+                                <view class="params_itemCon display-flex flex-wrap">
+                                    <repeat for="{{item.list}}" item="con">
+                                        <view class="option {{con.active? 'on' : ''}}" data-dindex="{{dindex}}" data-index="{{index}}" data-item="{{item}}" bindtap="attributeChange">{{con.name}}</view>
+                                    </repeat>
+                                </view>
+                            </view>
+                        </view>
+                    </repeat>
+                    <repeat for="{{goodsFlavor}}" index="dindex">
+                        <view class="paramsList pos-r">
+                            <view class="params_name pos-a">{{item.name}}</view>
+                            <view class="params_itemCon display-flex flex-wrap">
+                                <repeat for="{{item.list}}" item="con">
+                                    <view class="option {{con.active? 'on' : ''}}" data-dindex="{{dindex}}"
+                                    data-index="{{index}}" data-item="{{item}}"
+                                    bindtap="flavorChange">{{con.name}}</view>
+                                </repeat>
+                            </view>
+                        </view>
+                    </repeat>
+                </view>
+                <view class="tips t-c font-s24">TIPS:赠送好友时口味默认即可，TA可自行选择哦~</view>
+                <view class="goods_price font-s36 font-bold">
+                    ￥{{selectedGoodsInfo.price}}
+                    <view class="num_handle center-y">
+                        <van-stepper value="{{selectedGoodsInfo.num}}" input-width="40px" integer min="1" bind:change="buyNumChange" />
+                    </view>
+                </view>
+                <view class="handle_addCart t-c c-fff" bindtap="addShoppingCart">加入购物车</view>
+            </view>
+        </van-popup>
+    </view>
+</template>
+<script>
+import wepy from 'wepy';
+export default class GoodsModelPop extends wepy.component {
+
+    //props 接收父组件传递过来的值
+    props = {
+    }
+    components = {
+
+    }
+    caclePopPriceTotal() {
+        //计算规格弹窗选中规格价格总和： 所有规格中的active属性值为true的价格总和
+        let that = this;
+        let nameArry = [];
+        this.goodsFlavor.forEach((item) => {
+            item.list.forEach((res,index) => {
+                // 1 标记active
+                if(res.active) {
+                    nameArry.push(`${item.name}::${res.name}`);
+                }
+            })
+        })
+        let name = nameArry.join(';;');
+        that.goodsPopInfo.goods_list.forEach((listItem, idx) => {
+            if(listItem.goods_spec == name) {
+                that.selectedGoodsInfo.price = listItem.price_selling * that.selectedGoodsInfo.num;
+                that.$apply();
+            }
+        })
+    }
+    data = {
+        isShowPop: false,
+        goodsPopInfo: {},
+        isGoodsParamsSpread: false,  //商品口味参数选项下拉
+        goodsAttribute: [],   //商品属性
+        goodsFlavor: [],  //商品规格参数
+        selectedGoodsInfo: {
+            price: 0.00,
+            num: 1
+        },
+        selectedAttribute: [],
+    }
+
+    methods = {
+        goodsParamsSpread() {
+            this.isGoodsParamsSpread = !this.isGoodsParamsSpread;
+        },
+        onOpen(goodsInfo) {
+            let that = this;
+            //每次打开规格弹窗选中的信息还原
+            that.selectedGoodsInfo = {
+                price: 0.00,
+                num: 1
+            }
+            that.goodsPopInfo = goodsInfo;
+            that.goodsAttribute = goodsInfo.attribute;
+            that.goodsFlavor = goodsInfo.specs;
+            that.goodsAttribute.forEach((item) => {
+                item.list.forEach((res,index) => {
+                    if(index == 0) {
+                        res.active = true;
+                    }else {
+                        res.active = false;
+                    }
+                })
+            })
+            /**
+             *  1.给规格每一项循环添加选中标记active
+             *  2.选中的规格拼接后goods_list中的goods_spec比较，相等则取对应的价格
+             * */
+            let nameArry = [];
+            that.goodsFlavor.forEach((item) => {
+                item.list.forEach((res,index) => {
+                    // 1 标记active
+                    if(index == 0) {
+                        res.active = true;
+                    }else {
+                        res.active = false;
+                    }
+                })
+            })
+            // 2 计算总价
+            that.caclePopPriceTotal();
+            that.isShowPop = true;
+        },
+        onClose() {
+            this.isShowPop = false;
+        },
+        buyNumChange(e) {
+            //选择的商品数量
+            let singlePrice = (this.selectedGoodsInfo.price).toFixed(2)/this.selectedGoodsInfo.num;
+            this.selectedGoodsInfo.price = singlePrice * e.detail;
+            this.selectedGoodsInfo.num = e.detail;
+        },
+        attributeChange(e) {  //选择属性
+            let that = this;
+            let item = e.currentTarget.dataset.item;
+            let index = e.currentTarget.dataset.index;
+            let dindex = e.currentTarget.dataset.dindex;
+            let tempList = that.goodsAttribute[dindex].list;
+            for (let j = 0; j < tempList.length; j++) {
+            	if (j == index)
+            		tempList[j].active = true;
+            	else
+                    tempList[j].active = false;
+            }
+        },
+        flavorChange(e) {  //选择规格
+            let that = this;
+            let item = e.currentTarget.dataset.item;
+            let index = e.currentTarget.dataset.index;
+            let dindex = e.currentTarget.dataset.dindex;
+            let flavorList = that.goodsFlavor[dindex].list;
+            for (let j = 0; j < flavorList.length; j++) {
+            	if (j == index) {
+            		flavorList[j].active = true;
+                }
+            	else
+                    flavorList[j].active = false;
+            }
+            that.caclePopPriceTotal();
+        },
+        addShoppingCart() {
+            /**
+             *  1.执行加入购物车操作
+             *  2.调用父页面的获取购物车列表和计算购物车数据操作
+             * */
+            let that = this;
+            let spec_id = '';
+            let attribute = ''
+            let goodsInfo = that.goodsPopInfo;
+
+            //属性：
+            //将选中的属性加入到属性数组中 selectedAttribute
+            let selectedAttribute = [];
+            that.goodsAttribute.forEach(item => {
+                item.list.forEach(value => {
+                    if(value.active) {
+                        selectedAttribute.push(value.name)
+                    }
+                })
+            })
+            //多属性处理
+            attribute = selectedAttribute.length>1?selectedAttribute.join('&'):selectedAttribute[0];
+
+            //规格：
+            //每一组规格将规格name和规格列表中选中项做拼接，然后在和list中的spec_id做对比
+            let specsGroup = [];
+            //1.将每一中规格的name和选中的name做拼接然后丢入数组
+            that.goodsFlavor.forEach(item => {
+                item.list.forEach(value => {
+                    if(value.active) {
+                        specsGroup.push(`${value.group}::${value.name}`);
+                    }
+                })
+            })
+            //2. 将数组中的每一项按照;;做拼接转化成字符串
+            let specsStr = specsGroup.join(';;');
+            //3. 在商品信息的goods_list中去查找跟specsStr对应的spec_id
+            goodsInfo.goods_list.forEach(item => {
+                if(item.goods_spec == specsStr) {
+                    spec_id = item.spec_id;
+                }
+            })
+
+            let data = {
+                goods_id: goodsInfo.goods_id, //商品id
+                spec_id, //规格id
+                attribute, //属性id 多属性&拼接
+                number: this.selectedGoodsInfo.num
+            }
+            wepy.Api.addGoodsToShoppingCart(data)
+                .then((res) => {
+                    if(res.code == 1) {
+                        wx.showToast({
+                            title: '加入成功'
+                        })
+                        that.isShowPop = false;
+                        that.$apply();
+                        that.$emit('callGetShoppingCarList');
+                    }else if(res.code == 0) {
+                        wx.showToast({
+                            icon: 'none',
+                            title: res.msg
+                        })
+                    }
+                })
+        }
+
+    }
+}
+</script>
+<style lang="less" scoped>
+    .goodsModelPop {
+        .modelPopWrap {
+            padding-bottom: 20rpx;
+            .closePop {
+                right: 20rpx;
+                top: 20rpx;
+                width: 46rpx;
+                height: 46rpx;
+                z-index: 999;
+            }
+            .goods_info {
+                border-bottom: 2rpx solid #e9e9e9;
+                padding: 40rpx 30rpx 20rpx 260rpx;
+                .img {
+                    width: 220rpx;
+                    height: 220rpx;
+                    left: 30rpx;
+                    top: 30rpx;
+                }
+                .info {
+                    height: 232rpx;
+                    .con {
+                        height: 104rpx;
+                        margin-top: 10rpx;
+                        overflow: hidden;
+                    }
+                    .price {
+                        color: #d72300;
+                        padding: 10rpx 0rpx;
+                        .pre_price {
+                            left: 42%;
+                            top: 56%;
+                            color: #999;
+                            // &:before {
+                            //     display: block;
+                            //     content: '';
+                            //     width: 108%;
+                            //     height: 1rpx;
+                            //     background: #999;
+                            //     position: absolute;
+                            //     top: 48%;
+                            //     left: 0;
+                            //     transform: translateY(-50%);
+                            // }
+                        }
+                    }
+                }
+            }
+            .params_selectDown {
+                position: relative;
+                .txt_all {
+                    right: auto;
+                    left: 30rpx;
+                }
+                .txt,.txt_all {
+                    position: absolute;
+                    right: 32rpx;
+                    top: 38rpx;
+                    z-index: 99999;
+                    .down_log {
+                        transform: rotate(-90deg);
+                        display: inline-block;
+                        vertical-align: middle;
+                        width: 14rpx;
+                        margin-left: 8rpx;
+                        transition: all .4s;
+                    }
+                }
+                &.on {
+                    height: 80rpx;
+                    .txt,.txt_all {
+                        top: 24rpx;
+                        .down_log {
+                            transform: rotate(90deg);
+                        }
+                    }
+                }
+            }
+            .goods_params {
+                position: relative;
+                margin: 30rpx 0;
+                height: 64rpx;
+                overflow: hidden;
+                transition: all .4s;
+                &.on {
+                    height: 300rpx;
+                    overflow: scroll;
+                }
+                .paramsList {
+                    padding-left: 180rpx;
+                    .params_name {
+                        left: 30rpx;
+                        top: 12%;
+                        font-weight: bold;
+                    }
+                    .params_itemCon {
+                        .option {
+                            font-size: 26rpx;
+                            color: #282828;
+                            min-width: 130rpx;
+                            border: 1px solid #c2c2c2;
+                            text-align: center;
+                            border-radius: 3px;
+                            margin: 0 5px 5px 0;
+                            padding: 2%;
+                        }
+                        .option.on {
+                            color: #f8a300;
+                            border: 1px solid #f8a300;
+                            background: #fff7ea;
+                        }
+                    }
+                }
+            }
+            .tips {
+                background: #fef5e4;
+                padding: 20rpx 50rpx;
+                color: #d70000;
+            }
+            .goods_price {
+                position: relative;
+                color: #c02b28;
+                padding: 30rpx 35rpx;
+                .num_handle {
+                    right: 40rpx;
+                }
+            }
+            .handle_addCart {
+                background: #f59e2d;
+                width: 95%;
+                margin: 0 auto;
+                height: 86rpx;
+                line-height: 86rpx;
+                border-radius: 8rpx;
+
+            }
+        }
+    }
+</style>

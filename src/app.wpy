@@ -1,0 +1,113 @@
+<style lang="less">
+    @import './common/styles/base.wxss';
+</style>
+
+<script>
+    import wepy from 'wepy'
+    import 'wepy-async-function'
+    import Utils from '@/common/js/utils';
+    import Api from '@/server/api';
+
+    wepy.Utils = Utils;
+    wepy.Api = new Api();
+
+    // import { setStore } from 'wepy-redux'
+    // import configStore from './store'
+
+    // const store = configStore()
+    // setStore(store)
+
+    export default class extends wepy.app {
+        config = {
+            pages: [
+                'pages/home',
+                'pages/fridge',
+                'pages/groupBuy',
+                'pages/user',
+                'pages/oauth'
+            ],
+            window: {
+                backgroundTextStyle: 'light',
+                navigationBarBackgroundColor: '#fff',
+                navigationBarTitleText: 'WeChat',
+                navigationBarTextStyle: 'black'
+            },
+            tabBar: {
+                list: [
+                    {
+                        'pagePath': 'pages/home',
+                        'text': '首页',
+                        'iconPath': 'common/images/tabBar/index.png',
+                        'selectedIconPath': 'common/images/tabBar/indexActive.png'
+                    },
+                    {
+                        'pagePath': 'pages/groupBuy',
+                        'text': '拼团',
+                        'iconPath': 'common/images/tabBar/buy.png',
+                        'selectedIconPath': 'common/images/tabBar/buyActive.png'
+                    },
+                    {
+                        'pagePath': 'pages/fridge',
+                        'text': '冰箱',
+                        'iconPath': 'common/images/tabBar/fridge.png',
+                        'selectedIconPath': 'common/images/tabBar/fridgeActive.png'
+                    },
+                    {
+                        'pagePath': 'pages/user',
+                        'text': '我的',
+                        'iconPath': 'common/images/tabBar/user.png',
+                        'selectedIconPath': 'common/images/tabBar/userActive.png'
+                    }
+                ],
+                color: '#000',
+                selectedColor: '#f79800',
+                backgroundColor: '#fff',
+                borderStyle: 'white'
+            },
+            subPackages: [{
+                root: "packageA",
+                pages: [
+                    'pages/index/sureOrder', //下单
+                    'pages/index/timingOrder', //定时配送
+                    'pages/index/goodsDetail', //商品详情
+                    'pages/user/myAddress',  //我的地址
+                    'pages/user/editAddress',  //编辑收货地址
+                    'pages/user/dispatchOrder', //配送订单
+                    'pages/user/dispatchOrderDetail', //配送订单详情页
+                    'pages/user/fridgeOrder',  //入库订单
+                    'pages/user/contactService',  //联系客服
+                    'pages/user/userSetting',  //系统设置
+                    'pages/user/giveOrder',  //赠送记录
+                    'pages/user/userCoupon',  //我的优惠券
+                    'pages/user/userMember',
+                    'pages/user/userScore',
+                    'pages/group/groupBuyDetail',  //拼团详情
+
+                ]
+            }],
+        }
+
+        globalData = {
+            userInfo: null,
+            is_oauth: false
+        }
+
+        constructor() {
+            super();
+            this.use('requestfix');
+            this.use('promisify');
+        }
+
+        onLaunch(options) {
+            let that = this;
+            wepy.Utils.isLogin({
+                callbackOk: () => {
+                    that.globalData.is_oauth = true;
+                },
+                callbackErr: () => {
+                }
+            })
+        }
+
+    }
+</script>

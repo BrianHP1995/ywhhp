@@ -1,0 +1,51 @@
+<template>
+    <view class="oauth">
+        <image src="../common/images/logo.png" mode="widthFix" class="logoImg"></image>
+        <button class="button" open-type="getUserInfo" bindgetuserinfo="getUserInfo">授权登录</button>
+    </view>
+</template>
+<script>
+    import wepy from 'wepy';
+    export default class oauth extends wepy.page {
+        async getUserInfo(e) {
+            //授权登录
+            let that = this;
+            if(e.detail.errMsg == "getUserInfo:ok") {
+                let msg_login = await wepy.login({})
+                let wxResult = await wepy.getUserInfo({lang: 'zh_CN'});
+                console.log(msg_login.code)
+                let result = await wepy.Api.user_login({
+                    code: msg_login.code,
+                    iv: wxResult.iv,
+                    encryptedData: wxResult.encryptedData,
+                });
+                if(result.code == 1) {
+                    wepy.Utils.setStorage('token', result.token);
+                    that.$parent.globalData.is_oauth = true;
+                    that.$apply();
+                    wx.navigateBack({ detail: 1 });
+                }
+            }
+        }
+    }
+</script>
+<style lang="less" scoped>
+  .logoImg {
+    display: block;
+    width: 60%;
+    margin: 50rpx auto;
+    margin-top: 150rpx;
+
+  }
+  .button {
+    background: #fd8402;
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
+    height: 100rpx;
+    line-height: 100rpx;
+    color: #fff;
+    border-radius: 15rpx;
+    margin-top: 150rpx;
+  }
+</style>

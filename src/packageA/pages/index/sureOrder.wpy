@@ -1,0 +1,990 @@
+    <template>
+    <view id="Order" class="f2">
+        <van-tabs active="{{ active }}" bind:change="onChangeToggle" line-width="30">
+            <van-tab title="小哥配送"></van-tab>
+            <van-tab title="到店自提"></van-tab>
+
+        </van-tabs>
+        <view class="orderInfo">
+            <!-- 小哥配送选择收货地址  到店自取选择门店 -->
+            <view class="addr_sel_box">
+                <view class="addr_sel_top bgc-fff" @tap="handleSelectAddress">
+                    <image style="width:28rpx;" src="../../common/images/add.png" mode="widthFix" />
+                    <!-- 门店自取选择完门店后 -->
+                    <view class="add_cont_box">
+                        <view class="addr_sel_tips" wx:if="{{active === 0}}">{{activeCityTxt}}</view>
+                        <view class="addr_sel_tips" wx:else>湖南省长沙市岳麓区梅溪大街二段梅溪湖步步高L1层
+                        </view>
+                    </view>
+                    <van-icon name="arrow" size="30rpx" color="#b4b4b4" />
+                </view>
+                <image style="width:100%;" src="../../common/images/order_bot.jpg" mode="widthFix" />
+            </view>
+            <!-- 自提预留姓名和电话 -->
+            <van-cell-group  wx:if="{{active === 1}}">
+                <van-field value="{{name}}" name="name" placeholder="请输入预留姓名" border="false" bind:change="onChangeName" />
+                <van-field value="{{mobile}}" name="mobile" placeholder="请输入预留电话" border="false" bind:change="onChangeTel" />
+            </van-cell-group>
+            <!-- 商品信息，积分，配送费 -->
+            <view class="order_info_box">
+                <view class="order_info_inner bgc-fff">
+                    <!-- 商品信息只在配送的时候显示active: 0 -->
+                    <repeat for="{{shoppingData.list}}">
+                        <view wx:if="{{active === 0}}">
+                            <view class="order_flex_box">
+                                <view class="order_fl">
+                                    <view class="order_info_tt">{{item.title}}</view>
+                                </view>
+                                <view class="order_fr">
+                                    <text class="font-bold">￥{{item.price_selling}}</text>
+                                </view>
+                            </view>
+                            <!-- 口味 -->
+                            <view class="order_info_tips borderBot pos-r">{{item.flavor}}<text class="order_goods_num center-y">x {{item.number}}</text></view>
+                        </view>
+                    </repeat>
+                    <view class="order_flex_box jifen borderBot pos-r">
+                        <view class="order_fl">您是<text wx:if="{{userMemberGrade == 1}}">银卡</text><text wx:if="{{userMemberGrade == 2}}">金卡</text><text wx:if="{{userMemberGrade ==3}}">钻卡</text>会员本次订单可获得积分</view>
+
+                        <view class="">(tips: 积分可用于下次购买金额抵扣)</view>
+                        <view class="order_fr value center-y">{{shoppingData.integral}}</view>
+                    </view>
+                    <view class="order_flex_box">
+                        <view class="order_fl">
+                            <text class="font-s28 c-333">配送费</text>
+                        </view>
+                        <view class="order_fr">
+                            <text class="font-s28 font-bold">￥{{shoppingData.price_express}}</text>
+                        </view>
+                    </view>
+                </view>
+            </view>
+            <!-- 优惠券相关 -->
+            <view class="coupon_list_box">
+                <view bindtap="toCouponPage" class="coupon_list_tt borderBot">
+                    <view>优惠券</view>
+                    <view class="coupon_list_sel">
+                        {{couponTxt}}
+                    </view>
+                </view>
+                <view bindtap="integralChange"><van-checkbox value="{{integralChecked}}">最多可抵扣{{integral}}元</van-checkbox></view>
+            </view>
+            <view class="content_box" wx:if="{{active === 0}}">
+                <view class="content_box_tt center-y">备注: </view>
+                <view class="textarea">
+                    <textarea class="font-s26" bindblur="bindTextAreaBlur" placeholder-style="color:#ededed;" placeholder="" />
+                </view>
+
+                <van-popup
+                    show="{{ showSelTime }}"
+                    position="bottom"
+                    overlay="{{ true }}"
+                    bind:close="onClosePop"
+                    custom-style="height: 50%"
+                    >
+                    <view class="sel_time_tt">选择送达时间</view>
+                    <van-tree-select
+                    items="{{ timeItems }}"
+                    main-active-index="{{ mainActiveIndex }}"
+                    active-id="{{ activeId }}"
+                    bind:click-nav="onClickNav"
+                    bind:click-item="onClickItem"
+                    />
+                </van-popup>
+            </view>
+            <view class="fixed_botom">
+                <view class="delivery_time_sel" wx:if="{{active === 0}}">
+                    <view>时间预约</view>
+                    <view bindtap="selTime"><text style="margin-right:10rpx;">{{mainActiveIndex == 0?'今天':'明天'}} </text><text style="margin-right:10rpx;">{{timeTxt}} </text><van-icon name="arrow" size="12px" color="#b4b4b4"/></view>
+                </view>
+                <view class="pay_box">
+                    <view class="pay_num">￥{{orderPriceTotal}}</view>
+                    <view>
+                        <button bindtap="orderPay" class="pay_weixin">微信支付</button>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <map id="map" longitude="{{mapInfo.latitude}}" latitude="{{mapInfo.longitude}}"
+        style="width: 100%; height: 100%;"></map>
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class Order extends wepy.page {
+        config = {
+            navigationBarTitleText: '确认订单',
+            navigationBarBackgroundColor: '#fff',
+            navigationBarTextStyle: 'black',
+            usingComponents: {
+                'van-tab': '../../components/VantWeapp/tab/index',
+                'van-tabs': '../../components/VantWeapp/tabs/index',
+                'van-checkbox': '../../components/VantWeapp/checkbox/index',
+                "van-checkbox-group": "../../components/VantWeapp/checkbox-group/index",
+                'van-icon': '../../components/VantWeapp/icon/index',
+                'van-cell': '../../components/VantWeapp/cell/index',
+                'van-cell-group': '../../components/VantWeapp/cell-group/index',
+                'van-popup': '../../components/VantWeapp/popup/index',
+                'van-tree-select': '../../components/VantWeapp/tree-select/index',
+                'van-field': '../../components/VantWeapp/field/index',
+            }
+        }
+        data = {
+            active: 0, // 1 小哥配送 2 到店自提
+            couponTxt: '选择优惠券',
+            activeCityTxt: '选择收货地址',
+            timeItems: [
+                {
+                    text: '今天',
+                    disabled: false,
+                    children: [{
+                        text: '尽快送达',
+                        id: 0
+                    }]
+                },
+                {
+                    text: '明天',
+                    disabled: false,
+                    children: []
+                }
+            ],
+            timeTxt: '尽快送达',
+            showSelTime: false,
+            mainActiveIndex: 0,
+            activeId: 0,
+            integralChecked: false, //是否使用积分抵扣
+            shoppingData: {},
+            orderPriceTotal: 0.00,
+            couponInfo: {}, //选择的优惠券信息
+            receiverInfo: {},  //收货人信息
+            textAreaMsg: '', //留言信息
+            integral: '', //用户数据总积分，显示本次订单可抵扣多少
+            name: null,
+            mobile: null,
+            userMemberGrade: null, //会员等级
+            mapInfo: {
+                longitude: 112.861100,
+                latitude: 28.198990,
+                name: '大鱼燕窝门店位置',
+                address: '湖南省长沙市岳麓区梅溪大街二段梅溪湖步步高L1层'
+            }
+        }
+        //设置配送时间选择
+        async setDeliveryTime() {
+            let that = this;
+            //获取当前时间
+            let nowTimes = new Date().getHours();
+            //设置送达时间
+            let timeItems = that.timeItems;
+            for (let i = 0; i < timeItems.length; i++) {
+                let ele = timeItems[i];
+                for (let j = 1; j <= 49; j++) {
+                    var obj;
+                    var hour = 10 + parseInt(j/4);
+                    switch (j%4) {
+                        case 1:
+                            obj = { text: hour+ ":30", id: j };
+                            if(ele.text == '今天') {
+                                if(nowTimes>22 || nowTimes<10) {
+                                    ele.children = [];
+                                    ele.children.push({
+                                        text: '22:00-10:00暂停配送',
+                                        id: 0
+                                    })
+                                    that.timeTxt = '22:00-10:00暂停配送';
+                                }else {
+                                    if(hour>nowTimes) {
+                                        ele.children.push(obj);
+                                    }
+                                }
+                            }else {
+                                ele.children.push(obj);
+                            }
+                            break;
+                        case 2:
+                            obj = { text: hour+ ":45", id: j };
+                            if(ele.text == '今天') {
+                                if(nowTimes>22 || nowTimes<10) {
+                                    ele.children = [];
+                                    ele.children.push({
+                                        text: '22:00-10:00暂停配送',
+                                        id: 0
+                                    })
+                                    that.timeTxt = '22:00-10:00暂停配送';
+                                }else {
+                                    if(hour>nowTimes) {
+                                        ele.children.push(obj);
+                                    }
+                                }
+                            }else {
+                                ele.children.push(obj);
+                            }
+                            break;
+                        case 3:
+                            obj = { text: hour+ ":00", id: j };
+                            if(ele.text == '今天') {
+                                if(nowTimes>22 || nowTimes<10) {
+                                    ele.children = [];
+                                    ele.children.push({
+                                        text: '22:00-10:00暂停配送',
+                                        id: 0
+                                    })
+                                    that.timeTxt = '22:00-10:00暂停配送';
+                                }else {
+                                    if(hour>nowTimes) {
+                                        ele.children.push(obj);
+                                    }
+                                }
+                            }else {
+                                ele.children.push(obj);
+                            }
+                            break;
+                        case 0:
+                            obj = { text: hour+ ":15", id: j };
+                            if(ele.text == '今天') {
+                                if(nowTimes>=22 || nowTimes<10) {
+                                    ele.children = [];
+                                    ele.children.push({
+                                        text: '22:00-10:00暂停配送',
+                                        id: 0
+                                    })
+                                    that.timeTxt = '22:00-10:00暂停配送';
+                                }else {
+                                    if(hour>nowTimes) {
+                                        ele.children.push(obj);
+                                    }
+                                }
+                            }else {
+                                ele.children.push(obj);
+                            }
+                            break;
+                    }
+                }
+            }
+            that.$apply();
+        }
+        //获取购物车列表
+        async getShoppingCarList(options) {
+            let that = this;
+            let result = await wepy.Api.getGoodsShoppingCart({});
+            if(result.code == 1) {
+                that.shoppingData = result.result;
+                that.shoppingData.list.forEach((item) => {
+                    let arr = [];
+                    item.flavor = '';
+                    arr = item.attribute.split(';;');
+                    arr.forEach(val => {
+                        item.flavor += `/${val.split('::')[1]}`;
+                    })
+                    item.flavor = `${item.attribute.split('&')[0]}${item.flavor}`
+                })
+                that.cacleOrderPriceTotal(options);  //计算订单总价
+                that.$apply();
+
+            }
+        }
+        cacleOrderPriceTotal(options) {
+            let that = this;
+            that.shoppingData.list.forEach(item => {
+                that.orderPriceTotal += Number(item.price_selling)*item.number;
+            })
+            that.orderPriceTotal += Number(that.shoppingData.price_express);
+            this.getUserInfo(options);
+
+            that.$apply();
+
+        }
+        //获取用户信息
+        async getUserInfo(options) {
+            let that = this;
+            let result = await wepy.Api.getUserInfo({});
+            if(result.code == 1) {
+                /**
+                 *  会员等级userMemberGrade
+                 *      1-银卡   2-金卡    3-钻卡
+                 * */
+                that.userMemberGrade = result.result.vip_level;
+
+                if(result.result.integral<= that.orderPriceTotal) {
+                    that.integral = result.result.integral;
+                }else {
+                    that.integral = that.orderPriceTotal;
+                }
+                //获取选择的优惠券信息
+                if(options.couponInfo) {
+                    this.getCouonInfo(JSON.parse(options.couponInfo));
+                }
+                that.$apply();
+            }
+        }
+        //获取选择的地址
+        async getAddress(data) {
+            this.receiverInfo = data;
+            this.activeCityTxt = `${data.province}省${data.city}市${data.area}${data.address}`;
+            this.$apply();
+        }
+        //获取选择的优惠券信息
+        getCouonInfo(data) {
+            let that = this;
+            this.couponInfo = data;
+            console.log(data)
+            switch(data.type) {
+                case 1:
+                    this.couponTxt = '免邮券';
+                    if(Number(that.shoppingData.price_express) != 0) { //包含配送费
+
+                        that.orderPriceTotal -= Number(that.shoppingData.price_express);
+                    }
+                    break;
+                case 2:
+                    /**
+                     *  会员等级userMemberGrade
+                     *      1-银卡   2-金卡    3-钻卡
+                     * */
+                    this.couponTxt = parseInt(data.value) + '元抵扣券';
+                    if(that.orderPriceTotal-that.shoppingData.price_express >= Number(data.value)) {
+                        that.orderPriceTotal -= Number(data.value);
+                    }else {
+                        that.orderPriceTotal = 0 + Number(that.shoppingData.price_express);
+                    }
+
+                    if(that.userMemberGrade == 1) {
+                        if(that.orderPriceTotal-Number(that.shoppingData.price_express)>0) {
+                            that.shoppingData.integral = (that.orderPriceTotal-Number(that.shoppingData.price_express))* 0.03;
+                        }else {
+                            that.shoppingData.integral = 0;
+                        }
+                    }else if(that.userMemberGrade == 2) {
+                        if(that.orderPriceTotal-Number(that.shoppingData.price_express)>0) {
+                            that.shoppingData.integral = (that.orderPriceTotal-Number(that.shoppingData.price_express))* 0.05;
+                        }else {
+                            that.shoppingData.integral = 0;
+                        }
+                    }else if(that.userMemberGrade == 3) {
+                        if(that.orderPriceTotal-Number(that.shoppingData.price_express)>0) {
+                            that.shoppingData.integral = (that.orderPriceTotal-Number(that.shoppingData.price_express))* 0.1;
+                        }else {
+                            that.shoppingData.integral = 0;
+                        }
+                    }
+                    break;
+                case 3:
+                    this.couponTxt = '5折券';
+                    that.orderPriceTotal = ((that.orderPriceTotal-Number(that.shoppingData.price_express))*Number(data.value)*0.1)+Number(that.shoppingData.price_express);
+
+                    break;
+            }
+            this.$apply();
+        }
+        openMap() {
+            let that = this;
+            wx.openLocation({
+                  latitude: that.mapInfo.longitude,
+                  longitude: that.mapInfo.latitude,
+                  scale: 18,
+                  name: that.mapInfo.hotel_name,
+                  address: that.mapInfo.address
+            })
+        }
+        onLoad(options) {
+            this.getShoppingCarList(options);
+            this.setDeliveryTime();
+
+
+        }
+        methods = {
+            //配送和自取tab切换
+            onChangeToggle(event) {
+                this.active = event.detail.index;
+            },
+
+            onChangeName(e) {
+                //修改电话
+                let that = this;
+                that.name = e.detail;
+            },
+            onChangeTel(e) {
+                //修改电话
+                let that = this;
+                that.mobile = e.detail;
+            },
+            handleSelectAddress() {
+                /**
+                 *  active: 0 - 小哥配送： 选择收货地址
+                 *          1 - 到店自取： 选择门店
+                 *
+                 * */
+                if(this.active == 0) {
+                    wx.navigateTo({
+                        url: '../user/myAddress'
+                    })
+                }else {
+                    this.openMap();
+                }
+            },
+            toCouponPage() {  //选择优惠券页面
+                if(!this.integralChecked) {
+                    wx.navigateTo({
+                        url: '../user/userCoupon?code=1'
+                    })
+                }else {
+                    wx.showToast({
+                        icon: 'none',
+                        title: '积分抵扣和优惠券只能二选一奥~'
+                    })
+                }
+            },
+            //选择积分抵扣
+            integralChange(e) {
+                let that = this;
+                if(this.couponTxt == '选择优惠券') {
+                    this.integralChecked = !this.integralChecked;
+                    if(this.integralChecked) {
+                        //选择积分抵扣
+                        this.orderPriceTotal -= Number(this.integral);
+                        if(that.userMemberGrade == 1) {
+                            if(that.orderPriceTotal-Number(that.shoppingData.price_express)>0) {
+                                that.shoppingData.integral = (that.orderPriceTotal-Number(that.shoppingData.price_express))* 0.03;
+                            }else {
+                                that.shoppingData.integral = 0;
+                            }
+                        }else if(that.userMemberGrade == 2) {
+                            if(that.orderPriceTotal-Number(that.shoppingData.price_express)>0) {
+                                that.shoppingData.integral = (that.orderPriceTotal-Number(that.shoppingData.price_express))* 0.05;
+                            }else {
+                                that.shoppingData.integral = 0;
+                            }
+                        }else if(that.userMemberGrade == 3) {
+                            if(that.orderPriceTotal-Number(that.shoppingData.price_express)>0) {
+                                that.shoppingData.integral = (that.orderPriceTotal-Number(that.shoppingData.price_express))* 0.1;
+                            }else {
+                                that.shoppingData.integral = 0;
+                            }
+                        }
+                    }else {
+                        //未选择积分抵扣
+                       this.orderPriceTotal += Number(this.integral);
+                    }
+                }else {
+                    wx.showToast({
+                        icon: 'none',
+                        title: '优惠券和积分抵扣只能二选一奥~'
+                    })
+                }
+            },
+            bindTextAreaBlur(e) {
+                this.textAreaMsg = e.detail.value;
+            },
+            //选择配送时间
+            selTime() {
+                this.showSelTime = true;
+            },
+            //关闭时间选择弹窗
+            onClosePop() {
+                this.showSelTime = false;
+            },
+            onClickNav({ detail = {} }) {
+                this.mainActiveIndex = detail.index || 0;
+            },
+            //选择具体时间
+            onClickItem({ detail = {} }) {
+                let that = this;
+                this.activeId = detail.id;
+                if(this.mainActiveIndex == 0) {
+                    //今天
+                    that.timeItems[0].children.forEach((res) => {
+                        if(res.id == detail.id) {
+                            that.timeTxt = res.text;
+                        }
+                    })
+                }else if(this.mainActiveIndex == 1) {
+                    //明天
+                    that.timeItems[1].children.forEach((res) => {
+                        if(res.id == detail.id) {
+                            that.timeTxt = res.text;
+                        }
+                    })
+                }
+                this.showSelTime = false;
+            },
+            orderPay() {
+                let that = this;
+                if(that.active == 0) {
+                    if(!that.receiverInfo.id) {
+                        wx.showToast({
+                           icon: 'none',
+                           title: '请选择配送地址'
+                        })
+                        return false;
+                    }else if(that.timeTxt == '22:00-10:00暂停配送') {
+                        wx.showToast({
+                           icon: 'none',
+                           title: '请选择正确的配送时间'
+                        })
+                        return false;
+                    }else {
+                        let orderData = {
+                            address_id: that.receiverInfo.id, //收货地址id   int（不传为自提）
+                            coupon_id: that.couponInfo.id, //优惠券id  （和积分抵扣二选一）
+                            deduct: that.integralChecked?'1': '0', //是否积分抵扣 1是使用 0是不使用
+                            remark: that.textAreaMsg, //备注留言
+                            type: that.mainActiveIndex == 0?1:2, //1 今天 2明天  int
+                            date: that.timeTxt, //送达时间 例:尽快送达 例：12：30
+                        }
+                        wepy.Api.createDeliveryOrder(orderData)
+                            .then((res) => {
+                                if(res.code == 1) {
+                                    //创建订单成功，调取微信支付
+                                    wx.requestPayment({
+                                        timeStamp: res.result.timeStamp,
+                                        nonceStr: res.result.nonceStr,
+                                        package: res.result.package,
+                                        signType: 'MD5',
+                                        paySign: res.result.paySign,
+                                        success (res) {
+                                            if(res.errMsg == 'requestPayment:ok') {
+                                                wx.showToast({
+                                                    title: '支付成功'
+                                                })
+                                                setTimeout(() => {
+                                                   wx.navigateTo({
+                                                       url: '../user/dispatchOrder'
+                                                   }) 
+                                                },1000)
+                                            }
+
+                                        },
+                                        fail (res) {
+                                            wx.showToast({
+                                                icon: 'none',
+                                                title: '支付失败'
+                                            })
+                                        }
+                                    })
+                                }
+                            })
+                    }
+                }else {
+                    //自提
+                    if(!that.name) {
+                        wx.showToast({
+                           icon: 'none',
+                           title: '请输入预留姓名'
+                        })
+                        return false;
+                    }else if(!that.mobile) {
+                        wx.showToast({
+                           icon: 'none',
+                           title: '请输入预留电话'
+                        })
+                        return false;
+                    }else {
+                        let orderData = {
+                            name: that.name,  //收货人姓名  （自提时必传）
+                            mobile: that.mobile, //收货人电话 （自提时必传）
+                            coupon_id: that.couponInfo.id, //优惠券id  （和积分抵扣二选一）
+                            deduct: that.integralChecked?'1': '0', //是否积分抵扣 1是使用 0是不使用
+                        }
+                        wepy.Api.createDeliveryOrder(orderData)
+                            .then((res) => {
+                                if(res.code == 1) {
+                                    //创建订单成功，调取微信支付
+                                    wx.requestPayment({
+                                        timeStamp: res.result.timeStamp,
+                                        nonceStr: res.result.nonceStr,
+                                        package: res.result.package,
+                                        signType: 'MD5',
+                                        paySign: res.result.paySign,
+                                        success (res) {
+                                            if(res.errMsg == 'requestPayment:ok') {
+                                                wx.showToast({
+                                                    title: '支付成功'
+                                                })
+                                                setTimeout(() => {
+                                                   wx.navigateTo({
+                                                       url: '../user/dispatchOrder'
+                                                   }) 
+                                                },1000)
+                                            }
+
+                                        },
+                                        fail (res) {
+                                            wx.showToast({
+                                                icon: 'none',
+                                                title: '支付失败'
+                                            })
+                                        }
+                                    })
+                                }
+                            })
+                    }
+                }
+
+            }
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+	textarea {
+		font-size: 20px;
+	}
+    .f2 {
+        background: #f2f2f2;
+    }
+	.checked {
+		border-left: 2px solid #409eff;
+		border-right: 2px solid #409eff;
+	}
+    .addr_sel_box {
+        padding: 25rpx 0;
+
+        .addr_sel_top {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: flex-start;
+            padding: 30rpx 35rpx;
+            width: 100%;
+            box-sizing: border-box;
+
+            .add_cont_box {
+                padding: 0 0 0 15rpx;
+                flex: 1;
+
+                .addr_txt {
+                    font-size: 34rpx;
+                    color: #b4b4b4;
+                    font-weight: bolder;
+                }
+
+                .user_txt {
+                    font-size: 30rpx;
+                    color: #d1d1d1;
+                    margin-top: 10rpx;
+                }
+
+                .addr_tips {
+                    font-size: 26rpx;
+                    color: #c73637;
+                    margin-top: 20rpx;
+
+                    view {
+                        margin-top: 10rpx;
+                    }
+                }
+
+                .addr_sel_tips {
+                    font-size: 26rpx;
+                    color: #333;
+                    .shop_log {
+                        width: 35rpx;
+                        right: 0;
+                        top: 20%;
+                        transform: rotate(180deg);
+                    }
+                }
+            }
+        }
+    }
+
+    .exchange_buy_box {
+        background: #fff;
+        padding: 35rpx 15rpx;
+
+        .repurchase_tt {
+            padding: 0 0 35rpx 0;
+            font-size: 34rpx;
+            color: #282828;
+        }
+
+        .repurchase_List_box {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+
+            .repurchase_list {
+                width: 80%;
+                padding: 5px;
+                box-sizing: border-box;
+
+                .repurchase_list_box {
+                    box-shadow: 0px 0px 8px 3px rgba(0, 0, 0, 0.1);
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 15rpx;
+
+                    .repurchase_txt_box {
+                        flex: 1;
+                        padding: 0 0 0 10rpx;
+
+                        .repurchase_txt_tt {
+                            font-size: 32rpx;
+                            color: #282828;
+                        }
+
+                        .repurchase_txt_bot {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            margin-top: 10rpx;
+
+                            >text {
+                                font-size: 34rpx;
+                                color: #f4a22d;
+                                font-weight: bolder;
+                            }
+
+                            .num_box {
+                                display: flex;
+                                flex-wrap: nowrap;
+                                align-items: center;
+
+                                image {
+                                    display: block;
+                                }
+
+                                text {
+                                    display: inline-block;
+                                    width: 50rpx;
+                                    text-align: center;
+                                    font-size: 30rpx;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .order_info_box {
+        padding: 25rpx;
+
+        .order_info_inner {
+            padding: 20rpx;
+            box-shadow: 0px 0px 5px 3px rgba(0, 0, 0, 0.06);
+
+            .borderBot {
+                border-bottom: 1px solid #ededed;
+            }
+
+            .order_flex_box {
+                width: 100%;
+                justify-content: space-between;
+                display: flex;
+                flex-wrap: nowrap;
+                align-items: center;
+                padding: 20rpx 0;
+                font-size: 30rpx;
+                color: #000;
+                &.jifen {
+                    display: block;
+                }
+                .order_fr.value {
+                    right: 0;
+                }
+            }
+
+            .order_info_tips {
+                font-size: 24rpx;
+                width: 100%;
+                color: #666;
+                padding: 20rpx 0 35rpx 0;
+                .order_goods_num {
+                    right: 0;
+                }
+            }
+        }
+    }
+
+    .coupon_list_box {
+        padding: 0 45rpx;
+        background: #fff;
+
+        .borderBot {
+            border-bottom: 1px solid #ededed;
+        }
+
+        .coupon_list_tt {
+            padding: 20rpx 0;
+            font-size: 30rpx;
+            color: #000;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+
+            .coupon_list_sel {
+                display: flex;
+                align-items: center;
+
+            }
+        }
+    }
+
+    .fixed_botom {
+        background: #fff;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        left: 0;
+        z-index: 2;
+
+        .delivery_time_sel,
+        .pay_box {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            justify-content: space-between;
+            box-sizing: border-box;
+
+            .pay_weixin {
+                background: #07c160;
+            }
+        }
+
+        .delivery_time_sel {
+            font-size: 32rpx;
+            color: #000000;
+            border-bottom: 1px solid #ededed;
+            padding: 35rpx 45rpx;
+        }
+
+        .pay_box {
+            padding: 25rpx 45rpx;
+
+            .pay_num {
+                font-size: 40rpx;
+                color: #aa4146;
+            }
+
+            button {
+                width: 215rpx;
+                height: 75rpx;
+                line-height: 75rpx;
+                text-align: center;
+                font-size: 30rpx;
+                color: #fff;
+                background: #d7d7d7;
+                border: none;
+                box-shadow: none;
+            }
+        }
+    }
+
+    .sel_time_tt {
+        background: #f5f5f5;
+        font-size: 32rpx;
+        color: #000;
+        text-align: center;
+        padding: 25rpx 0;
+    }
+
+    .content_box {
+			background: #fff;
+			margin-top: 25rpx;
+			box-sizing: border-box;
+			position: relative;
+			border-bottom: 1px solid #ededed;
+			padding-left: 100rpx;
+
+			.content_box_tt {
+				left: 45rpx;
+			}
+
+			.textarea {
+				display: block;
+				box-sizing: border-box;
+				width: 100%;
+				padding: 25rpx 45rpx;
+
+				// height: 200rpx;
+				textarea {
+					height: 50rpx;
+                    line-height: 50rpx;
+                    font-size: 26rpx !important;
+				}
+			}
+		}
+
+	.big_img {
+		width: 200px;
+		height: 200px;
+		display: block;
+	}
+
+	.wh_order_info {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: stretch;
+		padding: 0 30rpx;
+		box-sizing: border-box;
+
+		.wh_order_img {
+			width: 200rpx;
+			height: 200rpx;
+			display: block;
+		}
+
+		.wh_order_cont {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			flex: 1;
+			padding: 0 0 0 30rpx;
+
+			.wh_order_tt {
+				font-size: 30rpx;
+				color: #191205;
+			}
+
+			.wh_order_price {
+				font-size: 36rpx;
+				color: #d72300;
+			}
+		}
+	}
+
+	.wh_order_form {
+		.wh_order_group {
+			display: flex;
+			flex-wrap: nowrap;
+			align-items: center;
+			padding: 30rpx 0;
+			border-bottom: 1px solid #ededed;
+			font-size: 30rpx;
+			justify-content: space-between;
+
+			text {
+				color: #333;
+			}
+		}
+
+		.picker {
+			flex: 1;
+			display: flex;
+			align-items: center;
+
+			image {
+				width: 35rpx;
+				height: 10rpx;
+				margin-left: 15rpx;
+			}
+		}
+	}
+
+	.repurchase_order_list {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: space-between;
+		padding: 30rpx 0;
+		font-size: 30rpx;
+		border-bottom: 1px solid #ededed;
+	}
+</style>

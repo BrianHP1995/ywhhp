@@ -1,0 +1,233 @@
+<template>
+    <view id="userCoupon">
+        <view class="coupon_box">
+            <form bindsubmit="formSubmit">
+                <view class="coupon_search">
+                    <view class="view_ipt">
+                        <input value="{{value}}" name="secret_key" placeholder="请输入优惠券兑换码" />
+                    </view>
+                    <view class="view_btn">
+                        <button form-type="submit">兑换</button>
+                    </view>
+                </view>
+            </form>
+            <view class="coupon_cont">
+                <van-tabs active="{{ active }}" bind:change="onChange" line-width="30">
+                    <van-tab title="免邮券"></van-tab>
+                    <van-tab title="抵扣券"></van-tab>
+                    <van-tab title="折扣券"></van-tab>
+                    <view class="couponList_wrap">
+                        <view class="no_coupon t-c" wx:if="{{!couponSingleData.coupon.length}}">
+                            <image class="display-ib" src="../../common/images/no_coupon.png" mode="widthFix" />
+                            <view>暂时没有可用的优惠券，sorry~</view>
+                        </view>
+                        <view class="coupon_list_box">
+                            <view class="coupon_list" data-item="{{item}}" bindtap=""
+                                wx:for="{{couponSingleData.coupon}}" wx:key="index" @tap="selectCoupon">
+                                <image class="coupon_bg" src="../../common/images/coupon_bg.png" mode="widthFix" />
+                                <view class="coupon_txt">
+                                    <view class="coupon_ico">
+                                        <image src="../../common/images/coupon_my.jpg" wx:if="{{couponSingleData.type==1}}"/>
+                                        <image src="../../common/images/coupon_dk.jpg" wx:if="{{couponSingleData.type==2}}"/>
+                                        <image src="../../common/images/coupon_zk.jpg" wx:if="{{couponSingleData.type==3}}"/>
+                                    </view>
+                                    <view class="coupon_detail" wx:if="{{couponSingleData.type==1}}">
+                                        <view class="coupon_detail_tt">免邮券</view>
+                                        <view class="coupon_detail_txt">该卷可抵扣配送费，可与其他优惠卷同享。</view>
+                                        <view class="coupon_detail_txt">有效期至 {{item.end_time}}</view>
+                                    </view>
+                                    <view class="coupon_detail" wx:if="{{couponSingleData.type==2}}">
+                                        <view class="coupon_detail_tt">{{couponSingleData.value}}元抵扣券</view>
+                                        <view class="coupon_detail_txt">该卷可抵扣产品费用{{couponSingleData.value}}元，可与其他优惠券同享。</view>
+                                        <view class="coupon_detail_txt">有效期至 {{item.end_time}}</view>
+                                    </view>
+                                    <view class="coupon_detail" wx:if="{{couponSingleData.type==3}}">
+                                        <view class="coupon_detail_tt">5折卷</view>
+                                        <view class="coupon_detail_txt">该卷可用于【燕窝炖品】系列产品，享5折优惠（不含配送费），不可与其他优惠券同享。</view>
+                                        <view class="coupon_detail_txt">有效期至 {{item.end_time}}</view>
+                                    </view>
+                                </view>
+                            </view>
+                        </view>
+                    </view>
+                </van-tabs>
+            </view>
+        </view>
+        <van-notify id="van-notify" />
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class Coupon extends wepy.page {
+        config = {
+            'navigationBarTitleText': '优惠券',
+            'navigationBarBackgroundColor': '#fff',
+            'navigationBarTextStyle': 'black',
+            'usingComponents': {
+                "van-tab": "../../../components/VantWeapp/tab/index",
+                "van-tabs": "../../../components/VantWeapp/tabs/index",
+                "van-notify": "../../../components/VantWeapp/notify/index",
+            }
+        }
+        data = {
+            active: 0,
+            couponData: [],
+            couponSingleData: [],
+            code: 0,  //0-查看优惠券  1-选择优惠券
+        }
+        async getUserCoupon() {
+            let that = this;
+            let result = await wepy.Api.getUserCoupon({});
+            that.couponData = result.result;
+            that.selectCouponType();
+            that.$apply();
+
+        }
+        selectCouponType() {
+            let that = this;
+            that.couponSingleData = that.couponData[that.active];
+        }
+        onLoad(options) {
+            this.getUserCoupon();
+            if(options.code) {
+                this.code = options.code;
+            }
+        }
+        methods = {
+            onChange(e) {
+                this.active = e.detail.index;
+                this.selectCouponType();
+            },
+            selectCoupon(e) {
+                let couponInfo = JSON.stringify(e.currentTarget.dataset.item);
+                wx.navigateTo({
+                    url: `../index/sureOrder?couponInfo=${couponInfo}`
+                })
+            }
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+    .coupon_box {
+        position: absolute;
+        width: 100%;
+        min-height: 100%;
+        height: auto;
+        background: #edeae5;
+
+        .coupon_search {
+            background: #fff;
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            align-items: stretch;
+            padding: 10px 15px;
+            border-bottom: 1px solid #f0f0f0;
+
+            .view_ipt {
+                padding: 0rpx 20rpx 0 0;
+                box-sizing: border-box;
+                flex: 1;
+
+                input {
+                    height: 78rpx;
+                    padding: 0 15rpx;
+                    line-height: 78rpx;
+                    font-size: 26rpx;
+                    color: #666;
+                    border-radius: 4px;
+                    background: #efefef;
+                    border: none;
+                }
+            }
+
+            .view_btn {
+                button {
+                    font-size: 29rpx;
+                    border-radius: 4px;
+                    color: #fff;
+                    background: #f7a100;
+                    height: 78rpx;
+                    line-height: 78rpx;
+                    width: 215rpx;
+                    text-align: center;
+                    border: none;
+                    box-shadow: 0px
+                }
+            }
+        }
+
+        .coupon_cont {
+            .no_coupon {
+                padding: 50rpx 0 0;
+                text-align: center;
+
+                image {
+                    width: 252rpx;
+                }
+
+                view {
+                    font-size: 26rpx;
+                    color: #666;
+                    margin-top: 35rpx;
+                }
+            }
+
+            .coupon_list_box {
+                padding: 15px;
+                overflow: hidden;
+
+                .coupon_list {
+                    position: relative;
+                    z-index: 0;
+
+                    .coupon_bg {
+                        width: 100%;
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        z-index: -1;
+                    }
+
+                    .coupon_txt {
+                        height: 288rpx;
+                        display: flex;
+                        padding: 40rpx;
+                        box-sizing: border-box;
+                        width: 100%;
+                        flex-wrap: nowrap;
+                        align-items: center;
+
+                        .coupon_ico {
+                            image {
+                                width: 145rpx;
+                                height: 145rpx;
+                                border-radius: 100%;
+                            }
+                        }
+
+                        .coupon_detail {
+                            flex: 1;
+                            padding: 0 0 0 35rpx;
+
+                            .coupon_detail_txt {
+                                font-size: 24rpx;
+                                color: #666;
+                                line-height: 1.4;
+                            }
+
+                            .coupon_detail_tt {
+                                font-size: 30rpx;
+                                color: #000;
+                                margin-bottom: 20rpx;
+                                font-weight: bold;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+</style>

@@ -1,0 +1,113 @@
+<template>
+    <view class="giveOrder">
+        <!-- <van-tabs bind:click="onClick" border="{{false}}">
+            <van-tab title="我请的">
+                <view class="no_order" wx:if="{{!hasOrder}}">
+                    <image src="../../common/images/no_order.png" mode="widthFix"/>
+                    <view>您暂时还没有订单哦~</view>
+                </view>
+            </van-tab>
+            <van-tab title="我领的">
+                <view class="no_order" wx:if="{{!hasOrder}}">
+                    <image src="../../common/images/no_order.png" mode="widthFix"/>
+                    <view>您暂时还没有订单哦~</view>
+                </view>
+            </van-tab>
+        </van-tabs> -->
+        <view class="give_type">
+            <view class="give_tt borderR" style="color:{{giveStatus == 1 ? '#a8473e': ''}}" bindtap="tabChange1">
+                <text class="give_status" style="color:{{giveStatus == 1 ? '#a8473e': '#181818'}}">我请的</text>
+                <view class="give_num" style="color:{{giveStatus == 1 ? '#a8473e': '#666666'}}">已送出{{giveList.length}}份燕窝</view>
+            </view>
+            <view class="give_tt" bindtap="tabChange2">
+                <text class="give_status" style="color:{{giveStatus == 2 ? '#a8473e': '#181818'}}">我领的</text>
+                <view class="give_num" style="color:{{giveStatus == 2 ? '#a8473e': '#666666'}}">已收到{{getList.length}}份燕窝</view>
+            </view>
+        </view>
+        <view class="no_order" wx:if="{{!hasOrder}}">
+            <image src="../../common/images/no_order.png" mode="widthFix"/>
+            <view>您暂时还没有订单哦~</view>
+        </view>
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class giveOrder extends wepy.page {
+        config = {
+            navigationBarTitleText: '赠送记录',
+            navigationBarTextStyle: 'black',
+            navigationBarBackgroundColor: '#fff',
+            usingComponents: {
+                "van-tab": "../../../components/VantWeapp/tab/index",
+                "van-tabs": "../../../components/VantWeapp/tabs/index"
+            },
+            enablePullDownRefresh: false,
+        }
+        data = {
+            giveStatus: 1,
+            giveList: [],
+            getList: []
+        }
+        methods = {
+            tabChange1(e) {
+                this.giveStatus = 1;
+            },
+            tabChange2(e) {
+                this.giveStatus = 2;
+            },
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+    .giveOrder {
+        .no_order {
+            width: 100%;
+            position: fixed;
+            height: 100%;
+            background: #f8f8f8;
+            text-align: center;
+            font-size: 30rpx;
+            color: #666;
+            padding: 100rpx 0 0;
+
+            image {
+                width: 280rpx;
+                margin: 0 auto;
+            }
+
+            view {
+                margin: 25rpx;
+            }
+        }
+
+        .give_type {
+            display: flex;
+            flex-wrap: nowrap;
+            padding: 20rpx 0;
+            background: #fff;
+
+            .give_tt {
+                width: 50%;
+                text-align: center;
+
+                .give_status {
+                    font-size: 34rpx;
+                    color: #181818;
+                    font-weight: bolder;
+                }
+
+                .give_num {
+                    font-size: 26rpx;
+                    color: #666666;
+                    margin-top: 10rpx;
+                }
+            }
+
+            .borderR {
+                border-right: 2px solid #dedede;
+            }
+        }
+    }
+</style>

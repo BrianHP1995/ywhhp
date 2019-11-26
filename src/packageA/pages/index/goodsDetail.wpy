@@ -1,0 +1,341 @@
+<template>
+    <view class="goodsDetail">
+        <view class="back_btn" bindtap="backHome">
+            <image src="../../../common/images/index/back.png" /> 返回</view>
+        <view class="pro_banner">
+            <image src="{{goodsInfo.topimage}}" mode="widthFix"/>
+        </view>
+        <view class="pro_detail_cont">
+            <view class="pro_detail_tt">{{goodsInfo.title}}</view>
+            <view class="pro_detail_txt">{{goodsInfo.content}}</view>
+            <view class="pro_detail_buy">
+                <view class="pos-r">¥ {{goodsInfo.goods_list[0].price_selling}}
+                    <view class="pre_price center-y font-s24">￥{{goodsInfo.goods_list[0].price_market}}</view>
+                </view>
+                <button data-bean="{{goodsInfo}}" bindtap="openGoodsSel">购买</button>
+            </view>
+        </view>
+        <view class="pro_detail_img">
+            <image wx:for="{{goodsInfo.image}}" wx:key="index" mode="widthFix" style="margin-top: -16rpx;"
+                src="{{item}}" />
+        </view>
+        <!-- 规格弹窗 :isShowPop.sync="isShowPop"-->
+        <GoodsModelPop></GoodsModelPop>
+        <GoodsShoppingCart></GoodsShoppingCart>
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    import GoodsModelPop from '../../../components/GoodsBuyAbout/goodsModelPop'
+    import GoodsShoppingCart from '../../../components/GoodsBuyAbout/goodsShoppingCart'
+    export default class goodsDetail extends wepy.page {
+        config = {
+            navigationBarTitleText: '商品详情',
+            navigationBarTextStyle: 'black',
+            navigationBarBackgroundColor: '#fff',
+            usingComponents: {
+                'van-popup': '../../../components/VantWeapp/popup/index', //弹窗
+                'van-stepper': '../../../components/VantWeapp/stepper/index'
+            },
+            enablePullDownRefresh: false,
+        }
+        components = {
+            GoodsModelPop,
+            GoodsShoppingCart
+        }
+        data = {
+            goodsInfo: {},
+        }
+        async getGoodsDetail(goods_id) {
+            let that = this;
+            let result = await wepy.Api.getGoodsDetail({
+                goods_id
+            });
+            if (result.code == 1) {
+                that.goodsInfo = result.result;
+                that.$apply();
+            }
+        }
+        //获取购物车列表
+        async getShoppingCarList() {
+            let that = this;
+            let result = await wepy.Api.getGoodsShoppingCart({});
+            if(result.code == 1) {
+                let shoppingData = result.result;
+                if (shoppingData.list.length > 0) {
+                    that.$invoke('GoodsShoppingCart', 'cacleShoppingCartData', shoppingData);
+                }
+            }
+        }
+
+        onLoad(options) {
+            //获取商品详情
+            if (options.id) {
+                this.getGoodsDetail(options.id);
+            }
+        }
+        methods = {
+            backHome() {
+                wepy.navigateBack({
+                	delta: 1
+                })
+            },
+            openGoodsSel() {
+                wepy.Utils.isLogin({
+                    callbackOk: () => {
+                        //已经登录
+                        this.$invoke('GoodsModelPop', 'onOpen', this.goodsInfo);
+                    },
+                    callbackErr: () => {
+                        //未登录
+                        wepy.Utils.showModal({
+                            content: '你还未登录，登录后可获得完整体验',
+                            callback: () => {
+                                wepy.navigateTo({url: '../../../pages/oauth'})
+                            }
+                        })
+                    }
+                })
+
+            }
+        }
+        //给子组件提供方法调用
+        events = {
+            //调用获取购物车列表方法
+            callGetShoppingCarList() {
+                this.getShoppingCarList();
+            }
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+    .goodsDetail {
+        .pro_detail_cont {
+            padding: 30rpx;
+
+            .pro_detail_tt {
+                font-size: 48rpx;
+                color: #282828;
+                font-weight: bolder;
+            }
+
+            .pro_detail_txt {
+                font-size: 24rpx;
+                color: #282828;
+                line-height: 1.5;
+                margin-top: 10rpx;
+            }
+        }
+
+        .pro_detail_buy {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10rpx 0;
+            position: relative;
+
+            view {
+                font-size: 36rpx;
+                color: #cd3720;
+                font-weight: bolder;
+                .pre_price {
+                    right: -80rpx;
+                    top: 56%;
+                    color: #999;
+                    font-weight: normal;
+                    font-size: 26rpx;
+                    &:before {
+                        display: block;
+                        content: '';
+                        width: 108%;
+                        height: 1rpx;
+                        background: #999;
+                        position: absolute;
+                        top: 50%;
+                        left: 0;
+                        transform: translateY(-50%);
+                    }
+                }
+            }
+
+            button {
+                display: inline-block;
+                text-align: center;
+                color: #fff;
+                font-size: 26rpx;
+                width: 120rpx;
+                height: 60rpx;
+                line-height: 60rpx;
+                border: none;
+                margin: 0;
+                font-family: "PingFang";
+                background: -webkit-linear-gradient(#c10404, #a20000);
+                /* Safari 5.1 to 6.0 */
+                background: -o-linear-gradient(#c10404, #a20000);
+                /* Opera 11.1 to 12.0 */
+                background: -moz-linear-gradient(#c10404, #a20000);
+                /* Firefox 3.6 to 15 */
+                background: linear-gradient(#c10404, #a20000);
+                /* 标准语法 (必须在最后) */
+            }
+
+            .has_buy_num {
+                display: inline-block;
+                font-size: 24rpx;
+                color: #fff;
+                background: #f8a300;
+                width: 40rpx;
+                height: 30rpx;
+                line-height: 30rpx;
+                position: absolute;
+                right: -14rpx;
+                top: 0;
+                border-radius: 20rpx;
+                text-align: center;
+            }
+        }
+
+        .comment_box {
+            padding: 20rpx 15rpx;
+            background: #f6f6f6;
+
+            .bgfff {
+                background: #fff;
+                box-sizing: border-box;
+                padding: 20rpx 40rpx;
+
+                .comment_tt_box {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+
+                    .comment_ttt_fl {
+                        font-size: 29rpx;
+                        color: #999;
+                        display: flex;
+                        align-items: center;
+                    }
+
+                    .comment_ttt_fr {
+                        font-size: 29rpx;
+                        color: #f78d00;
+                    }
+                }
+
+                .comment_cont {
+                    position: relative;
+                    height: 345rpx;
+                    box-sizing: border-box;
+                    padding: 60rpx 25rpx;
+                    z-index: 0;
+                    margin: 25rpx 0 0;
+                    overflow: hidden;
+
+                    .comment_bg {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        bottom: 0;
+                        right: 0;
+                        z-index: 1;
+                    }
+
+                    .comments_txt {
+                        height: 225px;
+                        overflow: auto;
+
+                        .comments_list {
+                            font-size: 23rpx;
+                            color: #333;
+                            padding: 25rpx 15rpx;
+                            border-bottom: 1px dashed #666;
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
+    .back_btn {
+        width: 145rpx;
+        height: 60rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32rpx;
+        color: #000;
+        position: fixed;
+        top: 10px;
+        left: 15px;
+        z-index: 2;
+        border-radius: 30rpx;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.6);
+
+        image {
+            width: 14rpx;
+            height: 24rpx;
+            margin-right: 10rpx;
+        }
+    }
+
+    .comment_edit {
+        background: #fff;
+        // position: fixed;
+        // top: 0;
+        // left: 0;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 20rpx;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+
+        .btns_view {
+            text-align: right;
+            margin-top: 15rpx;
+
+            .cancel,
+            .sure {
+                width: 125rpx;
+                height: 60rpx;
+                line-height: 60rpx;
+                font-size: 26rpx;
+                border-radius: 22rpx;
+                border: none;
+                background: none;
+                display: inline-block;
+            }
+
+            .cancel {
+                color: #a0a0a0;
+                border: 1rpx solid #a0a0a0;
+                margin-right: 15rpx;
+            }
+
+            .sure {
+                color: #fff;
+                border: 1rpx solid #fba71c;
+                background: #fba71c;
+            }
+        }
+
+        .comment_edit_border {
+            border: 1rpx solid #a0a0a0;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .words_tips {
+            color: #a0a0a0;
+            font-size: 26rpx;
+            text-align: right;
+
+            text {
+                font-weight: bolder;
+            }
+        }
+    }
+</style>

@@ -1,0 +1,160 @@
+<template>
+    <view class="DispatchOrderDetail">
+        <view class="order_statu bgc-fff">
+            <view class="statu_title t-c font-bold font-s40" wx:if="{{orderDetail.status==0}}">未支付</view>
+            <view class="statu_title t-c font-bold font-s40" wx:if="{{orderDetail.status==1}}">等待发货</view>
+            <view class="statu_title t-c font-bold font-s40" wx:if="{{orderDetail.status==2}}">已取消</view>
+            <view class="statu_title t-c font-bold font-s40" wx:if="{{orderDetail.status==3}}">等待送达</view>
+            <view class="statu_title t-c font-bold font-s40" wx:if="{{orderDetail.status==4}}">已完成</view>
+            <view class="order_time t-c font-s26" wx:if="{{orderDetail.status==1 || orderDetail.status==3}}"><text wx:if="{{orderDetail.status==3}}">预计<text class="time">{{orderDetail.express_estimate_at}}</text>送达，</text>请耐心等待大鱼燕窝来临！
+            </view>
+        </view>
+        <!-- 订单信息 -->
+        <view class="order_info bgc-fff">
+            <view class="order_code_time pos-r font-s26">
+                外卖订单：{{orderDetail.order_no}}
+                <view class="order_time right c-999 font-s24">{{orderDetail.create_at}}</view>
+            </view>
+            <view class="order_list">
+                <repeat for="{{orderDetail.orderList}}">
+                    <view class="order_item pos-r">
+                        <view class="title font-bold">{{item.goods_title}}</view>
+                        <view class="flavor">{{item.attribute}}{{item.flavor}}</view>
+                        <view class="num pos-a">x {{item.number_goods}}</view>
+                        <view class="price pos-a">￥{{item.price_real}}</view>
+                    </view>
+                </repeat>
+            </view>
+            <view class="order_fee pos-r">配送费<view class="fee right">￥{{orderDetail.price_express}}</view></view>
+            <!-- <view class="order_discount pos-r">全场饮品<view class="discount right">-￥22.4</view></view> -->
+            <view class="order_price pos-r">共{{orderDetail.orderList.length}}件商品<view class="price right">实付 ￥{{orderDetail.price_goods}}</view></view>
+        </view>
+        <!-- 下单时间 -->
+        <view class="order_add_time font-s26 c-666 bgc-fff">下单时间：{{orderDetail.create_at}}</view>
+        <!-- 收货地址 -->
+        <view class="order_address bgc-fff">
+            <view class="clearfix">
+                <view class="address_txt font-s26 c-999 f-l c-666">收货地址</view>
+                <view class="address f-r font-s24">{{orderDetail.express_province}}{{orderDetail.express_city}}{{orderDetail.express_area}}{{orderDetail.express_address}}</view>
+            </view>
+            <view class="order_consignee t-r font-s24">{{orderDetail.express_name}} {{orderDetail.express_phone}}</view>
+        </view>
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class DispatchOrderDetail extends wepy.page {
+        config = {
+            navigationBarTitleText: "订单详情",
+            usingComponents: {
+                'van-button': '../../../components/VantWeapp/button/index',
+            },
+            enablePullDownRefresh: false,
+        }
+        data = {
+            orderDetail: {},
+
+        }
+        async getOrderDetail(order_no) {
+            let result = await wepy.Api.getDispatchOrderDetail({order_no});
+            this.orderDetail = result.order;
+            this.orderDetail.orderList.forEach((item) => {
+                let arr = [];
+                item.flavor = '';
+                arr = item.goods_spec.split(';;');
+                arr.forEach(val => {
+                    item.flavor += `/${val.split('::')[1]}`;
+                })
+            })
+            this.$apply();
+        }
+        onLoad(options) {
+            if(options.order_no) {
+                this.getOrderDetail(options.order_no);
+            }
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+    .DispatchOrderDetail {
+        height: 100%;
+        background: #f9f9f9;
+        .right {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+        }
+        .order_statu {
+            padding-top: 60rpx;
+            padding-bottom: 50rpx;
+            .statu_title {
+                margin-bottom: 20rpx;
+            }
+            .order_time {
+                margin-top: 30rpx;
+                .time {
+                    color: #ff9f00;
+                }
+                .tip {
+                    color: #999;
+                }
+            }
+        }
+        .order_info {
+            margin-top: 10rpx;
+            padding: 0 20rpx;
+            .order_code_time {
+                border-bottom: 2rpx solid #efefef;
+                padding: 35rpx 0;
+                .order_time {
+                    right: 0;
+                }
+            }
+            .order_list {
+                .order_item {
+                    position: relative;
+                    padding: 30rpx 0;
+                    .num {
+                        top: 28rpx;
+                        right: 145rpx;
+                    }
+                    .price {
+                        top: 28rpx;
+                        right: 0rpx;
+                    }
+                }
+            }
+            .order_fee {
+                padding: 20rpx 0;
+            }
+            .order_discount {
+                padding: 20rpx 0;
+                border-bottom: 2rpx solid #efefef;
+                color: #ff9f00;
+            }
+            .order_price {
+                padding: 30rpx 0;
+            }
+        }
+        .order_add_time {
+            margin-top: 10rpx;
+            padding: 40rpx 20rpx;
+        }
+        .order_address {
+            margin-top: 10rpx;
+            padding: 30rpx 20rpx;
+            // .address_txt {
+
+            // }
+            // .address {
+
+            // }
+            // .order_consignee {
+
+            // }
+        }
+    }
+</style>

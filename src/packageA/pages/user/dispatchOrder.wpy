@@ -1,0 +1,141 @@
+<template>
+    <view class="dispatchOrder">
+        <view class="no_order" wx:if="{{!hasOrder}}">
+            <image src="../../common/images/no_order.png" mode="widthFix"/>
+            <view>您暂时还没有订单哦~</view>
+        </view>
+        <repeat for="{{orderList}}">
+            <van-cell>
+                <view slot="title">
+                    <view class="give_list_box pos-r" @tap="linkOrderDetail" data-item="{{item}}">
+                        <view class="give_list_fl">
+                            <image src="{{item.goods_logo}}" mode="widthFix"/>
+                        </view>
+                        <view class="give_list_fr">
+                            <view class="give_line">
+                                <view class="give_time display-flex font-s30 c-666">{{item.goods_title}}
+                                    <text class="font-s30 c-666" wx:if="{{item.number>1}}">等{{item.number}}份</text>
+                                </view>
+                            </view>
+                            <view class="give_line">
+                                <view class="give_pro">总计{{item.price_goods}}元</view>
+                                <view class="give_pro">{{item.create_at}}</view>
+
+                            </view>
+                        </view>
+                        <view class="give_status pos-a">
+                            <view class="order_statu" wx:if="{{item.status == 0}}">未支付</view>
+                            <view class="order_statu" wx:if="{{item.status == 1}}">等待发货</view>
+                            <view class="order_statu" wx:if="{{item.status == 3}}">已发货</view>
+                            <view class="order_statu" wx:if="{{item.status == 2}}">已取消</view>
+                            <view class="order_statu" wx:if="{{item.status == 4}}">已完成</view>
+                        </view>
+                    </view>
+                </view>
+            </van-cell>
+        </repeat>
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class DispatchOrder extends wepy.page {
+        config = {
+            navigationBarTitleText: "配送订单",
+            usingComponents: {
+                "van-cell": "../../../components/VantWeapp/cell/index",
+                'van-button': '../../../components/VantWeapp/button/index',
+            },
+            enablePullDownRefresh: false,
+        }
+        data = {
+            hasOrder: true,
+            orderList: []
+        }
+        async getUserOrderList() {
+            let result = await wepy.Api.getDispatchOrderList({})
+            if(result.code == 1) {
+                this.orderList = result.order;
+                this.$apply();
+            }
+        }
+        onLoad(options) {
+            this.getUserOrderList();
+        }
+        methods = {
+            linkOrderDetail(e) {
+                let order_no = e.currentTarget.dataset.item.order_no;
+                wx.navigateTo({
+                    url: './dispatchOrderDetail?order_no=' + order_no
+                })
+            }
+        }
+    }
+</script>
+<style lang="less" scoped>
+    .dispatchOrder {
+        .no_order{
+            width: 100%;
+            position: fixed;
+            height: 100%;
+            background: #f8f8f8;
+            text-align: center;
+            font-size: 30rpx;
+            color: #666;
+            padding: 100rpx 0 0;
+            image{
+                width: 280rpx;
+                margin: 0 auto;
+            }
+            view{
+                margin: 25rpx;
+            }
+        }
+        .give_list_box{
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            .give_list_fl{
+
+                image{
+                    width: 90rpx;
+                }
+            }
+            .give_list_fr{
+                flex:1;
+                padding: 0 0 0 20rpx;
+                box-sizing: border-box;
+                .give_line{
+                    display: flex;
+                    flex-wrap: nowrap;
+                    align-items: flex-start;
+                    justify-content: space-between;
+                    .give_name{
+                        font-size: 26rpx;
+                        color:#000;
+                        font-weight: bolder;
+                    }
+                    .give_pro{
+                        font-size: 26rpx;
+                        color:#000;
+                    }
+
+                }
+            }
+            .give_status{
+                font-size:24rpx;
+                text-align: right;
+                white-space: nowrap;
+                right: 0;
+                top: 0rpx;
+                .order_statu {
+                    // background: #fea3a3;
+                    // color: #fff;
+                    // padding: 2rpx 14rpx;
+                    // font-size: 24rpx;
+                    // border-radius: 6rpx;
+                }
+            }
+        }
+    }
+</style>

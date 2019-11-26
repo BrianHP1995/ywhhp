@@ -1,0 +1,315 @@
+<template>
+    <view class="goodsShoppingCart" wx:if="{{isShowCarTotal}}">
+        <van-popup show="{{ isShowCar }}" bind:close="closePopCar" position="bottom" overlay="true" z-index="100">
+            <view class="car_show">
+                <view class="car_tt">
+                    <view bindtap="clearCar" class="clearCar">
+                        <image src="http://dayu.brighta.cn/static/minimages/index/clear.png"
+                            mode="widthFix" />清空购物车
+                    </view>
+                </view>
+                <view class="car_cont">
+                    <scroll-view scroll-y style="height: 140px">
+                        <repeat for="{{shoppingCartData.list}}">
+                            <view class="car_line">
+                                <view class="car_line_fl">
+                                    <view class="car_line_tt van-multi-ellipsis--l2">
+                                        {{ item.title }}
+                                    </view>
+                                </view>
+                                <view class="car_line_fr">
+                                    <text class="car_line_price">¥{{ item.price_selling }}</text>
+                                    <van-stepper value="{{ item.number }}" data-item="{{item}}"
+                                    min="0" data-index="{{ index }}"
+                                        integer disable-input input-width="40px"
+                                        bind:plus="shoppingCartAdd" bind:minus="shoppingCartDel" />
+                                </view>
+                            </view>
+                        </repeat>
+                    </scroll-view>
+                </view>
+            </view>
+        </van-popup>
+        <view class="shoppingCartInfo display-flex bgc-fff">
+            <view class="buy_car_fl">
+                <view bindtap="openCar">
+                    <image src="../../common/images/index/buy_car.png" mode="widthFix" />
+                    <view class="shop_Num pos-a display-ib font-s20 t-c c-fff">{{shoppingCarTotal.num}}</view>
+                </view>
+                <view class="shop_total">¥{{shoppingCarTotal.price}}</view>
+            </view>
+            <view class="buy_car_fr display-flex pos-r">
+                <button class="give_friend c-fff font-s30" bindtap="giveFriends">微信送好友</button>
+                <button class="give_mine c-fff font-s30" bindtap="sureOrder">自己喝</button>
+            </view>
+        </view>
+    </view>
+</template>
+<script>
+    import wepy from 'wepy';
+    export default class GoodsShoppingCart extends wepy.component {
+
+        //props 接收父组件传递过来的值
+        props = {
+
+        }
+        data = {
+            isShowCar: false,
+            isShowCarTotal: false, //是否展示购物车
+            shoppingCarTotal: {
+            	num: 0,
+            	price: 0.00
+            },
+            shoppingCartData: {} //购物车数据
+        }
+        cacleShoppingCartData(shoppingData) {
+            let that = this;
+            that.shoppingCartData = shoppingData;
+            let price = 0.00;
+            let num = 0;
+            let data = shoppingData.list;
+            if(data.length>0) {
+                //购物车数据不为空 -- 显示购物车
+                that.isShowCarTotal = true;
+            }else {
+                that.isShowCarTotal = false;
+            }
+            //计算购物车数据
+            data.forEach((item) => {
+                price += parseFloat(item.price_selling)*item.number;
+                num += Number(item.number);
+            })
+            that.shoppingCarTotal = {
+                num,
+                price: price.toFixed(2)
+            };
+            that.isShowCar = false;
+            that.$apply();
+        }
+        methods = {
+            giveFriends() {
+                //微信送好友  -- 暂不开放
+                wx.showToast({
+                    icon: 'none',
+                    title: '该功能暂未开放'
+                })
+            },
+            sureOrder() {
+                //自己喝  -- 跳转订单确认下单页面
+                wx.navigateTo({
+                    url: '/packageA/pages/index/sureOrder'
+                })
+            },
+            openCar() {
+                this.isShowCar = !this.isShowCar;
+            },
+            closePopCar() {
+                this.isShowCar = false;
+            },
+            shoppingCartAdd(e) {
+                let that = this;
+                this.shoppingCarTotal.num ++;
+                let item = e.currentTarget.dataset.item;
+                let data = {
+                    goods_id: item.goods_id, //商品id
+                    spec_id: item.spec_id, //规格id
+                    attribute: item.attribute //属性id 多属性&拼接
+                }
+                wepy.Api.addGoodsToShoppingCart(data)
+                    .then((res) => {
+                        if(res.code == 1) {
+                            that.$emit('callGetShoppingCarList');
+                        }
+                    })
+            },
+            shoppingCartDel(e) {
+                let that = this;
+                this.shoppingCarTotal.num --;
+                let item = e.currentTarget.dataset.item;
+                let data = {
+                    goods_id: item.goods_id, //商品id
+                    spec_id: item.spec_id, //规格id
+                    attribute: item.attribute //属性id 多属性&拼接
+                }
+                wepy.Api.delGoodsFromShoppingCart(data)
+                    .then((res) => {
+                        if(res.code == 1) {
+                            that.$emit('callGetShoppingCarList');
+                        }
+                    })
+            },
+            clearCar() {
+                //清空购物车
+                let that = this;
+                wepy.Api.clearShoppingCart({})
+                    .then(res => {
+                        if(res.code == 1) {
+                            //清除成功
+                            that.isShowCarTotal = false;
+                            that.$apply();
+                            wx.showToast({
+                                title: '清除成功'
+                            })
+                        }
+                    })
+            }
+        }
+    }
+</script>
+<style lang="less" scoped>
+    .goodsShoppingCart {
+        .car_show {
+            z-index: 999;
+            overflow: hidden;
+            position: relative;
+            padding-bottom: 200rpx;
+            .clearCar {
+                image {
+                    display: inline-block;
+                    width: 25rpx;
+                    margin-right: 10rpx;
+                }
+            }
+            .car_cont {
+                padding: 80rpx 0 10rpx;
+                height: 100%;
+            }
+            .car_line {
+                width: 100%;
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+                padding: 10rpx 25rpx;
+                justify-content: space-between;
+                border-bottom: 1px solid #eeeeee;
+                .car_line_tt {
+                    font-size: 30rpx;
+                    color: #191205;
+                }
+                .car_line_tips {
+                    font-size: 22rpx;
+                    color: #646464;
+                }
+            }
+
+            .car_line_fr {
+                display: flex;
+                align-items: center;
+
+                .car_line_price {
+                    color: #d72300;
+                    font-size: 30rpx;
+                    margin-right: 25rpx;
+                }
+            }
+        }
+
+        .car_tt {
+            height: 30px;
+            line-height: 30px;
+            text-align: right;
+            padding: 0 20rpx;
+            box-sizing: border-box;
+            background: #f4f4f4;
+            font-size: 24rpx;
+            color: #767676;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .shoppingCartInfo {
+            align-items: center;
+            justify-content: space-between;
+            padding: 10rpx 25rpx;
+            width: 100%;
+            height: 125rpx;
+            box-shadow: 0 0 5px 3px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            bottom: 0rpx;
+            box-sizing: border-box;
+            overflow: hidden;
+            z-index: 999;
+            &:before {
+                display: block;
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 1rpx;
+                background: #eee;
+                bottom: 0;
+                left: 0;
+            }
+
+            .buy_car_fl {
+                display: flex;
+                flex-wrap: nowrap;
+                align-items: center;
+                position: relative;
+
+                image {
+                    width: 90rpx;
+                }
+
+                .shop_Num {
+                    left: 50rpx;
+                    bottom: 0rpx;
+                    width: 50rpx;
+                    height: 42rpx;
+                    background: #de4907;
+                    border-radius: 21rpx;
+                    line-height: 42rpx;
+                }
+
+                .shop_total {
+                    font-size: 32rpx;
+                    color: #c91d00;
+                    margin-left: 25rpx;
+                }
+            }
+
+            .buy_car_fr {
+                align-items: center;
+
+                .give_friend {
+                    width: 210rpx;
+                    height: 95rpx;
+                    line-height: 95rpx;
+                    border: none;
+                    border-radius: 8rpx;
+                    margin-right: 10rpx;
+                    // background: -webkit-linear-gradient(#c10404,
+                    //     #a20000);
+                    // /* Safari 5.1 to 6.0 */
+                    // background: -o-linear-gradient(#c10404,
+                    //     #a20000);
+                    // /* Opera 11.1 to 12.0 */
+                    // background: -moz-linear-gradient(#c10404,
+                    //     #a20000);
+                    // /* Firefox 3.6 to 15 */
+                    // background: linear-gradient(#c10404,
+                    //     #a20000);
+                    background: #eee;
+
+                    &:after {
+                        border: none;
+                    }
+                }
+
+                .give_mine {
+                    width: 200rpx;
+                    height: 95rpx;
+                    line-height: 95rpx;
+                    border: none;
+                    border-radius: 8rpx;
+                    background: #ffa400;
+
+                    &:after {
+                        border: none;
+                    }
+                }
+            }
+        }
+    }
+</style>

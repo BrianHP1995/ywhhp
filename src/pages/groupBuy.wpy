@@ -1,0 +1,177 @@
+<template>
+    <view id="GroupBuy" class="pos-r">
+        <view class="center-xy font-bold font-s36 c-000">即将上线，敬请期待</view>
+        <!-- 拼团banner -->
+        <!-- <view class="groupBuy_banner">
+            <image src="http://test.goodwx.cn/upload/bf78dd17d3b541ec/dddf60e3dc48404d.jpg" mode="widthFix"></image>
+        </view> -->
+        <!-- 拼团切换 -->
+        <!-- <view class="buy_cont">
+        	<view class="buy_tt_box display-flex">
+        		<view class="buy_tt t-c" bindtap="changeBuyType">
+        			<image wx:if="{{ buyType == 1 }}" src="../common/images/index/buy_tt_bg.png" mode="widthFix" />
+        			<view class="buy_tt_txt">
+        				<view class="buy_tt_top font-s38 font-bold" style="color:{{buyType == 1 ? '#f2ab23' : ''}}">老带新团</view>
+        				<view class="buy_tt_bot font-s24" style="color:{{buyType == 1 ? '#f2ab23' : ''}}">仅新用户可参团</view>
+        			</view>
+        		</view>
+        		<view class="buy_tt t-c" bindtap="changeBuyType">
+        			<image wx:if="{{ buyType == 2 }}" src="../common/images/index/buy_tt_bg.png" mode="widthFix" />
+        			<view class="buy_tt_txt">
+        				<view class="buy_tt_top font-s38 font-bold" style="color:{{buyType == 2 ? '#f2ab23' : ''}}">全民参与</view>
+        				<view class="buy_tt_bot font-s24" style="color:{{buyType == 2 ? '#f2ab23' : ''}}">新老用户皆可参与</view>
+        			</view>
+        		</view>
+        	</view>
+        </view> -->
+        <!-- 拼团商品 -->
+        <!-- <view class="group_goods">
+            <repeat for="{{3}}">
+                <view class="buy_list" bindtap="linkGroupBuyDetail">
+                	<image mode="widthFix" src="../common/images/index/buy_pro.jpg" />
+                	<view class="buy_detail">
+                		<view class="buy_detail_tt">限时专享 | 金奖美式 （热）1杯子装</view>
+                		<view class="buy_detail_other">
+                			<view class="buy_detail_bot_fl pos-r">
+                				<text class="new_price">¥3.8</text>
+                				<text class="old_price">¥22</text>
+                				<view class="group_num c-fff center-y font-s24">三人团</view>
+                			</view>
+                			<view class="buy_detail_bot_fr">
+                				<button>去开团</button>
+                			</view>
+                		</view>
+                	</view>
+                </view>
+            </repeat>
+            <view class="t-c center-xy">暂无数据</view>
+        </view> -->
+
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class GroupBuy extends wepy.page {
+        config = {
+            navigationBarTitleText: "超值拼团",
+            usingComponents: {
+            },
+            enablePullDownRefresh: false,
+        }
+        data = {
+            buyType: 1, //1--老带新团2--全民参与
+        }
+        methods = {
+            changeBuyType() {
+                this.buyType=this.buyType == 1?2:1;
+            },
+            linkGroupBuyDetail() {
+                wx.navigateTo({
+                    url: '../packageA/pages/group/groupBuyDetail'
+                })
+            }
+        }
+
+    }
+</script>
+
+<style lang="less" scoped>
+    
+    #GroupBuy {
+        height: 100%;
+        .buy_cont {
+        	.buy_tt_box {
+        		padding: 24rpx 0 0;
+        		background: #f4f4f4;
+        		.buy_tt {
+        			position: relative;
+        			height: 110rpx;
+        			width: 260rpx;
+        			z-index: 0;
+
+        			image {
+        				position: absolute;
+        				top: 0;
+        				left: 0;
+        				width: 290rpx;
+        				z-index: -1;
+        			}
+
+        			.buy_tt_txt {
+        				.buy_tt_top {
+        					margin-top: 15rpx;
+        					color: #0b0b0b;
+                            letter-spacing: 6rpx;
+        				}
+
+        				.buy_tt_bot {
+        					color: #515151;
+        				}
+        			}
+        		}
+            }
+        }
+        .group_goods {
+            padding: 0 40rpx;
+            .buy_list {
+            	margin: 32rpx 0rpx;
+            	box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+
+            	.buy_detail {
+            		padding: 35rpx 15rpx;
+
+            		.buy_detail_tt {
+            			font-size: 34rpx;
+            			color: #0b0b0b;
+            			font-weight: bolder;
+            			padding-left: 15rpx;
+            		}
+
+            		.buy_detail_other {
+            			margin-top: 10rpx;
+            			display: flex;
+            			flex-wrap: nowrap;
+            			align-items: center;
+            			justify-content: space-between;
+
+            			.buy_detail_bot_fl {
+            				.new_price {
+            					font-size: 46rpx;
+            					color: #cd4443;
+            					font-weight: bolder;
+            					padding-left: 15rpx;
+            				}
+
+            				.old_price {
+            					margin-left: 18rpx;
+            					color: #414141;
+            					font-size: 27rpx;
+            					text-decoration: line-through;
+            				}
+                            .group_num {
+                                background: #cd4342;
+                                right: -130rpx;
+                                padding: 6rpx 12rpx;
+                                border-radius: 8rpx;
+                            }
+            			}
+
+            			.buy_detail_bot_fr {
+            				button {
+            					font-size: 32rpx;
+            					color: #fff;
+            					border: 0px;
+            					box-shadow: 0px;
+            					background: #f69f00;
+            					font-weight: bolder;
+            					width: 175rpx;
+            				}
+            			}
+            		}
+            	}
+            }
+        }
+
+    }
+</style>

@@ -1,0 +1,609 @@
+<template>
+    <view id="Home" class="wh-100">
+        <!-- banner -->
+        <view class="banner">
+            <swiper autoplay="true" interval="3000" duration="1000" circular="true" class="b_img" bindchange="swiperChange">
+                <repeat for='{{bannerList}}'>
+                    <swiper-item class="wh-100">
+                        <image class="wh-100" src='{{item.image}}' mode='aspectFill' data-item="{{item}}"></image>
+                    </swiper-item>
+                </repeat>
+            </swiper>
+            <view class="swiper_dots">
+                <repeat for="{{bannerList}}" data-index="index">
+                    <text class="dot {{index == currentSwiper ? 'active' : ''}}"></text>
+                </repeat>
+            </view>
+        </view>
+        <!-- 燕窝分类tabs 商品列表 -->
+        <view class="goodsType">
+            <view class="tabsWrap">
+                <view class="tabs_innerWrap pos-r {{tabs_isdown?'tabs_all': ''}}">
+                    <view class="sort_all" wx:if="{{tabs_isdown}}">全部分类</view>
+                    <scroll-view scroll-x class="tabsScroll {{tabs_isdown?'scroll_down': ''}}" scroll-left="{{tabsScrollLeft}}"
+                        scroll-with-animation>
+                        <block wx:for="{{tabsList}}" wx:for-item="navItem" wx:for-index="idx" wx:key="idx">
+                            <view class="tab {{idx===active?'acitve':''}}" bindtap="switchNav" data-current="{{idx}}">{{navItem.title}}</view>
+                        </block>
+                    </scroll-view>
+                </view>
+                <view class="downArrow pos-a bgc-fff" bindtap="tabsDown">
+                    <image src="../common/images/index/back.png" mode="widthFix" class="{{tabs_isdown?'down':''}}"></image>
+                </view>
+            </view>
+            <view class="goodsListAll">
+                <repeat for="{{goodsList}}" item="typeItem" index="typeIndex">
+                    <view class="typeList" id="goodsType_{{typeIndex}}">
+                        <view class="typeTitle display-flex">
+                            <view class="title_img">
+                                <image src="../common/images/index/tt_ico.png" mode="widthFix"></image>
+                            </view>
+                            <view class="title_txt">
+                                <view class="en font-s30">{{typeItem.en_name}}</view>
+                                <view class="cn font-s26">{{typeItem.title}}</view>
+                            </view>
+                        </view>
+                        <repeat for="{{typeItem.list}}">
+                            <view class="goodsType_list">
+                                <view class="goodsItem display-flex pos-r">
+                                    <view class="goods_img center-y pos-r" @tap.stop='linkGoodsDetail' data-item="{{item}}">
+                                        <image src="{{item.logo}}" mode="widthFix"></image>
+                                        <view class="stock_warning pos-a t-c c-fff font-s24" wx:if="{{item.num<10}}">库存紧张</view>
+                                    </view>
+                                    <view class="goods_info">
+                                        <view class="info_title font-s32 font-bold" @tap.stop='linkGoodsDetail' data-item="{{item}}">{{item.title}}
+                                            <view class="good_type_hot temp center-y font-s22 c-fff t-c" wx:if="{{item.type == 1}}">热</view>
+                                            <view class="good_type_ice temp center-y font-s22 c-fff t-c" wx:if="{{item.type == 2}}">冰</view>
+                                        </view>
+                                        <view class="info_con font-s24 c-333" @tap.stop='linkGoodsDetail' data-item="{{item}}">{{item.introduce}}</view>
+                                        <view class="sales_volume t-l font-s24 c-666">已售: {{item.number_sales}} 份</view>
+                                        <view class="info_bot pos-r">
+                                            <view class="price font-bold font-s36">￥{{item.goods_list[0].price_selling}}
+                                                <text class="pre_price font-s24 pos-r">原价￥{{item.goods_list[0].price_market}} <!-- <text class="before"></text> --></text>
+                                            </view>
+                                            <view class="buy c-fff t-c pos-a font-s24" bindtap="openModelPop" data-item="{{typeItem}}" data-bean='{{item}}'>选规格</view>
+                                        </view>
+                                    </view>
+                                </view>
+                            </view>
+                        </repeat>
+                    </view>
+                </repeat>
+            </view>
+        </view>
+        <view class="bottom_logo t-c"><image class="display-ib" src="../common/images/logo.png" mode="widthFix"></image></view>
+
+        <!-- 规格弹窗 :isShowPop.sync="isShowPop"-->
+        <GoodsModelPop></GoodsModelPop>
+        <GoodsShoppingCart></GoodsShoppingCart>
+    </view>
+</template>
+<script>
+    import wepy from 'wepy';
+    import GoodsModelPop from '../components/GoodsBuyAbout/goodsModelPop'
+    import GoodsShoppingCart from '../components/GoodsBuyAbout/goodsShoppingCart'
+    export default class Home extends wepy.page {
+        config = {
+            navigationBarTitleText: "首页",
+            usingComponents: {
+                'van-button': '../components/VantWeapp/button/index',
+                "van-tab": "../components/VantWeapp/tab/index", //tab标签
+                "van-tabs": "../components/VantWeapp/tabs/index", //tab标签
+                'van-popup': '../components/VantWeapp/popup/index', //弹窗
+                'van-stepper': '../components/VantWeapp/stepper/index',
+            },
+            enablePullDownRefresh: false,
+        }
+        components = {
+            GoodsModelPop,
+            GoodsShoppingCart
+        }
+        data = {
+            currentSwiper: 0,
+            bannerList: [],
+            active: 0,
+            tabsScrollLeft: 0,
+            systemWidth: 0,
+            tabs_isdown: false,
+            goodsTypeTopArr: [], //商品分类列表中分类标题距离顶部的距离集合
+            tabsList: [],
+            goodsList: [],
+            goodsPopInfo: {}, //商品选择规格弹窗数据
+        }
+        swiperChange(e) {
+            this.currentSwiper = e.detail.current;
+            this.$apply();
+        }
+        getSystemInfo() {
+            let that = this;
+            wx.getSystemInfo({
+                success: function(res) {
+                    that.systemWidth = res.windowWidth;
+                    that.$apply();
+                }
+            })
+        }
+        //获取首页banner图
+        async getHomeBanner() {
+            let that = this;
+            let result = await wepy.Api.get_homeBanner({});
+            if(result.code == 1)
+                that.bannerList = result.result;
+            else
+                wx.showToast({
+                    icon: 'none',
+                    title: 'banner图获取错误'
+                })
+
+        }
+        //获取购物车列表
+        async getShoppingCarList() {
+            let that = this;
+            let result = await wepy.Api.getGoodsShoppingCart({});
+            if(result.code == 1) {
+                let shoppingData = result.result;
+                if (shoppingData.list.length > 0) {
+                    that.$invoke('GoodsShoppingCart', 'cacleShoppingCartData', shoppingData);
+                }
+            }
+        }
+        //获取首页商品分类列表
+        async getGoodsTypeList() {
+            let result = await wepy.Api.getGoodsCateList({});
+            if(result.code == 1) {
+                this.tabsList = result.result;
+                //this.tabsListLength = result.result.length*21;
+                this.$apply();
+            }
+        }
+        //获取商品列表
+        async getGoodsList() {
+            let result = await wepy.Api.getGoodsList({});
+            if(result.code == 1) {
+                this.goodsList = result.result;
+                this.$apply();
+                this.getGoodsTypeTopOffset();
+            }
+        }
+        onLoad(options) {
+            //获取设备信息
+            this.getSystemInfo();
+            this.getHomeBanner();
+            this.getGoodsTypeList();
+            this.getGoodsList();
+        }
+        //为了授权返回后可以请求到数据
+        onShow() {
+            this.getShoppingCarList();
+        }
+        //获取商品列表中每种分类标题距离页面顶部的距离
+        getGoodsTypeTopOffset() {
+            let that = this;
+            let length = that.tabsList.length;
+            //获取每种类型对应的距离顶部的top值
+            for (let i = 0; i < length; i++) {
+                let queryId = `#goodsType_${i}`;
+                let query = wx.createSelectorQuery()
+                query.select(queryId).boundingClientRect()
+                query.selectViewport().scrollOffset()
+                query.exec(function(res) {
+                    that.goodsTypeTopArr.push(res[0].top);
+                })
+            }
+
+        }
+        setTypeTabsActive(top) {
+            let that = this;
+            let length = that.goodsTypeTopArr.length;
+            for (let i = 0; i < length; i++) {
+                if (top > that.goodsTypeTopArr[i] - 40 && i > that.active || top < that.goodsTypeTopArr[i] && i <
+                    that.active) {
+                    that.active = i;
+                    that.$apply()
+                }
+
+            }
+            that.$apply()
+        }
+        checkLoginState() { //检测登录状态
+            return new Promise((resolve, reject) => {
+                wepy.Utils.isLogin({
+                    callbackOk: () => {
+                        //已经登录
+                        resolve();
+                    },
+                    callbackErr: () => {
+                        //未登录
+                        reject();
+                    }
+                })
+            })
+        }
+        onPageScroll(e) {
+            /**
+             *  1. 页面加载完成后记录每个分类标题的位置scrollTop
+             *  2. 监听页面滚动，滚动距离到达哪个就赋值当前值给哪个
+             * */
+            let that = this;
+            let top = e.scrollTop;
+            that.setTypeTabsActive(top)
+        }
+        methods = {
+            switchNav(e) { //分类tabs点击事件
+                let that = this;
+                //当前索引
+                let current = e.currentTarget.dataset.current;
+
+                //当前选项
+                this.active = current;
+                //分类栏横向滚动
+                this.tabsScrollLeft = (current - 2) * this.systemWidth / 4;
+
+                //控制商品列表描点定位
+                let queryId = `#goodsType_${current}`;
+                let query = wx.createSelectorQuery()
+                query.select(queryId).boundingClientRect()
+                query.selectViewport().scrollOffset()
+                query.exec(function(res) {
+                    wx.pageScrollTo({
+                        scrollTop: res[0].top + res[1].scrollTop - 44
+                    });
+                })
+                //选择完成后关闭下拉
+                this.tabs_isdown = this.tabs_isdown ? false : false;
+            },
+            tabsDown() { //分类tabs点击下拉事件
+                this.tabs_isdown = !this.tabs_isdown;
+            },
+            openModelPop(e) {
+                let that = this;
+                /**
+                 *  判断是否登录：
+                 *      登录 - 打开商品规格弹窗
+                 *    未登录 - 询问是否登录，进入授权页面
+                 *
+                 * */
+                that.checkLoginState()
+                    .then((res) => {
+                        that.goodsPopInfo = e.currentTarget.dataset.bean;
+                        let typeId = e.currentTarget.dataset.item.type;
+                        let goods_id = e.currentTarget.dataset.bean.goods_id;
+                        /**
+                         *  typeId: 不同燕窝直接购买，定时配送跳转定时配送页面
+                         *      1- 普通燕窝
+                         *      2- 定时配送燕窝
+                         * */
+                        // if(typeId == 1)
+                            that.$invoke('GoodsModelPop', 'onOpen', that.goodsPopInfo);
+                        // else
+                        //     wepy.navigateTo({
+                        //         url: `../packageA/pages/index/timingOrder?goods_id=${goods_id}`
+                        //     })
+                    })
+                    .catch(err => {
+                        wepy.Utils.showModal({
+                            content: '你还未登录，登录后可获得完整体验',
+                            callback: () => {
+                                wepy.navigateTo({url: './oauth'})
+                            }
+                        })
+                    })
+            },
+            //跳转商品详情
+            linkGoodsDetail(e) {
+                let id = e.currentTarget.dataset.item.goods_id;
+                wx.navigateTo({
+                    url: `/packageA/pages/index/goodsDetail?id=${id}`
+                })
+            }
+        }
+        //给子组件提供方法调用
+        events = {
+            //调用获取购物车列表方法
+            callGetShoppingCarList() {
+                this.getShoppingCarList();
+            }
+        }
+        onShareAppMessage() {
+            // 在这里支付
+            if (ops.from === 'menu') {
+            	// 来自页面内转发按钮
+            }
+            return {
+            	title: that.giveList[that.index].txt,
+            	path: 'pages/home'
+            }
+        }
+    }
+</script>
+<style lang="less">
+    .van-tab {
+        min-width: auto !important;
+    }
+
+    #Home {
+        .banner {
+            position: relative;
+
+            .b_img {
+                width: 100%;
+                height: 280rpx;
+                overflow: hidden;
+
+                >img {
+                    width: 100%;
+                    height: 100%;
+                    display: block;
+                }
+            }
+
+            .swiper_dots {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                bottom: 15rpx;
+                text-align: center;
+
+                .dot {
+                    display: inline-block;
+                    width: 14rpx;
+                    height: 14rpx;
+                    border-radius: 100%;
+                    margin-left: 14rpx;
+                    background: #fff;
+
+                    &.active {
+                        background: #f99d05;
+                    }
+                }
+            }
+
+        }
+
+        .goodsType {
+            .tabsWrap {
+                position: sticky;
+                top: 0;
+                height: 36px;
+                background: #fff;
+                z-index: 9;
+                border-bottom: 1rpx solid #faf6f7;
+
+                .tabs_innerWrap {
+                    width: 87%;
+                    overflow: hidden;
+                    height: 36px;
+                    transition: height .4s;
+
+                    .sort_all {
+                        height: 36px;
+                        line-height: 36px;
+                        padding-left: 30rpx;
+                        border-bottom: 1rpx solid #efefef;
+                    }
+
+                    &.tabs_all {
+                        position: absolute;
+                        background: #fff;
+                        width: 100%;
+                        box-shadow: 0px 8rpx 16rpx 0rpx #ccc;
+                        padding-bottom: 20rpx;
+                        height: 120px;
+                    }
+
+                    .tabsScroll {
+                        white-space: nowrap;
+
+                        &.scroll_down {
+                            width: 100% !important;
+                            white-space: pre-wrap;
+                        }
+
+                        .tab {
+                            display: inline-block;
+                            width: 25%;
+                            color: #d29b65;
+                            padding: 0 5px;
+                            font-size: 30rpx;
+                            line-height: 36px;
+                            text-align: center;
+                            box-sizing: border-box;
+
+                            &.acitve {
+                                color: #3b2114;
+                            }
+                        }
+                    }
+                }
+
+                .downArrow {
+                    right: 0rpx;
+                    top: 0;
+                    height: 100%;
+                    width: 100rpx;
+                    z-index: 99999999;
+
+                    image {
+                        width: 20rpx;
+                        transform: rotate(-90deg);
+                        margin: 0 auto;
+                        margin-top: 30%;
+                        transition: all .4s;
+
+                        &.down {
+                            transform: rotate(90deg);
+                        }
+                    }
+                }
+
+            }
+
+            .goodsListAll {
+                .typeList {
+                    .typeTitle {
+                        padding: 14rpx 30rpx;
+                        border-bottom: 1rpx solid #faf6f7;
+
+                        .title_img {
+                            width: 50rpx;
+                        }
+
+                        .title_txt {
+                            margin-left: 16rpx;
+
+                            .en {
+                                color: #c48e23;
+                                font-weight: bold;
+                                line-height: 32rpx;
+                                margin-bottom: 6rpx;
+                            }
+                        }
+                    }
+
+                    .goodsType_list {
+                        padding: 0 30rpx;
+
+                        .goodsItem {
+                            padding: 25rpx 0;
+                            padding-left: 245rpx;
+                            border-bottom: 1rpx solid #eee;
+                            padding-bottom: 10rpx;
+
+                            .goods_img {
+                                left: 0;
+                                // padding-bottom: 18rpx;
+                                overflow: hidden;
+                                border-radius: 12rpx;
+
+                                image {
+                                    width: 220rpx;
+                                }
+
+                                .stock_warning {
+                                    bottom: 0;
+                                    left: 0;
+                                    width: 100%;
+                                    height: 44rpx;
+                                    line-height: 44rpx;
+                                    background: rgba(244, 42, 55, .8);
+                                }
+                            }
+
+                            .goods_info {
+                                padding-bottom: 20rpx;
+                                width: 100%;
+                                .info_title {
+                                    color: #191205;
+                                    position: relative;
+
+                                    .temp {
+                                        width: 35rpx;
+                                        height: 35rpx;
+                                        line-height: 1.4;
+                                        right: -44rpx;
+                                        border-radius: 5rpx;
+                                    }
+
+                                    .good_type_ice {
+                                        background: -webkit-linear-gradient(left top,
+                                            #7395e9,
+                                            #afcdff);
+                                        /* Safari 5.1 - 6.0 */
+                                        background: -o-linear-gradient(left top,
+                                            #7395e9,
+                                            #afcdff);
+                                        /* Opera 11.1 - 12.0 */
+                                        background: -moz-linear-gradient(left top,
+                                            #7395e9,
+                                            #afcdff);
+                                        /* Firefox 3.6 - 15 */
+                                        background: linear-gradient(to left top,
+                                            #7395e9,
+                                            #afcdff);
+                                        /* 标准的语法（必须放在最后）*/
+                                    }
+
+                                    .good_type_hot {
+                                        background: -webkit-linear-gradient(left top,
+                                            #fe5515,
+                                            #fdb04d);
+                                        /* Safari 5.1 - 6.0 */
+                                        background: -o-linear-gradient(left top,
+                                            #fe5515,
+                                            #fdb04d);
+                                        /* Opera 11.1 - 12.0 */
+                                        background: -moz-linear-gradient(left top,
+                                            #fe5515,
+                                            #fdb04d);
+                                        /* Firefox 3.6 - 15 */
+                                        background: linear-gradient(to left top,
+                                            #fe5515,
+                                            #fdb04d);
+                                        /* 标准的语法（必须放在最后）*/
+                                    }
+                                }
+
+                                .info_con {
+                                    margin-top: 8rpx;
+                                    color: #949494;
+                                    padding-right: 30rpx;
+                                    line-height: 32rpx;
+                                    height: 96rpx;
+                                    overflow: hidden;
+                                }
+
+                                .sales_volume {
+                                    margin-top: 8rpx;
+                                }
+
+                                .info_bot {
+                                    margin-top: 8rpx;
+
+                                    .price {
+                                        color: #d62500;
+                                        margin-left: -5rpx;
+                                        position: relative;
+                                        display: inline-block;
+                                        .pre_price {
+                                            font-weight: normal;
+                                            color: #999;
+                                            .before {
+                                                display: block;
+                                                width: 105%;
+                                                height: 1rpx;
+                                                background: #999;
+                                                position: absolute;
+                                                top: 48%;
+                                                left: 0;
+                                                transform: translateY(-50%);
+                                            }
+                                        }
+                                    }
+
+                                    .buy {
+                                        background: #b20202;
+                                        color: #fff;
+                                        width: 124rpx;
+                                        height: 58rpx;
+                                        line-height: 58rpx;
+                                        right: 0rpx;
+                                        border-radius: 34rpx;
+                                        top: -10rpx;
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+
+        }
+        .bottom_logo {
+            padding: 30rpx 0;
+            image {
+                
+            }
+        }
+    }
+</style>

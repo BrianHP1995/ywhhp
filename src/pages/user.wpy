@@ -1,0 +1,222 @@
+<template>
+    <view id="User">
+        <view class="user_info">
+            <view class="user_name">
+                <view class="user_img">
+                    <image src="{{userInfo.avatar}}" mode="widthFix" />
+                </view>
+                <text>{{userInfo.nickname}}</text>
+            </view>
+            <van-row>
+                <van-col span="8">
+                    <view style="margin-bottom:5px;">优惠券</view>
+                    <view style="font-size:40rpx;margin-top:10rpx;" @tap="linkCoupon">{{CouponLen}}</view>
+                </van-col>
+                <van-col span="8">
+                    <view style="margin-bottom:5px;">会员等级</view>
+                    <text style="font-size:32rpx;margin-top:10rpx;" @tap="linkMember">{{userInfo.name}}</text>
+
+                </van-col>
+                <van-col span="8">
+                    <view style="margin-bottom:5px;">积分</view>
+                    <view style="font-size:40rpx;margin-top:10rpx;" @tap="linkScore">{{userInfo.integral}}</view>
+                </van-col>
+            </van-row>
+        </view>
+        <view class="user_list">
+            <view wx:for="{{userList}}" wx:key="index">
+                <van-cell is-link center url="{{item.link}}" link-type="navigateTo">
+                    <view slot="title">
+                        <view class="user_list_txt">{{item.txt}}</view>
+                    </view>
+                    <view slot="icon">
+                        <view class="user_list_ico">
+                            <image src="{{item.ico}}" mode="widthFix" />
+                        </view>
+                    </view>
+                </van-cell>
+            </view>
+        </view>
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class User extends wepy.page {
+        config = {
+        	navigationBarTitleText: '个人中心',
+        	navigationBarTextStyle: 'black',
+        	navigationBarBackgroundColor: '#fff',
+        	usingComponents: {
+        		'van-row': '../components/VantWeapp/row/index',
+        		'van-col': '../components/VantWeapp/col/index',
+        		'van-cell': '../components/VantWeapp/cell/index',
+        		'van-cell-group': '../components/VantWeapp/cell-group/index'
+        	},
+        	enablePullDownRefresh: false,
+        }
+        data = {
+        	CouponLen: 0,
+        	userInfo: {},
+        	userList: [{
+        			link: '../packageA/pages/user/fridgeOrder',
+        			txt: '入库订单',
+        			ico: '../common/images/user/order.png'
+        		},
+        		{
+        			link: '../packageA/pages/user/dispatchOrder',
+        			txt: '配送订单',
+        			ico: '../common/images/user/delivery.png'
+        		},
+        		{
+        			link: '../packageA/pages/user/giveOrder',
+        			txt: '赠送记录',
+        			ico: '../common/images/user/give.png'
+        		},
+        		{
+        			link: '/packageA/pages/user/myAddress',
+        			txt: '我的地址',
+        			ico: '../common/images/user/address.png'
+        		},
+        		{
+        			link: '../packageA/pages/user/contactService',
+        			txt: '联系客服',
+        			ico: '../common/images/user/service.png'
+        		},
+        		{
+        			link: '../packageA/pages/user/setting',
+        			txt: '系统设置',
+        			ico: '../common/images/user/setting.png'
+        		}
+        	],
+        }
+        checkUserLogin() {
+            let that = this;
+            wepy.Utils.isLogin({
+                callbackOk: () => {
+                    //已经登录
+                    //获取用户信息
+                    that.getUserInfo();
+                },
+                callbackErr: () => {
+                    //未登录
+                    wepy.Utils.showModal({
+                        content: '你还未登录，登录后可获得完整体验',
+                        callback: () => {
+                            wepy.navigateTo({url: './oauth'})
+                        }
+                    })
+                }
+            })
+        }
+        async getUserInfo() {
+            let that = this;
+            let result = await wepy.Api.getUserInfo({});
+            if(result.code == 1) {
+                that.userInfo = result.result;
+                that.$apply();
+            }
+        }
+        async getUserCoupon() {
+            let that = this;
+            let CouponLen = 0;
+            let result = await wepy.Api.getUserCoupon({});
+            if(result.code == 1) {
+                result.result.forEach(res => {
+                    CouponLen += res.coupon.length;
+                })
+                that.CouponLen = CouponLen;
+                that.$apply();
+            }
+        }
+        onLoad(options) {
+
+        }
+        onShow() {
+            //检测登录状态
+            this.checkUserLogin();
+            this.getUserCoupon();
+        }
+        methods = {
+            linkCoupon() {
+                wx.navigateTo({
+                    url: '../packageA/pages/user/userCoupon'
+                })
+            },
+            linkMember() {
+                wx.navigateTo({
+                    url: '../packageA/pages/user/userMember'
+                })
+            },
+            linkScore() {
+                // wx.navigateTo({
+                //     url: '../packageA/pages/user/userScore'
+                // })
+            }
+        }
+    }
+</script>
+
+<style lang="less">
+	.button {
+		width: 98%;
+		margin-top: 2%;
+		border-radius: 5rpx;
+		background: -webkit-linear-gradient(left, rgb(255, 115, 0), #FFC000);
+		background: -o-linear-gradient(right, #FFD800, #FFC000);
+		background: -moz-linear-gradient(right, #FFD800, #FFC000);
+		background: linear-gradient(to right, #FFD800, #FFC000);
+		font-size: 30rpx;
+		border: none;
+	}
+
+	.user_info {
+		text-align: center;
+		background: #f1a93d;
+		color: #fff;
+		padding: 25rpx 0 45rpx 0;
+		font-size: 32rpx;
+		font-family: "SourceHanSansCN-Medium";
+
+		.user_name {
+			margin-bottom: 30rpx;
+			font-size: 32rpx;
+			font-family: "SourceHanSansCN-Bold";
+			font-weight: bolder;
+
+			.user_img {
+				width: 130rpx;
+				height: 130rpx;
+				margin: 0 auto;
+				border: 2px solid #fff;
+				border-radius: 50%;
+				overflow: hidden;
+				margin-bottom: 10rpx;
+
+				image {
+					width: 100%;
+					height: 100%;
+					;
+				}
+			}
+		}
+	}
+
+	.user_list {
+		.user_list_txt {
+			font-size: 30rpx;
+		}
+
+		.user_list_ico {
+			width: 35rpx;
+			margin-right: 20rpx;
+			display: flex;
+			align-items: center;
+
+			image {
+				display: inline-block;
+				width: 35rpx;
+			}
+		}
+	}
+</style>

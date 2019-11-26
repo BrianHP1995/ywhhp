@@ -1,0 +1,125 @@
+<style lang="less" scoped>
+.member_bg{
+    background: #6ba6fb;
+    position: absolute;
+    min-height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 20rpx;
+    overflow: hidden;
+    .bgfff{
+        position: absolute;
+        top: 0;
+        left: 20rpx;
+        right: 20rpx;
+        overflow: hidden;
+        padding: 20rpx;
+        box-sizing: border-box;
+        background: #fff;
+        .member_box{
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            padding: 30rpx;
+            height: 340rpx;
+            color: #fff;
+            z-index: 0;
+            image{
+                width: 100%;
+                position: absolute;
+                left: 0;
+                top: 0;
+                z-index: -1;
+            }
+            .member_top{
+                text-align: left;
+                z-index: 1;
+            }
+            .member_bottom{
+                text-align: left;
+                z-index: 1;
+                margin-top: 90rpx;
+            }
+        }
+        .silver image{
+            box-shadow: 2px 5px 8px rgba(228,230,236,0.6);
+        }
+        .gold image{
+            box-shadow: 0px 2px 5px rgba(247,233,209,0.8);
+        }
+        .diamond image{
+            box-shadow: 0px 2px 5px rgba(239,240,241,0.8);
+        }
+    }
+}
+</style>
+<template>
+    <view>
+      <view class="member_bg">
+          <view class="bgfff">
+                <view class="member_box diamond">
+                    <image src="../../common/images/diamond_member.png" mode="widthFix"/>
+                    <view class="member_top">
+                        <view style="font-size:42rpx;">钻卡会员</view>
+                        <view style="font-size:28rpx;margin-top:20rpx;text-transform:uppercase;">Drill card member</view>
+                    </view>
+                    <view class="member_bottom">
+                        <view style="font-size:27rpx;">累计消费50000元即可成为大鱼燕窝暂时会员</view>
+                      <view style="font-size:27rpx;">消费可获得支付产品金额的10%积分</view>
+
+                        <!-- <view style="font-size:24rpx;margin-top:20rpx;">查看详情 <van-icon name="arrow" color="#fff" size="20rpx"/></view> -->
+                    </view>
+                </view>
+                <view class="member_box gold">
+                      <image src="../../common/images/gold_member.png" mode="widthFix"/>
+                      <view class="member_top">
+                          <view style="font-size:42rpx;">金卡会员</view>
+                          <view style="font-size:28rpx;margin-top:20rpx;text-transform:uppercase;">Gold card member</view>
+                      </view>
+                      <view class="member_bottom">
+                        <view style="font-size:27rpx;">累计消费满10000元即可成为大鱼燕窝金卡会员</view>
+                        <view style="font-size:27rpx;">消费可获得支付产品金额的5%积分</view>
+                      </view>
+                </view>
+              <view class="member_box silver">
+                  <image src="../../common/images/silver_member.png" mode="widthFix"/>
+                  <view class="member_top">
+                      <view style="font-size:42rpx;">银卡会员</view>
+                      <view style="font-size:28rpx;margin-top:20rpx;text-transform:uppercase;">Silver card member</view>
+                  </view>
+                  <view class="member_bottom">
+                    <view style="font-size:27rpx;">消费任意金额即可成为大鱼燕窝银卡会员</view>
+                    <view style="font-size:27rpx;">消费可获得支付产品金额的3%积分</view>
+                  </view>
+              </view>
+
+          </view>
+      </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy';
+export default class Member extends wepy.page {
+    config = {
+      'navigationBarTitleText': '我的会员卡',
+      'navigationBarBackgroundColor': '#fff',
+      'navigationBarTextStyle': 'black',
+      'usingComponents': {
+        "van-icon": "../../../components/VantWeapp/icon/index"
+      }
+    }
+    components = {
+
+    }
+    data = {
+    }
+    onLoad(){
+    }
+    onUnload(){
+
+    }
+    methods= {
+
+    }
+}
+</script>

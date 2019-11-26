@@ -1,0 +1,233 @@
+<template>
+    <view id="groupBuyDetail">
+        <!-- 详情banner -->
+        <view class="detail_banner">
+            <image src="../../common/images/buy_pro_img.jpg" mode="widthFix"></image>
+        </view>
+        <!-- 拼团详情 -->
+        <view class="but_detail">
+            <view class="buy_tt font-s32 pos-r">限时专享 | 金奖美式 （热）1杯子装
+                <view class="group_num c-fff font-s24 display-ib">三人团</view>
+            </view>
+            <view class="mail_tips font-s26">下单需另付配送费</view>
+            <view class="other_tips font-s26 c-666">存入冰箱库，永久有效</view>
+            <view class="price pos-r">
+                <text class="new_price font-s42">¥16</text>
+                <text class="price_tips font-s18">拼团价</text>
+                <text class="old_price c-666 font-s28">¥35</text>
+            </view>
+        </view>
+        <!-- 拼团规则 -->
+        <view class="buy_rules">
+            <view class="rules_title">拼团玩法</view>
+            <view class="rules_con display-flex flex-wrap flex-between">
+                <view class="line">
+                    <view class="order display-ib c-fff t-c">1</view>选择商品，开团或拼团
+                </view>
+                <view class="line">
+                    <view class="order display-ib c-fff t-c">2</view>付款后邀请好友参团
+                </view>
+                <view class="line">
+                    <view class="order display-ib c-fff t-c">3</view>达到拼团人数，顺利开团
+                </view>
+                <view class="line">
+                    <view class="order display-ib c-fff t-c">4</view>若2小时内拼团不成功，全额退款
+                </view>
+            </view>
+        </view>
+        <!-- 已开团用户 -->
+        <view class="group_opend">
+            <view class="title font-s34">已有用户开团，可直接参与</view>
+            <view class="group_user display-flex pos-r">
+                <view class="img"><image src="../../common/images/user_ico.png"></image></view>
+                <view class="info">
+                    <view class="name font-s26">唐陆敏</view>
+                    <view class="tips font-s24 c-999">还差<text class="num">1人</text>参团  剩余01:11:00</view>
+                </view>
+                <view class="join_btn center-y c-fff font-s26">16元拼团</view>
+            </view>
+        </view>
+        <!-- 发起拼团 -->
+        <view class="add_btn_box">
+            <view class="group_price">
+                <view class="deli_price">￥16</view>
+                <view class="deli_tips">另需配送费</view>
+            </view>
+            <button class="add_address_btn" bindtap="allUser">发起拼团</button>
+        </view>
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class GroupBuyDetail extends wepy.page {
+        config = {
+            navigationBarTitleText: "拼团详情",
+            usingComponents: {},
+            enablePullDownRefresh: false,
+        }
+        data = {
+
+        }
+        methods = {
+
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+    #groupBuyDetail {
+        padding-bottom: 160rpx;
+        .but_detail {
+            padding: 45rpx 35rpx;
+
+            .buy_tt {
+                color: #282828;
+                font-weight: bolder;
+
+                .group_num {
+                    background: #cd4342;
+                    padding: 6rpx 12rpx;
+                    border-radius: 8rpx;
+                }
+            }
+
+            .mail_tips {
+                color: #cd3720;
+                margin-top: 10rpx;
+                font-weight: bolder;
+            }
+
+            .other_tips {
+                margin-top: 10rpx;
+            }
+
+            .price {
+                display: flex;
+                align-items: center;
+                margin-top: 20rpx;
+
+                .new_price {
+                    color: #cd3720;
+                }
+
+                .price_tips {
+                    color: #cd3720;
+                    margin: 0 5rpx;
+                }
+
+                .old_price {
+                    text-decoration: line-through;
+                    margin-left: 20rpx;
+                }
+            }
+        }
+
+        .buy_rules {
+            background: #f2f7fa;
+            padding: 20rpx 30rpx;
+            margin-bottom: 20rpx;
+
+            .rules_title {
+                font-size: 34rpx;
+                color: #476683;
+                font-weight: bolder;
+                margin-bottom: 20rpx;
+            }
+
+            .rules_con {
+                .line {
+                    margin-bottom: 30rpx;
+                    font-size: 22rpx;
+                    color: #476683;
+                    width: 50%;
+
+                    .order {
+                        width: 32rpx;
+                        height: 32rpx;
+                        line-height: 32rpx;
+                        background: #476683;
+                        border-radius: 100%;
+                        margin-right: 6rpx;
+                        vertical-align: middle;
+                    }
+                }
+            }
+        }
+        .group_opend {
+            padding: 0 30rpx;
+            margin-top: 10rpx;
+            .title {
+                padding: 20rpx 0;
+                border-bottom: 2rpx solid #e1e1e1;
+            }
+            .group_user {
+                padding: 30rpx 0;
+                border-bottom: 2rpx solid #eee;
+                .img {
+                    width: 90rpx;
+                    height: 90rpx;
+                    border-radius: 100%;
+                    border: 2rpx solid #e1e1e1;
+                    margin-right: 16rpx;
+                }
+                .info {
+                    margin-top: 6rpx;
+                    .name {
+
+                    }
+                    .tips {
+                        margin-top: 8rpx;
+                        .num {
+                            color: #cd3720;
+                        }
+                    }
+                }
+                .join_btn {
+                    right: 0;
+                    background: #f69f00;
+                    border-radius: 8rpx;
+                    padding: 20rpx 30rpx;
+                }
+            }
+
+        }
+        .add_btn_box {
+            position: fixed;
+            background-color: #fff;
+            left: 0;
+            bottom: 0;
+            padding: 20rpx;
+            box-sizing: border-box;
+            border-top: 1px solid #e5e5e5;
+            width: 100%;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: space-between;
+            .group_price {
+                color: #cd3720;
+                .deli_price {
+                    font-size: 46rpx;
+                }
+                .deli_tips {
+                    font-size: 22rpx;
+                }
+            }
+            button {
+                background: #f69f00;
+                font-size: 32rpx;
+                color: #fff;
+                padding: 20rpx 0;
+                text-align: center;
+                border-radius: 4px;
+                width: 65%;
+                border: none;
+                box-shadow: none;
+                margin: 0;
+
+            }
+        }
+
+    }
+</style>

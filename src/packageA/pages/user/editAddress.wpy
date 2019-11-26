@@ -1,0 +1,216 @@
+<template>
+    <view class="editAddress">
+        <form bindsubmit="formSubmit">
+            <view class="form_group">
+                <view class="label_tt">姓名</view>
+                <van-field name="recName" value="{{editData.name}}" clearable placeholder="收货人姓名" bind:change="onChangeName" />
+            </view>
+            <view class="form_group">
+                <view class="label_tt">手机号码</view>
+                <van-field name="mobilePhone" value="{{editData.mobile}}" clearable placeholder="售货员将以此联系您"
+                    bind:change="onChangeTel" />
+            </view>
+            <view class="form_group">
+                <view class="label_tt">地址</view>
+                <van-field name="address" value="{{editData.province}}{{editData.city}}{{editData.area}}" clearable placeholder="城市、小区、写字楼、地标建筑名称"
+                    disabled bindtap="selAddress" />
+            </view>
+            <view class="form_group">
+                <view class="label_tt">详细门牌</view>
+                <van-field name="addressDetail" value="{{editData.address}}" clearable placeholder="例如：19号楼1801室" bind:change="onChangeAdr" />
+            </view>
+            <view class="form_group">
+              <view class="label_tt">标签</view>
+              <van-field
+                name="addressTag"
+                value="{{editData.addressTag}}"
+                clearable
+                placeholder="不超过2个字，例如:公司、家"
+              />
+            </view>
+            <view class="add_btn_box">
+                <button class="add_address_btn" form-type="submit">保存</button>
+            </view>
+        </form>
+    </view>
+
+    <van-popup show="{{ show }}" position="bottom" overlay="{{ true }}" bind:close="onClose" style="width:100%;height:100%;">
+        <van-area area-list="{{ areaList }}" value="110101" bind:confirm="confirmAddress" />
+    </van-popup>
+
+    <van-notify id="van-notify" />
+</template>
+
+<script>
+    import wepy from 'wepy';
+    import Notify from '../../../components/VantWeapp/notify/notify';
+    import areaList from '../../../common/js/area.js'
+    export default class EditAddress extends wepy.page {
+        config = {
+            navigationBarTitleText: '新增地址',
+            usingComponents: {
+                'van-field': '../../../components/VantWeapp/field/index',
+                'van-notify': '../../../components/VantWeapp/notify/index',
+                'van-popup': '../../../components/VantWeapp/popup/index',
+                'van-area': '../../../components/VantWeapp/area/index'
+            }
+        };
+        data = {
+            editData: {
+                name: '',
+                mobile: '',
+                address: '',
+                area: '',
+                city: '',
+                province: '',
+                addressTag: ''
+            },
+            code: 0, // 1 修改 0 新增
+            show: false,
+            areaList: { //示例
+                province_list: areaList.province_list,
+                city_list: areaList.city_list,
+                county_list: areaList.county_list
+            }
+        }
+        onLoad(options) {
+            if(options.editInfo) {  //编辑地址
+                this.editData = JSON.parse(options.editInfo);
+                this.code = 1;
+                this.$apply();
+            }
+        }
+        methods = {
+            onChangeName(e) {
+                //修改姓名
+                let that = this;
+                that.editData.name = e.detail;
+            },
+            onChangeTel(e) {
+                //修改电话
+                let that = this;
+                that.editData.mobile = e.detail;
+            },
+            onChangeAdr(e) {
+                //修改详细地址
+                let that = this;
+                that.editData.address = e.detail;
+            },
+            selAddress() {
+                //选择地址
+                this.show = true;
+            },
+            confirmAddress(e) {
+                //选择收获地址完成
+                this.editData.province = e.detail.values[0].name;
+                this.editData.city = e.detail.values[1].name;
+                this.editData.area = e.detail.values[2].name;
+                this.show = false;
+            },
+            formSubmit(e) {
+                let that = this;
+                if (e.detail.value.recName == '') {
+                    Notify('请填写姓名');
+                    return false;
+                } else if (e.detail.value.mobilePhone == '') {
+                    Notify('请填写手机号');
+                    return false;
+                }
+                // 正则
+                else if (
+                    /^((13[0-9]|14[57]|15[0-9]|16[6]|17[0-9]|18[0-9]|19[89])[0-9]{8})$/.test(
+                        e.detail.value.mobilePhone
+                    ) == false
+                ) {
+                    Notify('请填写正确的手机号');
+                    return false;
+                } else if (e.detail.value.address == '') {
+                    Notify('请填写地址');
+                    return false;
+                } else if (e.detail.value.addressDetail == '') {
+                    Notify('请填写详细地址');
+                    return false;
+                }
+                if (that.code === 0) {
+
+                    // 新增收获地址
+                    wepy.Api.addAddress(that.editData)
+                        .then(res => {
+                            if(res.code == 1) {
+                                wx.showToast({
+                                    title: '添加成功'
+                                })
+                                setTimeout(() => {
+                                    wx.navigateTo({
+                                        url: './myAddress'
+                                    })
+                                },1000)
+                            }
+                        })
+
+                }else if(that.code == 1) {
+                    // 编辑收获地址
+                    let data = {
+                        address: that.editData.address,
+                        area: that.editData.area,
+                        city: that.editData.city,
+                        id: that.editData.id,
+                        mobile: that.editData.mobile,
+                        name: that.editData.name,
+                        province: that.editData.province
+                    }
+                    wepy.Api.editAddress(data)
+                        .then(res => {
+                            wx.showToast({
+                                title: '修改成功'
+                            })
+                        })
+                        setTimeout(() => {
+                            wx.navigateTo({
+                                url: './myAddress'
+                            })
+                        },1000)
+                }
+            }
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+    .editAddress {
+        .add_btn_box {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            padding: 20rpx;
+            box-sizing: border-box;
+            border-top: 1px solid #e5e5e5;
+            width: 100%;
+
+            button {
+                background: #cc4444;
+                font-size: 32rpx;
+                color: #fff;
+                padding: 20rpx 0;
+                text-align: center;
+                border-radius: 4px;
+                width: 100%;
+                border: none;
+                box-shadow: none;
+            }
+        }
+    }
+
+    .form_group {
+        margin-top: 50rpx;
+        padding: 0 15px 0 0;
+    }
+
+    .label_tt {
+        width: 100%;
+        padding: 0 15px;
+        text-align: left;
+        font-weight: bolder;
+        font-size: 32rpx;
+    }
+</style>

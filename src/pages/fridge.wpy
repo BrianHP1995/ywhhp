@@ -1,0 +1,261 @@
+<template>
+    <view id="Fridge pos-r">
+        <view class="center-xy font-bold font-s36 c-000">即将上线，敬请期待</view>
+        <!-- 什么是燕窝库 -->
+        <!-- <view class="fridge_explain t-r" wx:if="{{showTips}}">
+            <view class="title font-bold t-l font-s32">什么是燕窝库？</view>
+            <view class="content t-l font-s26 c-999">
+                在大鱼燕窝购买的入库套餐，会自动存档到库里。平时想喝就下单，我们会尽快送到您手上。库里的燕窝也可以像发红包一样直接微信送给好友，大家一起分享，乐趣多多。
+            </view>
+            <view class="title font-bold t-l font-s32">什么是成长燕窝？</view>
+            <view class="content t-l font-s26 c-999">
+                它是可以累积的燕窝福利，满一杯时可以兑换成可下单的燕窝并放入燕窝库。您在燕窝付款下单就有机会获得成长燕窝。
+            </view>
+            <view class="handle_close c-fff display-ib" @tap="closeShowTips">
+                <image class="display-ib" src="../common/images/index/select.png" mode="widthFix"></image>我知道了
+            </view>
+        </view> -->
+        <!-- 冰箱banner -->
+        <!-- <view class="fridge_banner">
+            <image src="../common/images/index/fridge_banner.jpg" mode="widthFix"></image>
+        </view> -->
+        <!-- 配送时间 -->
+        <!-- <view class="delivery_time_box t-c">
+            <view class="delivery_time_txt">选择鲜炖燕窝配送时间</view>
+
+            <view class="delivery_time_sel" bindtap="selDeliveryTime">
+                {{ deliveryTime }}
+                <image style="width:40rpx" src="../common/images/index/give_time.png" mode="widthFix" />
+            </view>
+            <van-popup show="{{ showDeliveryTime }}" position="bottom" bind:close="onClose">
+                <van-picker show-toolbar toolbar-class="selPopToolbar" active-class="selActive" cancel-button-text=""
+                    title="请选择配送时间" columns="{{ deliveryTimeList }}" default-index="{{ defaultIndex }}" bind:confirm="onConfirm" />
+            </van-popup>
+        </view> -->
+        <!-- <view class="stock_box">
+            <view class="stock_tt font-s40 font-bold">套餐区</view>
+            <view class="stock_list">
+                <repeat for="{{4}}">
+                    <view class="pro_box">
+                        <view class="pro_img">
+                            <image src="../common/images/index/buy_pro_all.jpg" mode="widthFix"/>
+                        </view>
+                        <view class="pro_cont bgc-fff display-flex">
+                            <view class="pro_tt font-bold font-s26">成长燕窝</view>
+                            <view class="pro_num">1杯</view>
+                        </view>
+                        <view class="stock_option t-c font-s24 c-fff">
+                            <view class="delivery_time_box t-c" bindtap="selDeliveryTime">
+                                <view class="delivery_time_txt display-flex">配送时间<view class="value">{{ deliveryTime }}</view></view>
+                                <view class="delivery_time_sel">
+                                    <image class="timeImg" src="../common/images/index/give_time.png" mode="widthFix" />
+                                </view>
+                            </view>
+                            <view class="delivery_time_box t-c" bindtap="selDeliveryAdr">
+                                <view class="delivery_time_txt display-flex">配送地址<view class="value">家</view></view>
+                                <view class="delivery_time_sel">
+                                    <image class="adrImg" src="../common/images/index/back.png" mode="widthFix" />
+                                </view>
+                            </view>
+                        </view>
+                    </view>
+                </repeat>
+            </view>
+            <view class="stock_tt font-s40 font-bold">炖品区</view>
+            <view class="stock_list">
+                <repeat for="{{4}}">
+                    <view class="pro_box">
+                        <view class="pro_img">
+                            <image src="../common/images/index/buy_pro_all.jpg" mode="widthFix"/>
+                        </view>
+                        <view class="pro_cont bgc-fff display-flex">
+                            <view class="pro_tt font-bold font-s26">成长燕窝</view>
+                            <view class="pro_num">1杯</view>
+                        </view>
+                    </view>
+                </repeat>
+            </view>
+            <van-popup show="{{ showDeliveryTime }}" position="bottom" bind:close="onClose">
+                <van-picker show-toolbar toolbar-class="selPopToolbar" active-class="selActive" cancel-button-text=""
+                    title="请选择配送时间" columns="{{ deliveryTimeList }}" default-index="{{ defaultIndex }}" bind:confirm="onConfirm" />
+            </van-popup>
+        </view> -->
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class Fridge extends wepy.page {
+        config = {
+            navigationBarTitleText: "冰箱库",
+            usingComponents: {
+                'van-popup': '../components/VantWeapp/popup/index',
+                'van-picker': '../components/VantWeapp/picker/index',
+            },
+            enablePullDownRefresh: false,
+        }
+        data = {
+            showTips: true,
+            showDeliveryTime: false,
+            deliveryTime: '周一',
+            defaultIndex: 0,
+            deliveryTimeList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日', '暂停'],
+        }
+        async getAddress(data) {
+            console.log(data)
+            //this.address = data;
+            // this.activeCityTxt = `${data.province}省${data.city}市${data.area}${data.address}`;
+            // this.$apply();
+        }
+        methods = {
+            closeShowTips(){
+                this.showTips = false;
+            },
+            selDeliveryTime() {
+                this.showDeliveryTime = true;
+            },
+            selDeliveryAdr() {
+                wepy.navigateTo({
+                    url: '../packageA/pages/user/myAddress'
+                })
+            },
+            onConfirm(event) {
+                let that = this
+                that.deliveryTime = event.detail.value;
+                //that.weekend = event.detail.index + 1
+                that.showDeliveryTime = false;
+            },
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+    #Fridge {
+        height: 100%;
+        .fridge_explain {
+            padding: 0 30rpx;
+
+            .title {
+                margin-top: 30rpx;
+            }
+
+            .content {
+                margin-top: 30rpx;
+                line-height: 38rpx;
+                padding-right: 30rpx;
+            }
+
+            .handle_close {
+                background: #ab3e39;
+                padding: 20rpx 30rpx;
+                border-radius: 10rpx;
+                margin-top: 20rpx;
+
+                image {
+                    width: 34rpx;
+                    vertical-align: middle;
+                    margin-right: 20rpx;
+                }
+            }
+        }
+
+        .fridge_banner {
+            padding: 0 20rpx;
+            margin-top: 20rpx;
+        }
+
+        .delivery_time_box {
+            display: flex;
+            align-items: center;
+            background: #f1a93d;
+            padding: 16rpx 12rpx;
+            justify-content: space-between;
+            margin-bottom: 4rpx;
+
+            .delivery_time_txt {
+                font-size: 30rpx;
+                .value {
+                    margin-left: 36rpx;
+                }
+            }
+
+            .delivery_time_sel {;
+                text-align: center;
+                font-size: 28rpx;
+                display: flex;
+                align-items: center;
+
+                image {
+                    display: inline-block;
+                }
+                .timeImg {
+                    width: 30rpx;
+                    height: 30rpx;
+                }
+                .adrImg {
+                    width: 14rpx;
+                    height: 14rpx;
+                    transform: rotate(-180deg);
+                    margin-right: 14rpx;
+                }
+            }
+        }
+        .stock_box {
+        	padding: 15px;
+        	.stock_txt {
+        		font-size: 29rpx;
+        		color: #595959;
+        		margin-top: 15rpx;
+        	}
+
+        	.stock_list {
+        		display: flex;
+        		flex-wrap: wrap;
+        		align-items: center;
+        		justify-content: space-between;
+        		padding: 15rpx 35rpx 0;
+
+        		.pro_box {
+        			width: 280rpx;
+        			box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.1);
+        			margin-top: 30rpx;
+                    border-radius: 10rpx;
+                    overflow: hidden;
+                    padding-bottom: 24rpx;
+                    .pro_img {
+                        width: 100%;
+                    }
+        			.pro_cont {
+        				align-items: center;
+        				justify-content: space-between;
+        				padding: 20rpx 15rpx;
+        				.pro_tt {
+        					color: #2b235b;
+        				}
+        				.pro_num {
+        					font-size: 29rpx;
+        					color: #ab4638;
+        				}
+        			}
+                    .stock_option {
+                        .op {
+                            background: #f1a93d;
+                            margin-top: 16rpx;
+                            width: 80%;
+                            height: 64rpx;
+                            line-height: 64rpx;
+                            border-radius: 12rpx;
+                        }
+                        .op_time {
+                            background: #f1a93d;
+                        }
+                        .op_adr {
+                            background: #f1a93d;
+                            margin-top: 16rpx;
+                        }
+                    }
+        		}
+        	}
+        }
+    }
+</style>

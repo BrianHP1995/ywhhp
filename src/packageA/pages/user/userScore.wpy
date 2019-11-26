@@ -1,0 +1,167 @@
+<style lang="less" scoped>
+.score_tips{
+    padding: 35rpx;
+    background: #eacc5e;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    height: auto;
+    z-index: 99;
+    .tips_tt{
+        font-size: 36rpx;
+        color: #282828;
+    }
+    .tips_cont{
+        font-size: 30rpx;
+        color: #000;
+        text-align: justify;
+        line-height: 1.3;
+    }
+    .show_tip_btn{
+        font-size: 32rpx;
+        color: #fff;
+        display: inline-block;
+        line-height: 80rpx;
+        margin-top: 25rpx;
+        background: #ba3433;
+        .suc_ico{
+            width: 35rpx;
+            margin-right:10rpx;
+        }
+    }
+}
+.has_score{
+    .score_txt{
+        color: #fff;
+        font-size: 26rpx;
+        font-weight: bolder;
+        padding: 70rpx 0 20rpx 0;
+        text-align: center;
+        background: #5394fc;
+        view{
+            margin-top: 20rpx;
+            font-size: 100rpx;
+        }
+        image{
+            width: 100%;
+        }
+    }
+    .order_list{
+        border-bottom: 1px solid #dedede;
+        padding: 35rpx;
+        overflow: hidden;
+        .order_tt{
+            .order_name{
+                font-size: 36rpx;
+                color: #282828;
+                font-weight: bolder;
+            }
+            .order_status{
+                font-size: 36rpx;
+                color: #909090;
+                display: flex;
+                align-items: center;
+                text{
+                    white-space: nowrap;
+                }
+            }
+        }
+        .order_type,.order_date{
+            color: #4d4d4d;
+            font-size: 32rpx;
+            margin-top: 10rpx;
+        }
+        .order_date{
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            .score_get{
+                color: #66a0e0;
+            }
+        }
+    }
+}
+</style>
+<template>
+    <view>
+        <view class="score_box">
+            <view class="score_tips">
+                <view class="tips_tt">什么是福袋？</view>
+                <text class="tips_cont">
+                    下单即可获得燕窝积分。福袋内将会随机出现积分燕窝、0.xx杯积分燕窝或优惠券，分享给好友同时，自己也可以领取哦~
+                </text>
+                <view style="text-align:right">
+                    <button class="show_tip_btn" bindtap="hideTips"><image class="suc_ico" src="../../common/images/success.png" mode="widthFix"/>我知道了</button>
+                </view>
+            </view>
+            <view class="has_score">
+                <view class="score_txt">
+                    <view>{{totalScore}}</view>
+                    当前积分
+                </view>
+                <image class="suc_ico" style="width: 100%;" src="../../common/images/score_bg.png" mode="widthFix"/>
+
+                <view wx:for="{{scoreList}}" style="position: relative;">
+                  <van-card
+                      title="{{item.title}}"
+                      thumb="{{app}}/static/images/{{ item.img }}"
+                      />
+                      <view style="position: absolute;top: 26rpx;right: 30rpx;color: #666;font-size: 24rpx;">{{item.Integral_jia - item.Integral_jian}}</view>
+                      <view style="position: absolute;bottom: 90rpx;right: 250rpx;color: #666;font-size: 24rpx;">{{item.time}}</view>
+                </view>
+            </view>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy';
+export default class HasScore extends wepy.page {
+    config = {
+      'navigationBarTitleText': '我的积分',
+      'navigationBarBackgroundColor': '#5394fc',
+      'navigationBarTextStyle': 'white',
+      'usingComponents': {
+        'van-card': '../../../components/VantWeapp/card/index',
+      }
+    }
+    data = {
+      showTips: false,
+      totalScore: 0,
+      scoreList: []
+    }
+    onLoad(){
+        const that = this
+        wx.request({
+            url: that.app + '/getUserMsg?openid='+ wx.getStorageSync('userInfo').openid,
+            success(res) {
+                // that.userInfo = res.data[0];
+                that.totalScore = res.data[0].integral
+                that.$apply();
+            }
+
+        })
+
+        that.$apply();
+        // 获取积分记录
+        var reqTask = wx.request({
+            url: that.app + '/getIntegralRecord?openid=' + wx.getStorageSync("userInfo").openid,
+            success: (result)=>{
+                that.scoreList = result.data
+                that.$apply()
+            },
+        });
+    }
+    onUnload(){
+
+    }
+    methods = {
+      hideTips(){
+        let t = this;
+        t.showTips = false;
+        t.$apply();
+      }
+    }
+}
+</script>
