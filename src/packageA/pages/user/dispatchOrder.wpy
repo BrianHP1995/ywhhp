@@ -1,6 +1,6 @@
 <template>
     <view class="dispatchOrder">
-        <view class="no_order" wx:if="{{!hasOrder}}">
+        <view class="no_order" wx:if="{{!orderList.length}}">
             <image src="../../common/images/no_order.png" mode="widthFix"/>
             <view>您暂时还没有订单哦~</view>
         </view>
@@ -49,7 +49,6 @@
             enablePullDownRefresh: false,
         }
         data = {
-            hasOrder: true,
             orderList: []
         }
         async getUserOrderList() {

@@ -32,7 +32,7 @@
             code: null, // 1 代表选择地址
             mainActiveIndex: 0,
             activeId: null,
-            e: ''
+            pageFrom: ''
         };
         components = {};
         async getAddressList() {
@@ -41,9 +41,14 @@
             this.addressList = result.result;
             this.$apply();
         }
-        onLoad(e) {
+        onLoad(options) {
             // 获取地址列表
             this.getAddressList();
+            if(options.from) {
+                //判断是从哪里进入的地址列表页面
+                this.pageFrom = options.from;
+                this.$apply();
+            }
         }
         methods = {
             onClose1() {
@@ -70,14 +75,20 @@
             adrSelect(e) {
                 let that = this;
                 let data = e.currentTarget.dataset.item;
-
+                if(that.pageFrom == 'user') {
+                    return false;
+                }else {
+                    wx.navigateTo({
+                        url: `../index/sureOrder?addressInfo=${Json.stringigy(data)}`
+                    })
+                }
                 //获取上一个页面的信息并调用获取配送地址方法
-                let prevPage = getCurrentPages()[getCurrentPages().length-2];
-                prevPage.getAddress(data);
-                //返回上一页
-                wx.navigateBack({
-                    delta: 1
-                })
+                // let prevPage = getCurrentPages()[getCurrentPages().length-2];
+                // prevPage.getAddress(data);
+                // //返回上一页
+                // wx.navigateBack({
+                //     delta: 1
+                // })
             },
             // 编辑地址
             adrEdit(e) {

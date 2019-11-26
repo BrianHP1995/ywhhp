@@ -390,7 +390,9 @@
         onLoad(options) {
             this.getShoppingCarList(options);
             this.setDeliveryTime();
-
+            if(options.addressInfo) {
+                this.getAddress(JSON.parse(options.addressInfo))
+            }
 
         }
         methods = {
@@ -550,7 +552,7 @@
                                                 setTimeout(() => {
                                                    wx.navigateTo({
                                                        url: '../user/dispatchOrder'
-                                                   }) 
+                                                   })
                                                 },1000)
                                             }
 
@@ -604,7 +606,7 @@
                                                 setTimeout(() => {
                                                    wx.navigateTo({
                                                        url: '../user/dispatchOrder'
-                                                   }) 
+                                                   })
                                                 },1000)
                                             }
 

@@ -74,7 +74,7 @@
         			ico: '../common/images/user/give.png'
         		},
         		{
-        			link: '/packageA/pages/user/myAddress',
+        			link: '/packageA/pages/user/myAddress?from=user',
         			txt: '我的地址',
         			ico: '../common/images/user/address.png'
         		},
@@ -84,7 +84,7 @@
         			ico: '../common/images/user/service.png'
         		},
         		{
-        			link: '../packageA/pages/user/setting',
+        			link: '../packageA/pages/user/systemSetting',
         			txt: '系统设置',
         			ico: '../common/images/user/setting.png'
         		}

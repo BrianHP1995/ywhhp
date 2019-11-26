@@ -81,6 +81,7 @@
                     'pages/user/userCoupon',  //我的优惠券
                     'pages/user/userMember',
                     'pages/user/userScore',
+                    'pages/user/systemSetting',
                     'pages/group/groupBuyDetail',  //拼团详情
 
                 ]
