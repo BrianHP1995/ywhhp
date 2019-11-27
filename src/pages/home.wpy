@@ -341,13 +341,15 @@
                 // wx.navigateTo({
                 //     url: `/packageA/pages/index/goodsDetail?id=${id}`
                 // })
-                console.log(2)
                 wepy.Api.getGoodsDetail({
                     goods_id: id
                 })
                 .then((res) => {
                     if (res.code == 1) {
                         that.detailShow = true;
+                        wx.pageScrollTo({
+                            scrollTop: 0
+                        })
                         that.goodsInfo = res.result;
                         wx.hideLoading()
                     }
