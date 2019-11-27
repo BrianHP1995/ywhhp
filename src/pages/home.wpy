@@ -251,6 +251,7 @@
             let that = this;
             let top = e.scrollTop;
             that.setTypeTabsActive(top)
+            that.tabs_isdown = false;
         }
         methods = {
             switchNav(e) { //分类tabs点击事件
@@ -348,7 +349,8 @@
                     if (res.code == 1) {
                         that.detailShow = true;
                         wx.pageScrollTo({
-                            scrollTop: 0
+                            scrollTop: 0,
+                            duration: 0
                         })
                         that.goodsInfo = res.result;
                         wx.hideLoading()

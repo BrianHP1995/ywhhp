@@ -187,7 +187,7 @@
                         case 1:
                             obj = { text: hour+ ":30", id: j };
                             if(ele.text == '今天') {
-                                if(nowTimes>22 || nowTimes<10) {
+                                if(nowTimes>22 && nowTimes<24) {
                                     ele.children = [];
                                     ele.children.push({
                                         text: '22:00-10:00暂停配送',
@@ -206,7 +206,7 @@
                         case 2:
                             obj = { text: hour+ ":45", id: j };
                             if(ele.text == '今天') {
-                                if(nowTimes>22 || nowTimes<10) {
+                                if(nowTimes>22 && nowTimes<24) {
                                     ele.children = [];
                                     ele.children.push({
                                         text: '22:00-10:00暂停配送',
@@ -225,7 +225,7 @@
                         case 3:
                             obj = { text: hour+1 + ":00", id: j };
                             if(ele.text == '今天') {
-                                if(nowTimes>22 || nowTimes<10) {
+                                if(nowTimes>22 && nowTimes<24) {
                                     ele.children = [];
                                     ele.children.push({
                                         text: '22:00-10:00暂停配送',
@@ -244,7 +244,7 @@
                         case 0:
                             obj = { text: hour+ ":15", id: j };
                             if(ele.text == '今天') {
-                                if(nowTimes>=22 || nowTimes<10) {
+                                if(nowTimes>=22 && nowTimes<24) {
                                     ele.children = [];
                                     ele.children.push({
                                         text: '22:00-10:00暂停配送',
