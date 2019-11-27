@@ -114,6 +114,7 @@
             let result = await wepy.Api.getUserInfo({});
             if(result.code == 1) {
                 that.userInfo = result.result;
+                that.userInfo.integral = parseInt(that.userInfo.integral)
                 that.$apply();
             }
         }

@@ -19,7 +19,7 @@
                 <repeat for="{{orderDetail.orderList}}">
                     <view class="order_item pos-r">
                         <view class="title font-bold">{{item.goods_title}}</view>
-                        <view class="flavor">{{item.attribute}}{{item.flavor}}</view>
+                        <view class="flavor">{{item.attribute}}/{{item.goods_spec}}</view>
                         <view class="num pos-a">x {{item.number_goods}}</view>
                         <view class="price pos-a">￥{{item.price_real}}</view>
                     </view>
@@ -59,14 +59,14 @@
         async getOrderDetail(order_no) {
             let result = await wepy.Api.getDispatchOrderDetail({order_no});
             this.orderDetail = result.order;
-            this.orderDetail.orderList.forEach((item) => {
-                let arr = [];
-                item.flavor = '';
-                arr = item.goods_spec.split(';;');
-                arr.forEach(val => {
-                    item.flavor += `/${val.split('::')[1]}`;
-                })
-            })
+            // this.orderDetail.orderList.forEach((item) => {
+            //     let arr = [];
+            //     item.flavor = '';
+            //     arr = item.goods_spec.split(';;');
+            //     arr.forEach(val => {
+            //         item.flavor += `/${val.split('::')[1]}`;
+            //     })
+            // })
             this.$apply();
         }
         onLoad(options) {

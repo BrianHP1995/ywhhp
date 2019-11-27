@@ -18,17 +18,19 @@
         <!-- 燕窝分类tabs 商品列表 -->
         <view class="goodsType">
             <view class="tabsWrap">
-                <view class="tabs_innerWrap pos-r {{tabs_isdown?'tabs_all': ''}}">
-                    <view class="sort_all" wx:if="{{tabs_isdown}}">全部分类</view>
-                    <scroll-view scroll-x class="tabsScroll {{tabs_isdown?'scroll_down': ''}}" scroll-left="{{tabsScrollLeft}}"
-                        scroll-with-animation>
-                        <block wx:for="{{tabsList}}" wx:for-item="navItem" wx:for-index="idx" wx:key="idx">
-                            <view class="tab {{idx===active?'acitve':''}}" bindtap="switchNav" data-current="{{idx}}">{{navItem.title}}</view>
-                        </block>
-                    </scroll-view>
-                </view>
-                <view class="downArrow pos-a bgc-fff" bindtap="tabsDown">
-                    <image src="../common/images/index/back.png" mode="widthFix" class="{{tabs_isdown?'down':''}}"></image>
+                <view class="pos-r">
+                    <view class="tabs_innerWrap pos-r {{tabs_isdown?'tabs_all': ''}}">
+                        <view class="sort_all" wx:if="{{tabs_isdown}}">全部分类</view>
+                        <scroll-view scroll-x class="tabsScroll {{tabs_isdown?'scroll_down': ''}}" scroll-left="{{tabsScrollLeft}}"
+                            scroll-with-animation>
+                            <block wx:for="{{tabsList}}" wx:for-item="navItem" wx:for-index="idx" wx:key="idx">
+                                <view class="tab {{idx===active?'acitve':''}}" bindtap="switchNav" data-current="{{idx}}">{{navItem.title}}</view>
+                            </block>
+                        </scroll-view>
+                    </view>
+                    <view class="downArrow pos-a bgc-fff" bindtap="tabsDown">
+                        <image src="../common/images/index/back.png" mode="widthFix" class="{{tabs_isdown?'down':''}}"></image>
+                    </view>
                 </view>
             </view>
             <view class="goodsListAll">
@@ -72,7 +74,27 @@
             </view>
         </view>
         <view class="bottom_logo t-c"><image class="display-ib" src="../common/images/logo.png" mode="widthFix"></image></view>
-
+        <view class="goodsDetail" wx:if="{{detailShow}}">
+            <view class="back_btn" bindtap="backHome">
+                <image src="../../common/images/index/back.png" /> 返回</view>
+            <view class="pro_banner">
+                <image src="{{goodsInfo.topimage}}" mode="widthFix"/>
+            </view>
+            <view class="pro_detail_cont">
+                <view class="pro_detail_tt">{{goodsInfo.title}}</view>
+                <view class="pro_detail_txt">{{goodsInfo.content}}</view>
+                <view class="pro_detail_buy">
+                    <view class="pos-r">¥ {{goodsInfo.goods_list[0].price_selling}}
+                        <view class="detail_pre_price center-y font-s22">原价￥{{goodsInfo.goods_list[0].price_market}}</view>
+                    </view>
+                    <button data-bean="{{goodsInfo}}" @tap.stop="openGoodsSel">购买</button>
+                </view>
+            </view>
+            <view class="pro_detail_img">
+                <image wx:for="{{goodsInfo.image}}" wx:key="index" mode="widthFix" style="margin-top: -16rpx;"
+                    src="{{item}}" />
+            </view>
+        </view>
         <!-- 规格弹窗 :isShowPop.sync="isShowPop"-->
         <GoodsModelPop></GoodsModelPop>
         <GoodsShoppingCart></GoodsShoppingCart>
@@ -109,6 +131,8 @@
             tabsList: [],
             goodsList: [],
             goodsPopInfo: {}, //商品选择规格弹窗数据
+            goodsInfo: {},
+            detailShow: false
         }
         swiperChange(e) {
             this.currentSwiper = e.detail.current;
@@ -289,12 +313,49 @@
                         })
                     })
             },
+            openGoodsSel() {
+                wepy.Utils.isLogin({
+                    callbackOk: () => {
+                        //已经登录
+                        this.$invoke('GoodsModelPop', 'onOpen', this.goodsInfo);
+                    },
+                    callbackErr: () => {
+                        //未登录
+                        wepy.Utils.showModal({
+                            content: '你还未登录，登录后可获得完整体验',
+                            callback: () => {
+                                wepy.navigateTo({url: '../../../pages/oauth'})
+                            }
+                        })
+                    }
+                })
+
+            },
             //跳转商品详情
             linkGoodsDetail(e) {
-                let id = e.currentTarget.dataset.item.goods_id;
-                wx.navigateTo({
-                    url: `/packageA/pages/index/goodsDetail?id=${id}`
+                let that = this;
+                wx.showLoading({
+                    title: '加载中'
                 })
+                let id = e.currentTarget.dataset.item.goods_id;
+                // wx.navigateTo({
+                //     url: `/packageA/pages/index/goodsDetail?id=${id}`
+                // })
+                console.log(2)
+                wepy.Api.getGoodsDetail({
+                    goods_id: id
+                })
+                .then((res) => {
+                    if (res.code == 1) {
+                        that.detailShow = true;
+                        that.goodsInfo = res.result;
+                        wx.hideLoading()
+                    }
+                })
+
+            },
+            backHome() {
+                this.detailShow = false;
             }
         }
         //给子组件提供方法调用
@@ -310,7 +371,7 @@
             	// 来自页面内转发按钮
             }
             return {
-            	title: that.giveList[that.index].txt,
+            	title: '大鱼燕窝，随时随地，健康新滋补',
             	path: 'pages/home'
             }
         }
@@ -322,6 +383,8 @@
     }
 
     #Home {
+        position: relative;
+        height: 100%;
         .banner {
             position: relative;
 
@@ -364,7 +427,7 @@
             .tabsWrap {
                 position: sticky;
                 top: 0;
-                height: 36px;
+                height: 84rpx;
                 background: #fff;
                 z-index: 9;
                 border-bottom: 1rpx solid #faf6f7;
@@ -389,6 +452,7 @@
                         box-shadow: 0px 8rpx 16rpx 0rpx #ccc;
                         padding-bottom: 20rpx;
                         height: 120px;
+                        z-index: 9;
                     }
 
                     .tabsScroll {
@@ -419,7 +483,7 @@
                 .downArrow {
                     right: 0rpx;
                     top: 0;
-                    height: 100%;
+                    height: 84rpx;
                     width: 100rpx;
                     z-index: 99999999;
 
@@ -602,7 +666,230 @@
         .bottom_logo {
             padding: 30rpx 0;
             image {
-                
+                width: 300rpx;
+            }
+        }
+        .goodsDetail {
+            position: absolute;
+            top: 0;
+            z-index: 9;
+            background: #fff;
+            min-height: 100%;
+            width: 100%;
+            .pro_detail_cont {
+                padding: 30rpx;
+
+                .pro_detail_tt {
+                    font-size: 48rpx;
+                    color: #282828;
+                    font-weight: bolder;
+                }
+
+                .pro_detail_txt {
+                    font-size: 24rpx;
+                    color: #282828;
+                    line-height: 1.5;
+                    margin-top: 10rpx;
+                }
+            }
+
+            .pro_detail_buy {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10rpx 0;
+                position: relative;
+
+                view {
+                    font-size: 36rpx;
+                    color: #cd3720;
+                    font-weight: bolder;
+                    .detail_pre_price {
+                        right: -110%;
+                        top: 56%;
+                        color: #999;
+                        font-weight: normal;
+                        font-size: 22rpx;
+
+                    }
+                }
+
+                button {
+                    display: inline-block;
+                    text-align: center;
+                    color: #fff;
+                    font-size: 26rpx;
+                    width: 120rpx;
+                    height: 60rpx;
+                    line-height: 60rpx;
+                    border: none;
+                    margin: 0;
+                    font-family: "PingFang";
+                    background: -webkit-linear-gradient(#c10404, #a20000);
+                    /* Safari 5.1 to 6.0 */
+                    background: -o-linear-gradient(#c10404, #a20000);
+                    /* Opera 11.1 to 12.0 */
+                    background: -moz-linear-gradient(#c10404, #a20000);
+                    /* Firefox 3.6 to 15 */
+                    background: linear-gradient(#c10404, #a20000);
+                    /* 标准语法 (必须在最后) */
+                }
+
+                .has_buy_num {
+                    display: inline-block;
+                    font-size: 24rpx;
+                    color: #fff;
+                    background: #f8a300;
+                    width: 40rpx;
+                    height: 30rpx;
+                    line-height: 30rpx;
+                    position: absolute;
+                    right: -14rpx;
+                    top: 0;
+                    border-radius: 20rpx;
+                    text-align: center;
+                }
+            }
+
+            .comment_box {
+                padding: 20rpx 15rpx;
+                background: #f6f6f6;
+
+                .bgfff {
+                    background: #fff;
+                    box-sizing: border-box;
+                    padding: 20rpx 40rpx;
+
+                    .comment_tt_box {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+
+                        .comment_ttt_fl {
+                            font-size: 29rpx;
+                            color: #999;
+                            display: flex;
+                            align-items: center;
+                        }
+
+                        .comment_ttt_fr {
+                            font-size: 29rpx;
+                            color: #f78d00;
+                        }
+                    }
+
+                    .comment_cont {
+                        position: relative;
+                        height: 345rpx;
+                        box-sizing: border-box;
+                        padding: 60rpx 25rpx;
+                        z-index: 0;
+                        margin: 25rpx 0 0;
+                        overflow: hidden;
+
+                        .comment_bg {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            bottom: 0;
+                            right: 0;
+                            z-index: 1;
+                        }
+
+                        .comments_txt {
+                            height: 225px;
+                            overflow: auto;
+
+                            .comments_list {
+                                font-size: 23rpx;
+                                color: #333;
+                                padding: 25rpx 15rpx;
+                                border-bottom: 1px dashed #666;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        .back_btn {
+            width: 145rpx;
+            height: 60rpx;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32rpx;
+            color: #000;
+            position: fixed;
+            top: 10px;
+            left: 15px;
+            z-index: 2;
+            border-radius: 30rpx;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.6);
+
+            image {
+                width: 14rpx;
+                height: 24rpx;
+                margin-right: 10rpx;
+            }
+        }
+
+        .comment_edit {
+            background: #fff;
+            // position: fixed;
+            // top: 0;
+            // left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 20rpx;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+
+            .btns_view {
+                text-align: right;
+                margin-top: 15rpx;
+
+                .cancel,
+                .sure {
+                    width: 125rpx;
+                    height: 60rpx;
+                    line-height: 60rpx;
+                    font-size: 26rpx;
+                    border-radius: 22rpx;
+                    border: none;
+                    background: none;
+                    display: inline-block;
+                }
+
+                .cancel {
+                    color: #a0a0a0;
+                    border: 1rpx solid #a0a0a0;
+                    margin-right: 15rpx;
+                }
+
+                .sure {
+                    color: #fff;
+                    border: 1rpx solid #fba71c;
+                    background: #fba71c;
+                }
+            }
+
+            .comment_edit_border {
+                border: 1rpx solid #a0a0a0;
+                border-radius: 8px;
+                padding: 10px;
+            }
+
+            .words_tips {
+                color: #a0a0a0;
+                font-size: 26rpx;
+                text-align: right;
+
+                text {
+                    font-weight: bolder;
+                }
             }
         }
     }

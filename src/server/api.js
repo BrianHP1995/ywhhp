@@ -21,9 +21,13 @@ export default class Api{
     addAddress(params) {
         return this.request.wxRequest_token(params, 'address/createAddress')
     }
+    //删除收货地址
+    delAddress(params) {
+        return this.request.wxRequest_token(params, 'address/delAddress')
+    }
     //获取默认收货地址列表
     getDefaultAddress(params) {
-        return this.request.wxRequest_token(params, 'address/getDefaultAddress')
+        return this.request.wxRequest_token({}, 'address/getDefaultAddress')
     }
     //跟据id获取收货地址列表
     getAddressById(params) {

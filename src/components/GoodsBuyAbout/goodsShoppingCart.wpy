@@ -9,7 +9,7 @@
                     </view>
                 </view>
                 <view class="car_cont">
-                    <scroll-view scroll-y style="height: 140px">
+                    <scroll-view scroll-y style="max-height: 140px">
                         <repeat for="{{shoppingCartData.list}}">
                             <view class="car_line">
                                 <view class="car_line_fl">
@@ -162,7 +162,7 @@
             z-index: 999;
             overflow: hidden;
             position: relative;
-            padding-bottom: 200rpx;
+            padding-bottom: 126rpx;
             .clearCar {
                 image {
                     display: inline-block;
@@ -171,8 +171,8 @@
                 }
             }
             .car_cont {
-                padding: 80rpx 0 10rpx;
-                height: 100%;
+                padding: 80rpx 0 0rpx;
+                // height: 100%;
             }
             .car_line {
                 width: 100%;

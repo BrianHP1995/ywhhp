@@ -1,5 +1,7 @@
 <template>
     <view class="dispatchOrder">
+        <!-- <view class="back_btn" bindtap="backHome">
+            <image src="../../../common/images/index/back.png" /> 返回首页</view> -->
         <view class="no_order" wx:if="{{!orderList.length}}">
             <image src="../../common/images/no_order.png" mode="widthFix"/>
             <view>您暂时还没有订单哦~</view>
@@ -61,11 +63,21 @@
         onLoad(options) {
             this.getUserOrderList();
         }
+        onUnload() {
+            wx.reLaunch({
+                url: '../../../pages/home'
+            })
+        }
         methods = {
             linkOrderDetail(e) {
                 let order_no = e.currentTarget.dataset.item.order_no;
                 wx.navigateTo({
                     url: './dispatchOrderDetail?order_no=' + order_no
+                })
+            },
+            backHome() {
+                wx.navigateTo({
+                    url: '../../../pages/home'
                 })
             }
         }
@@ -73,6 +85,28 @@
 </script>
 <style lang="less" scoped>
     .dispatchOrder {
+        .back_btn {
+            width: 145rpx;
+            height: 60rpx;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32rpx;
+            color: #000;
+            position: fixed;
+            top: 10px;
+            left: 15px;
+            z-index: 2;
+            border-radius: 30rpx;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.6);
+
+            image {
+                width: 14rpx;
+                height: 24rpx;
+                margin-right: 10rpx;
+            }
+        }
         .no_order{
             width: 100%;
             position: fixed;

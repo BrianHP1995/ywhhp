@@ -22,10 +22,11 @@
             <view class="form_group">
               <view class="label_tt">标签</view>
               <van-field
-                name="addressTag"
-                value="{{editData.addressTag}}"
+                name="labled"
+                value="{{editData.lable}}"
                 clearable
                 placeholder="不超过2个字，例如:公司、家"
+                bind:change="onChangeLabel"
               />
             </view>
             <view class="add_btn_box">
@@ -63,7 +64,7 @@
                 area: '',
                 city: '',
                 province: '',
-                addressTag: ''
+                lable: ''
             },
             code: 0, // 1 修改 0 新增
             show: false,
@@ -95,6 +96,11 @@
                 //修改详细地址
                 let that = this;
                 that.editData.address = e.detail;
+            },
+            onChangeLabel(e) {
+                //修改详细地址
+                let that = this;
+                that.editData.lable = e.detail;
             },
             selAddress() {
                 //选择地址
@@ -130,47 +136,51 @@
                 } else if (e.detail.value.addressDetail == '') {
                     Notify('请填写详细地址');
                     return false;
-                }
-                if (that.code === 0) {
-
-                    // 新增收获地址
-                    wepy.Api.addAddress(that.editData)
-                        .then(res => {
-                            if(res.code == 1) {
-                                wx.showToast({
-                                    title: '添加成功'
-                                })
-                                setTimeout(() => {
-                                    wx.navigateTo({
-                                        url: './myAddress'
+                }else if(that.editData.lable == "" || that.editData.lable.length>2) {
+                    Notify('请添加合适的标签');
+                    return false;
+                }else {
+                    if (that.code === 0) {
+                        // 新增收获地址
+                        wepy.Api.addAddress(that.editData)
+                            .then(res => {
+                                if(res.code == 1) {
+                                    wx.showToast({
+                                        title: '添加成功'
                                     })
-                                },1000)
-                            }
-                        })
+                                    setTimeout(() => {
+                                        wx.navigateTo({
+                                            url: './myAddress'
+                                        })
+                                    },1000)
+                                }
+                            })
 
-                }else if(that.code == 1) {
-                    // 编辑收获地址
-                    let data = {
-                        address: that.editData.address,
-                        area: that.editData.area,
-                        city: that.editData.city,
-                        id: that.editData.id,
-                        mobile: that.editData.mobile,
-                        name: that.editData.name,
-                        province: that.editData.province
+                    }else if(that.code == 1) {
+                        // 编辑收获地址
+                        let data = {
+                            address: that.editData.address,
+                            area: that.editData.area,
+                            city: that.editData.city,
+                            id: that.editData.id,
+                            mobile: that.editData.mobile,
+                            name: that.editData.name,
+                            province: that.editData.province
+                        }
+                        wepy.Api.editAddress(data)
+                            .then(res => {
+                                wx.showToast({
+                                    title: '修改成功'
+                                })
+                            })
+                            setTimeout(() => {
+                                wx.navigateTo({
+                                    url: './myAddress'
+                                })
+                            },1000)
                     }
-                    wepy.Api.editAddress(data)
-                        .then(res => {
-                            wx.showToast({
-                                title: '修改成功'
-                            })
-                        })
-                        setTimeout(() => {
-                            wx.navigateTo({
-                                url: './myAddress'
-                            })
-                        },1000)
                 }
+
             }
         }
     }
@@ -184,7 +194,7 @@
             bottom: 0;
             padding: 20rpx;
             box-sizing: border-box;
-            border-top: 1px solid #e5e5e5;
+            // border-top: 1px solid #e5e5e5;
             width: 100%;
 
             button {

@@ -1,4 +1,4 @@
-    <template>
+<template>
     <view id="Order" class="f2">
         <van-tabs active="{{ active }}" bind:change="onChangeToggle" line-width="30">
             <van-tab title="小哥配送"></van-tab>
@@ -30,7 +30,7 @@
                 <view class="order_info_inner bgc-fff">
                     <!-- 商品信息只在配送的时候显示active: 0 -->
                     <repeat for="{{shoppingData.list}}">
-                        <view wx:if="{{active === 0}}">
+                        <view>
                             <view class="order_flex_box">
                                 <view class="order_fl">
                                     <view class="order_info_tt">{{item.title}}</view>
@@ -67,9 +67,9 @@
                         {{couponTxt}}
                     </view>
                 </view>
-                <view bindtap="integralChange"><van-checkbox value="{{integralChecked}}">最多可抵扣{{integral}}元</van-checkbox></view>
+                <view bindtap="integralChange"><van-checkbox value="{{integralChecked}}">积分可抵扣{{integral}}元</van-checkbox></view>
             </view>
-            <view class="content_box" wx:if="{{active === 0}}">
+            <view class="content_box">
                 <view class="content_box_tt center-y">备注: </view>
                 <view class="textarea">
                     <textarea class="font-s26" bindblur="bindTextAreaBlur" placeholder-style="color:#ededed;" placeholder="" />
@@ -93,7 +93,7 @@
                 </van-popup>
             </view>
             <view class="fixed_botom">
-                <view class="delivery_time_sel" wx:if="{{active === 0}}">
+                <view class="delivery_time_sel">
                     <view>时间预约</view>
                     <view bindtap="selTime"><text style="margin-right:10rpx;">{{mainActiveIndex == 0?'今天':'明天'}} </text><text style="margin-right:10rpx;">{{timeTxt}} </text><van-icon name="arrow" size="12px" color="#b4b4b4"/></view>
                 </view>
@@ -168,7 +168,8 @@
                 latitude: 28.198990,
                 name: '大鱼燕窝门店位置',
                 address: '湖南省长沙市岳麓区梅溪大街二段梅溪湖步步高L1层'
-            }
+            },
+            canGetIntegral: null
         }
         //设置配送时间选择
         async setDeliveryTime() {
@@ -222,7 +223,7 @@
                             }
                             break;
                         case 3:
-                            obj = { text: hour+ ":00", id: j };
+                            obj = { text: hour+1 + ":00", id: j };
                             if(ele.text == '今天') {
                                 if(nowTimes>22 || nowTimes<10) {
                                     ele.children = [];
@@ -270,6 +271,7 @@
             let result = await wepy.Api.getGoodsShoppingCart({});
             if(result.code == 1) {
                 that.shoppingData = result.result;
+                that.canGetIntegral = result.result.integral;
                 that.shoppingData.list.forEach((item) => {
                     let arr = [];
                     item.flavor = '';
@@ -317,6 +319,16 @@
                 }
                 that.$apply();
             }
+        }
+        async getDefaultAddress() {
+            let that = this;
+            let result = await wepy.Api.getDefaultAddress({});
+            if(Object.keys(result.result).length != 0) {
+                that.receiverInfo = result.result;
+                that.activeCityTxt = `${result.result.province}${result.result.city}${result.result.area}${result.result.address}`
+            }
+
+            that.$apply();
         }
         //获取选择的地址
         async getAddress(data) {
@@ -389,11 +401,17 @@
         }
         onLoad(options) {
             this.getShoppingCarList(options);
+            this.getDefaultAddress();
             this.setDeliveryTime();
             if(options.addressInfo) {
                 this.getAddress(JSON.parse(options.addressInfo))
             }
 
+        }
+        onUnload() {
+            wx.reLaunch({
+                url: '../../../pages/home'
+            })
         }
         methods = {
             //配送和自取tab切换
@@ -464,9 +482,11 @@
                                 that.shoppingData.integral = 0;
                             }
                         }
+                         that.shoppingData.integral = Math.floor(that.shoppingData.integral*100)/100
                     }else {
                         //未选择积分抵扣
                        this.orderPriceTotal += Number(this.integral);
+                       that.shoppingData.integral = that.canGetIntegral;
                     }
                 }else {
                     wx.showToast({
@@ -513,7 +533,7 @@
             orderPay() {
                 let that = this;
                 if(that.active == 0) {
-                    if(!that.receiverInfo.id) {
+                    if(that.activeCityTxt=="选择收货地址") {
                         wx.showToast({
                            icon: 'none',
                            title: '请选择配送地址'
@@ -562,6 +582,11 @@
                                                 icon: 'none',
                                                 title: '支付失败'
                                             })
+                                            setTimeout(() => {
+                                                wx.navigateTo({
+                                                    url: '../user/dispatchOrder'
+                                                })
+                                            },1000)
                                         }
                                     })
                                 }
@@ -581,12 +606,21 @@
                            title: '请输入预留电话'
                         })
                         return false;
+                    }else if(that.timeTxt == '22:00-10:00暂停配送') {
+                        wx.showToast({
+                           icon: 'none',
+                           title: '请选择正确的配送时间'
+                        })
+                        return false;
                     }else {
                         let orderData = {
                             name: that.name,  //收货人姓名  （自提时必传）
                             mobile: that.mobile, //收货人电话 （自提时必传）
                             coupon_id: that.couponInfo.id, //优惠券id  （和积分抵扣二选一）
                             deduct: that.integralChecked?'1': '0', //是否积分抵扣 1是使用 0是不使用
+                            remark: that.textAreaMsg, //备注留言
+                            type: that.mainActiveIndex == 0?1:2, //1 今天 2明天  int
+                            date: that.timeTxt, //送达时间 例:尽快送达 例：12：30
                         }
                         wepy.Api.createDeliveryOrder(orderData)
                             .then((res) => {
@@ -629,6 +663,9 @@
 </script>
 
 <style lang="less" scoped>
+    #Order {
+        padding-bottom: 260rpx;
+    }
 	textarea {
 		font-size: 20px;
 	}

@@ -1,13 +1,18 @@
 <template>
     <view class="add_bg myAddress">
+        <view class="no_order" wx:if="{{!addressList.length}}">
+            <image src="../../common/images/no_order.png" mode="widthFix"/>
+            <view>您暂无收货地址~</view>
+        </view>
         <van-panel wx:key="item" wx:for="{{addressList}}"
         title="{{item.province}}{{item.city}}{{item.area}}{{item.address}}"
-        desc="{{item.name}} {{item.mobile}}">
-            <view class="address_handle center-y display-flex" data-item="{{item}}" @tap="adrSelect">
+        desc="{{item.name}} {{item.mobile}}"  data-item="{{item}}" @tap="adrSelect">
+            <view class="address_handle center-y">
                 <!-- 选择地址 -->
                 <!-- <view class="adr_select" @tap="adrSelect" data-item="{{item}}"><image src="../../common/images/select.png" mode="widthFix"></image></view> -->
                 <!-- 编辑地址 -->
                 <view class="adr_edit" @tap.stop="adrEdit"  data-item="{{item}}">编辑地址<!-- <image src="../../common/images/edit.png" mode="widthFix"></image> --></view>
+                <view class="adr_edit del" @tap.stop="adrDel"  data-item="{{item}}">删除地址</view>
             </view>
         </van-panel>
         <view class="add_btn_box">
@@ -74,12 +79,13 @@
             //选择收货地址
             adrSelect(e) {
                 let that = this;
+                console.log(e)
                 let data = e.currentTarget.dataset.item;
                 if(that.pageFrom == 'user') {
                     return false;
                 }else {
                     wx.navigateTo({
-                        url: `../index/sureOrder?addressInfo=${Json.stringigy(data)}`
+                        url: `../index/sureOrder?addressInfo=${JSON.stringify(data)}`
                     })
                 }
                 //获取上一个页面的信息并调用获取配送地址方法
@@ -97,6 +103,27 @@
                     url: './editAddress?editInfo='+ JSON.stringify(data)
                 });
             },
+            adrDel(e) {
+                let that = this;
+                let id = e.currentTarget.dataset.item.id;
+                wepy.Api.delAddress({id})
+                    .then(res => {
+                        if(res.code == 1) {
+                            wx.showToast({
+                                title: '删除成功'
+                            })
+                            setTimeout(() => {
+                                that.getAddressList();
+                            },1000)
+                        }
+                    })
+                    .catch(err => {
+                        wx.showToast({
+                            title: err.msg
+                        })
+                    })
+
+            },
             addAddress() {
                 const that = this;
                 wepy.navigateTo({
@@ -108,13 +135,33 @@
 </script>
 <style lang="less" scoped>
     .myAddress {
+        .no_order{
+            width: 100%;
+            position: fixed;
+            height: 100%;
+            background: #f8f8f8;
+            text-align: center;
+            font-size: 30rpx;
+            color: #666;
+            padding: 100rpx 0 0;
+            image{
+                width: 280rpx;
+                margin: 0 auto;
+            }
+            view{
+                margin: 25rpx;
+            }
+        }
         padding-bottom: 25%;
         .address_handle {
             right: 22rpx;
             .adr_edit {
-                width: 46rpx;
-                margin-top: 10rpx;
-                margin-left: 20rpx;
+                // width: 46rpx;
+
+                // margin-left: 20rpx;
+                &.del {
+                    margin-top: 20rpx;
+                }
             }
             .adr_select {
                 width: 58rpx;
