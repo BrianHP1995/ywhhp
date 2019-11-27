@@ -36,7 +36,45 @@
                     </view>
                 </van-cell>
             </view>
+            <view @tap="openMap">
+                <van-cell is-link center>
+                    <view slot="title">
+                        <view class="user_list_txt">门店地址</view>
+                    </view>
+                    <view slot="icon">
+                        <view class="user_list_ico">
+                            <image src="../common/images/user/adr.png" mode="widthFix" />
+                        </view>
+                    </view>
+                </van-cell>
+            </view>
+            <view>
+                <van-cell is-link center url="../packageA/pages/user/contactService" link-type="navigateTo">
+                    <view slot="title">
+                        <view class="user_list_txt">联系客服</view>
+                    </view>
+                    <view slot="icon">
+                        <view class="user_list_ico">
+                            <image src="../common/images/user/service.png" mode="widthFix" />
+                        </view>
+                    </view>
+                </van-cell>
+            </view>
+            <view>
+                <van-cell is-link center url="../packageA/pages/user/systemSetting" link-type="navigateTo">
+                    <view slot="title">
+                        <view class="user_list_txt">系统设置</view>
+                    </view>
+                    <view slot="icon">
+                        <view class="user_list_ico">
+                            <image src="../common/images/user/setting.png" mode="widthFix" />
+                        </view>
+                    </view>
+                </van-cell>
+            </view>
         </view>
+        <map id="map" longitude="{{mapInfo.latitude}}" latitude="{{mapInfo.longitude}}"
+        style="width: 100%; height: 100%;"></map>
     </view>
 </template>
 
@@ -77,18 +115,14 @@
         			link: '/packageA/pages/user/myAddress?from=user',
         			txt: '我的地址',
         			ico: '../common/images/user/address.png'
-        		},
-        		{
-        			link: '../packageA/pages/user/contactService',
-        			txt: '联系客服',
-        			ico: '../common/images/user/service.png'
-        		},
-        		{
-        			link: '../packageA/pages/user/systemSetting',
-        			txt: '系统设置',
-        			ico: '../common/images/user/setting.png'
         		}
         	],
+            mapInfo: {
+                longitude: 112.861100,
+                latitude: 28.198990,
+                name: '大鱼燕窝门店位置',
+                address: '湖南省长沙市岳麓区梅溪大街二段梅溪湖步步高L1层'
+            }
         }
         checkUserLogin() {
             let that = this;
@@ -129,6 +163,16 @@
                 that.CouponLen = CouponLen;
                 that.$apply();
             }
+        }
+        openMap() {
+            let that = this;
+            wx.openLocation({
+                  latitude: that.mapInfo.latitude,
+                  longitude: that.mapInfo.longitude,
+                  scale: 18,
+                  name: that.mapInfo.name,
+                  address: that.mapInfo.address
+            })
         }
         onLoad(options) {
 

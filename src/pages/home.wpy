@@ -338,6 +338,7 @@
                 wx.showLoading({
                     title: '加载中'
                 })
+                that.detailShow = true;
                 let id = e.currentTarget.dataset.item.goods_id;
                 // wx.navigateTo({
                 //     url: `/packageA/pages/index/goodsDetail?id=${id}`
@@ -347,7 +348,6 @@
                 })
                 .then((res) => {
                     if (res.code == 1) {
-                        that.detailShow = true;
                         wx.pageScrollTo({
                             scrollTop: 0,
                             duration: 0
@@ -394,7 +394,7 @@
 
             .b_img {
                 width: 100%;
-                height: 280rpx;
+                height: 320rpx;
                 overflow: hidden;
 
                 >img {

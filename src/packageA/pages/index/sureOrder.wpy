@@ -392,10 +392,10 @@
         openMap() {
             let that = this;
             wx.openLocation({
-                  latitude: that.mapInfo.longitude,
-                  longitude: that.mapInfo.latitude,
+                  latitude: that.mapInfo.latitude,
+                  longitude: that.mapInfo.longitude,
                   scale: 18,
-                  name: that.mapInfo.hotel_name,
+                  name: that.mapInfo.name,
                   address: that.mapInfo.address
             })
         }
