@@ -49,7 +49,7 @@
                         </view>
                     </repeat>
                 </view>
-                <view class="tips t-c font-s24">Tips：{{goodsPopInfo.is_popup==0?'本商品支持全国配送，顺丰包邮到家哦！':'本商品仅在长沙部分地区配送，请查看地图！'}}</view>
+                <view class="tips t-c font-s24">Tips：{{goodsPopInfo.is_popup==0?'本商品支持全国配送，顺丰包邮到家哦！':'为保证产品的口感和配送时效，本产品目前仅在长沙河西部分区域配送，请注意查看配送地图。'}}</view>
                 <view class="goods_price font-s36 font-bold">
                     ￥{{selectedGoodsInfo.price}}
                     <view class="num_handle center-y">
@@ -240,7 +240,7 @@ export default class GoodsModelPop extends wepy.component {
                         })
                         that.isShowPop = false;
                         that.$apply();
-                        that.$emit('callGetShoppingCarList');
+                        that.$emit('callGetShoppingCarList',0);
                     }else if(res.code == 0) {
                         wx.showToast({
                             icon: 'none',

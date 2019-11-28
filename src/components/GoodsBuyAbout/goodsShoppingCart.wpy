@@ -18,7 +18,7 @@
                                     </view>
                                 </view>
                                 <view class="car_line_fr">
-                                    <text class="car_line_price">¥{{ item.price_selling }}</text>
+                                    <text class="car_line_price">¥{{ item.price_selling*item.number }}</text>
                                     <van-stepper value="{{ item.number }}" data-item="{{item}}"
                                     min="0" data-index="{{ index }}"
                                         integer disable-input input-width="40px"
@@ -62,7 +62,7 @@
             },
             shoppingCartData: {} //购物车数据
         }
-        cacleShoppingCartData(shoppingData) {
+        cacleShoppingCartData(shoppingData,isClick) {
             let that = this;
             that.shoppingCartData = shoppingData;
             let price = 0.00;
@@ -83,7 +83,12 @@
                 num,
                 price: price.toFixed(2)
             };
-            that.isShowCar = false;
+            /**
+             * 控制购物车详情展开
+             *  isClick: 0-收起  -页面加载后展示购物车
+             *           1-展开  -购物车里边数量变化
+             * */
+            that.isShowCar = isClick?true:false;
             that.$apply();
         }
         methods = {
@@ -118,7 +123,7 @@
                 wepy.Api.addGoodsToShoppingCart(data)
                     .then((res) => {
                         if(res.code == 1) {
-                            that.$emit('callGetShoppingCarList');
+                            that.$emit('callGetShoppingCarList',1);
                         }
                     })
             },
@@ -134,7 +139,7 @@
                 wepy.Api.delGoodsFromShoppingCart(data)
                     .then((res) => {
                         if(res.code == 1) {
-                            that.$emit('callGetShoppingCarList');
+                            that.$emit('callGetShoppingCarList',1);
                         }
                     })
             },

@@ -96,7 +96,9 @@
                     src="{{item}}" />
             </view>
             <van-popup custom-class="popTips" overlay-style="display: none;" show="{{ showPop }}" position="top" overlay="false">
-            	<view style="padding: 20rpx 30rpx;">{{is_popup==0?'本商品支持全国配送，顺丰包邮到家哦！':'本商品仅在长沙部分地区配送，请查看配送地图！'}}</view>
+            	<view style="padding: 20rpx 30rpx;">
+                    {{is_popup==0?'本商品支持全国配送，顺丰包邮到家哦！':'为保证产品的口感和配送时效，本产品目前仅在长沙河西部分区域配送，请注意查看最下方的配送地图。'}}
+                </view>
             </van-popup>
         </view>
         <!-- 规格弹窗 :isShowPop.sync="isShowPop"-->
@@ -167,13 +169,13 @@
 
         }
         //获取购物车列表
-        async getShoppingCarList() {
+        async getShoppingCarList(isClick) {
             let that = this;
             let result = await wepy.Api.getGoodsShoppingCart({});
             if(result.code == 1) {
                 let shoppingData = result.result;
                 if (shoppingData.list.length > 0) {
-                    that.$invoke('GoodsShoppingCart', 'cacleShoppingCartData', shoppingData);
+                    that.$invoke('GoodsShoppingCart', 'cacleShoppingCartData', shoppingData,isClick);
                 }
             }
         }
@@ -204,7 +206,7 @@
         }
         //为了授权返回后可以请求到数据
         onShow() {
-            this.getShoppingCarList();
+            this.getShoppingCarList(0);
         }
         //获取商品列表中每种分类标题距离页面顶部的距离
         getGoodsTypeTopOffset() {
@@ -378,8 +380,8 @@
         //给子组件提供方法调用
         events = {
             //调用获取购物车列表方法
-            callGetShoppingCarList() {
-                this.getShoppingCarList();
+            callGetShoppingCarList(isClick) {
+                this.getShoppingCarList(isClick);
             }
         }
         onShareAppMessage() {
