@@ -96,4 +96,12 @@ export default class Api{
     getDispatchOrderDetail(params) {
         return this.request.wxRequest_token(params, 'member/getOrderDetail')
     }
+    //继续支付未支付订单
+    continuePay(params) {
+        return this.request.wxRequest_token(params, 'member/orderPay')
+    }
+    //取消订单
+    cancleOrder(params) {
+        return this.request.wxRequest_token(params, 'member/cancelOrder')
+    }
 }

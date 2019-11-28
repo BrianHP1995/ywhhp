@@ -69,7 +69,6 @@
                 pages: [
                     'pages/index/sureOrder', //下单
                     'pages/index/timingOrder', //定时配送
-                    'pages/index/goodsDetail', //商品详情
                     'pages/user/myAddress',  //我的地址
                     'pages/user/editAddress',  //编辑收货地址
                     'pages/user/dispatchOrder', //配送订单

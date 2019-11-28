@@ -71,7 +71,7 @@
             </view>
             <view class="content_box">
                 <view class="content_box_tt center-y">备注: </view>
-                <view class="textarea">
+                <view class="textarea" wx:if="{{!showSelTime}}">
                     <textarea class="font-s26" bindblur="bindTextAreaBlur" placeholder-style="color:#ededed;" placeholder="" />
                 </view>
 
@@ -564,8 +564,8 @@
                                         package: res.result.package,
                                         signType: 'MD5',
                                         paySign: res.result.paySign,
-                                        success (res) {
-                                            if(res.errMsg == 'requestPayment:ok') {
+                                        success (data) {
+                                            if(data.errMsg == 'requestPayment:ok') {
                                                 wx.showToast({
                                                     title: '支付成功'
                                                 })
@@ -577,11 +577,15 @@
                                             }
 
                                         },
-                                        fail (res) {
+                                        fail (err) {
                                             wx.showToast({
                                                 icon: 'none',
                                                 title: '支付失败'
                                             })
+                                            // wx.setStorage({
+                                            //     key: 'payInfo',
+                                            //     data: JSON.stringify(res.result);
+                                            // })
                                             setTimeout(() => {
                                                 wx.navigateTo({
                                                     url: '../user/dispatchOrder'
@@ -632,8 +636,8 @@
                                         package: res.result.package,
                                         signType: 'MD5',
                                         paySign: res.result.paySign,
-                                        success (res) {
-                                            if(res.errMsg == 'requestPayment:ok') {
+                                        success (data) {
+                                            if(data.errMsg == 'requestPayment:ok') {
                                                 wx.showToast({
                                                     title: '支付成功'
                                                 })
@@ -645,11 +649,20 @@
                                             }
 
                                         },
-                                        fail (res) {
+                                        fail (err) {
+                                            // wx.setStorage({
+                                            //     key: 'payInfo',
+                                            //     data: JSON.stringify(res.result);
+                                            // })
                                             wx.showToast({
                                                 icon: 'none',
                                                 title: '支付失败'
                                             })
+                                            setTimeout(() => {
+                                                wx.navigateTo({
+                                                    url: '../user/dispatchOrder'
+                                                })
+                                            },1000)
                                         }
                                     })
                                 }
@@ -931,9 +944,10 @@
 			position: relative;
 			border-bottom: 1px solid #ededed;
 			padding-left: 100rpx;
-
+            height: 100rpx;
 			.content_box_tt {
 				left: 45rpx;
+
 			}
 
 			.textarea {

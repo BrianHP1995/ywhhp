@@ -75,8 +75,9 @@
         </view>
         <view class="bottom_logo t-c"><image class="display-ib" src="../common/images/logo.png" mode="widthFix"></image></view>
         <view class="goodsDetail" wx:if="{{detailShow}}">
+
             <view class="back_btn" bindtap="backHome">
-                <image src="../../common/images/index/back.png" /> 返回</view>
+                <image src="../common/images/index/back.png" /> 返回</view>
             <view class="pro_banner">
                 <image src="{{goodsInfo.topimage}}" mode="widthFix"/>
             </view>
@@ -94,6 +95,9 @@
                 <image wx:for="{{goodsInfo.image}}" wx:key="index" mode="widthFix" style="margin-top: -16rpx;"
                     src="{{item}}" />
             </view>
+            <van-popup custom-class="popTips" overlay-style="display: none;" show="{{ showPop }}" position="top" overlay="false">
+            	<view style="padding: 20rpx 30rpx;">{{is_popup==0?'本商品支持全国配送，顺丰包邮到家哦！':'本商品仅在长沙部分地区配送，请查看配送地图！'}}</view>
+            </van-popup>
         </view>
         <!-- 规格弹窗 :isShowPop.sync="isShowPop"-->
         <GoodsModelPop></GoodsModelPop>
@@ -132,7 +136,9 @@
             goodsList: [],
             goodsPopInfo: {}, //商品选择规格弹窗数据
             goodsInfo: {},
-            detailShow: false
+            detailShow: false,
+            showPop: true,
+            is_popup: null
         }
         swiperChange(e) {
             this.currentSwiper = e.detail.current;
@@ -252,6 +258,10 @@
             let top = e.scrollTop;
             that.setTypeTabsActive(top)
             that.tabs_isdown = false;
+            if(e.scrollTop >= 200) {
+                that.showPop = false;
+                that.$apply();
+            }
         }
         methods = {
             switchNav(e) { //分类tabs点击事件
@@ -340,9 +350,6 @@
                 })
                 that.detailShow = true;
                 let id = e.currentTarget.dataset.item.goods_id;
-                // wx.navigateTo({
-                //     url: `/packageA/pages/index/goodsDetail?id=${id}`
-                // })
                 wepy.Api.getGoodsDetail({
                     goods_id: id
                 })
@@ -353,6 +360,12 @@
                             duration: 0
                         })
                         that.goodsInfo = res.result;
+                        that.showPop = true;
+                        that.is_popup = res.result.is_popup;
+                        setTimeout(() => {
+                            that.showPop = false;
+                        },5000)
+
                         wx.hideLoading()
                     }
                 })
@@ -680,6 +693,13 @@
             background: #fff;
             min-height: 100%;
             width: 100%;
+            .popTips {
+              color: #d70000;
+              font-size: 24rpx;
+              text-align: center;
+              padding: 15rpx 0;
+              background: #fff7ea;
+            }
             .pro_detail_cont {
                 padding: 30rpx;
 

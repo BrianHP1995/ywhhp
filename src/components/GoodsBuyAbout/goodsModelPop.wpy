@@ -49,7 +49,7 @@
                         </view>
                     </repeat>
                 </view>
-                <view class="tips t-c font-s24">TIPS:赠送好友时口味默认即可，TA可自行选择哦~</view>
+                <view class="tips t-c font-s24">Tips：{{goodsPopInfo.is_popup==0?'本商品支持全国配送，顺丰包邮到家哦！':'本商品仅在长沙部分地区配送，请查看地图！'}}</view>
                 <view class="goods_price font-s36 font-bold">
                     ￥{{selectedGoodsInfo.price}}
                     <view class="num_handle center-y">

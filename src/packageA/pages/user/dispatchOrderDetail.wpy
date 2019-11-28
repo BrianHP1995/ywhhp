@@ -8,7 +8,12 @@
             <view class="statu_title t-c font-bold font-s40" wx:if="{{orderDetail.status==4}}">已完成</view>
             <view class="order_time t-c font-s26" wx:if="{{orderDetail.status==1 || orderDetail.status==3}}"><text wx:if="{{orderDetail.status==3}}">预计<text class="time">{{orderDetail.express_estimate_at}}</text>送达，</text>请耐心等待大鱼燕窝来临！
             </view>
+            <view class="handle_pay_wrap display-flex" wx:if="{{orderDetail.status==0}}">
+                <view class="handle_pay toPay" @tap="goPayOrder">去支付</view>
+                <view class="handle_pay delPay" @tap="cancleOrder">取消订单</view>
+            </view>
         </view>
+
         <!-- 订单信息 -->
         <view class="order_info bgc-fff">
             <view class="order_code_time pos-r font-s26">
@@ -27,7 +32,7 @@
             </view>
             <view class="order_fee pos-r">配送费<view class="fee right">￥{{orderDetail.price_express}}</view></view>
             <!-- <view class="order_discount pos-r">全场饮品<view class="discount right">-￥22.4</view></view> -->
-            <view class="order_price pos-r">共{{orderDetail.orderList.length}}件商品<view class="price right">实付 ￥{{orderDetail.price_goods}}</view></view>
+            <view class="order_price pos-r">共{{orderDetail.orderList.length}}件商品<view class="price right"><text wx:if="{{orderDetail.status==0}}">需付</text><text wx:else>实付</text> ￥{{totalPrice}}</view></view>
         </view>
         <!-- 下单时间 -->
         <view class="order_add_time font-s26 c-666 bgc-fff">下单时间：{{orderDetail.create_at}}</view>
@@ -54,24 +59,67 @@
         }
         data = {
             orderDetail: {},
-
+            totalPrice: 0,
+            order_no: null
         }
         async getOrderDetail(order_no) {
             let result = await wepy.Api.getDispatchOrderDetail({order_no});
             this.orderDetail = result.order;
-            // this.orderDetail.orderList.forEach((item) => {
-            //     let arr = [];
-            //     item.flavor = '';
-            //     arr = item.goods_spec.split(';;');
-            //     arr.forEach(val => {
-            //         item.flavor += `/${val.split('::')[1]}`;
-            //     })
-            // })
+            this.totalPrice = Number(result.order.price_goods) + Number(result.order.price_express);
+
             this.$apply();
         }
         onLoad(options) {
             if(options.order_no) {
                 this.getOrderDetail(options.order_no);
+                this.order_no = options.order_no;
+                this.$apply();
+            }
+        }
+        methods = {
+            goPayOrder() {
+                let that = this;
+                wepy.Api.continuePay({order_no: that.order_no})
+                    .then((res) => {
+                        if(res.code == 1) {
+                            let data = res.result;
+                            wx.requestPayment({
+                                timeStamp: data.timeStamp,
+                                nonceStr: data.nonceStr,
+                                package: data.package,
+                                signType: 'MD5',
+                                paySign: data.paySign,
+                                success (data) {
+                                    if(data.errMsg == 'requestPayment:ok') {
+                                        wx.showToast({
+                                            title: '支付成功'
+                                        })
+                                        that.getOrderDetail(that.order_no);
+                                    }
+
+                                },
+                                fail (err) {
+                                    wx.showToast({
+                                        icon: 'none',
+                                        title: '支付失败'
+                                    })
+
+                                }
+                            })
+                        }
+                    })
+            },
+            cancleOrder() {
+                let that = this;
+                wepy.Api.cancleOrder({order_no: that.order_no})
+                    .then((res) => {
+                        if(res.code == 1) {
+                            wx.showToast({
+                                title: '取消订单成功'
+                            })
+                            that.getOrderDetail(that.order_no);
+                        }
+                    })
             }
         }
     }
@@ -100,6 +148,25 @@
                 }
                 .tip {
                     color: #999;
+                }
+            }
+        }
+        .handle_pay_wrap {
+            justify-content: center;
+            margin-top: 46rpx;
+            .handle_pay {
+                color: #fff;
+                padding: 16rpx 0rpx;
+                border-radius: 16rpx;
+                width: 150rpx;
+                text-align: center;
+                &.toPay {
+                    background: #07c160;
+                    margin-left: 0;
+                }
+                &.delPay {
+                    background: #eee;
+                    margin-left: 30rpx;
                 }
             }
         }

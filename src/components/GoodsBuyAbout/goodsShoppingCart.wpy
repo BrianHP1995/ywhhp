@@ -113,7 +113,7 @@
                 let data = {
                     goods_id: item.goods_id, //商品id
                     spec_id: item.spec_id, //规格id
-                    attribute: item.attribute //属性id 多属性&拼接
+                    attribute: item.attribute.split('&')[0] //属性id 多属性&拼接
                 }
                 wepy.Api.addGoodsToShoppingCart(data)
                     .then((res) => {
