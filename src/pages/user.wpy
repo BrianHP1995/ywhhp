@@ -96,11 +96,12 @@
         data = {
         	CouponLen: 0,
         	userInfo: {},
-        	userList: [{
-        			link: '../packageA/pages/user/fridgeOrder',
-        			txt: '入库订单',
-        			ico: '../common/images/user/order.png'
-        		},
+        	userList: [
+          //       {
+        		// 	link: '../packageA/pages/user/fridgeOrder',
+        		// 	txt: '入库订单',
+        		// 	ico: '../common/images/user/order.png'
+        		// },
         		{
         			link: '../packageA/pages/user/dispatchOrder',
         			txt: '配送订单',

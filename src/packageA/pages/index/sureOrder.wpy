@@ -61,10 +61,12 @@
             </view>
             <!-- 优惠券相关 -->
             <view class="coupon_list_box">
-                <view bindtap="toCouponPage" class="coupon_list_tt borderBot">
+                <view bindtap="toCouponPage" class="coupon_list_tt borderBot pos-r">
                     <view>优惠券</view>
                     <view class="coupon_list_sel">
-                        {{couponTxt}}
+                        <text class="{{couponTxt=='有券可用'?'have':''}}{{couponTxt!='有券可用' && couponTxt!='暂无可用' ?'used':''}}">{{couponTxt}}</text>
+
+                        <image class="coupon_row pos-a" mode="widthFix" src="../../common/images/row.png"></image>
                     </view>
                 </view>
                 <view bindtap="integralChange"><van-checkbox value="{{integralChecked}}">积分可抵扣{{integral}}元</van-checkbox></view>
@@ -98,10 +100,11 @@
                     <view bindtap="selTime"><text style="margin-right:10rpx;">{{mainActiveIndex == 0?'今天':'明天'}} </text><text style="margin-right:10rpx;">{{timeTxt}} </text><van-icon name="arrow" size="12px" color="#b4b4b4"/></view>
                 </view>
                 <view class="pay_box">
-                    <view class="pay_num">￥{{orderPriceTotal}}</view>
-                    <view>
-                        <button bindtap="orderPay" class="pay_weixin">微信支付</button>
+                    <view class="pay_num">
+                        <view class="pay font-s32">还需支付 <text class="font-bold font-s36 c-000">￥{{orderPriceTotal}}</text></view>
+                        <view class="count font-s28" wx:if="{{countPrice>0}}">已抵扣￥{{countPrice}}</view>
                     </view>
+                    <view class="pay_button" bindtap="orderPay">去支付</view>
                 </view>
             </view>
         </view>
@@ -132,7 +135,7 @@
         }
         data = {
             active: 0, // 1 小哥配送 2 到店自提
-            couponTxt: '选择优惠券',
+            couponTxt: '有券可用',
             activeCityTxt: '选择收货地址',
             timeItems: [
                 {
@@ -169,7 +172,8 @@
                 name: '大鱼燕窝门店位置',
                 address: '湖南省长沙市岳麓区梅溪大街二段梅溪湖步步高L1层'
             },
-            canGetIntegral: null
+            canGetIntegral: null,
+            countPrice: 0
         }
         //设置配送时间选择
         async setDeliveryTime() {
@@ -273,13 +277,13 @@
                 that.shoppingData = result.result;
                 that.canGetIntegral = result.result.integral;
                 that.shoppingData.list.forEach((item) => {
-                    let arr = [];
+                    let arrSpec = [];
                     item.flavor = '';
-                    arr = item.attribute.split(';;');
-                    arr.forEach(val => {
+                    arrSpec = item.goods_spec.split(';;');
+                    arrSpec.forEach(val => {
                         item.flavor += `/${val.split('::')[1]}`;
                     })
-                    item.flavor = `${item.attribute.split('&')[0]}${item.flavor}`
+                    item.flavor = `${item.attribute.replace('&','/')}${item.flavor}`
                 })
                 that.cacleOrderPriceTotal(options);  //计算订单总价
                 that.$apply();
@@ -336,14 +340,30 @@
             this.activeCityTxt = `${data.province}省${data.city}市${data.area}${data.address}`;
             this.$apply();
         }
+        async getUserCoupon() {
+            let that = this;
+            let CouponLen = 0;
+            let result = await wepy.Api.getUserCoupon({});
+            if(result.code == 1) {
+                result.result.forEach(res => {
+                    CouponLen += res.coupon.length;
+                })
+                if(CouponLen>0) {
+                    that.couponTxt = "有券可用";
+                }else {
+                    that.couponTxt = "暂无可用";
+                }
+                that.$apply();
+            }
+        }
         //获取选择的优惠券信息
         getCouonInfo(data) {
             let that = this;
             this.couponInfo = data;
-            console.log(data)
             switch(data.type) {
                 case 1:
-                    this.couponTxt = '免邮券';
+                    this.couponTxt = '免邮券 -￥5';
+                    that.countPrice = 5;
                     if(Number(that.shoppingData.price_express) != 0) { //包含配送费
 
                         that.orderPriceTotal -= Number(that.shoppingData.price_express);
@@ -354,7 +374,8 @@
                      *  会员等级userMemberGrade
                      *      1-银卡   2-金卡    3-钻卡
                      * */
-                    this.couponTxt = parseInt(data.value) + '元抵扣券';
+                    this.couponTxt =  '现金抵扣券 -￥'+data.value;
+                    that.countPrice = data.value;
                     if(that.orderPriceTotal-that.shoppingData.price_express >= Number(data.value)) {
                         that.orderPriceTotal -= Number(data.value);
                     }else {
@@ -380,11 +401,49 @@
                             that.shoppingData.integral = 0;
                         }
                     }
+                    that.shoppingData.integral = that.shoppingData.integral.toFixed(2);
                     break;
                 case 3:
-                    this.couponTxt = '5折券';
-                    that.orderPriceTotal = ((that.orderPriceTotal-Number(that.shoppingData.price_express))*Number(data.value)*0.1)+Number(that.shoppingData.price_express);
 
+                    //部分商品可用
+                    that.shoppingData.list.forEach(item => {
+                        if(data.goods_id.indexOf(String(item.goods_id)) != -1) {
+                            item.total_price = (Number(item.price_selling)*item.number)*Number(data.value)*0.1;
+                        }else {
+                            item.total_price = Number(item.price_selling)*item.number;
+                        }
+                    })
+
+                    that.orderPriceTotal = 0;
+                    let actPrice = 0;
+                    that.shoppingData.list.forEach(item => {
+                        that.orderPriceTotal += Number(item.total_price);
+                        actPrice += Number(item.price_selling)*item.number;
+                    })
+                    that.countPrice = actPrice-that.orderPriceTotal;
+                    this.couponTxt = '5折券  -￥'+ that.countPrice;
+                    that.orderPriceTotal += Number(that.shoppingData.price_express);
+
+                    if(that.userMemberGrade == 1) {
+                        if(that.orderPriceTotal-Number(that.shoppingData.price_express)>0) {
+                            that.shoppingData.integral = (that.orderPriceTotal-Number(that.shoppingData.price_express))* 0.03;
+                        }else {
+                            that.shoppingData.integral = 0;
+                        }
+                    }else if(that.userMemberGrade == 2) {
+                        if(that.orderPriceTotal-Number(that.shoppingData.price_express)>0) {
+                            that.shoppingData.integral = (that.orderPriceTotal-Number(that.shoppingData.price_express))* 0.05;
+                        }else {
+                            that.shoppingData.integral = 0;
+                        }
+                    }else if(that.userMemberGrade == 3) {
+                        if(that.orderPriceTotal-Number(that.shoppingData.price_express)>0) {
+                            that.shoppingData.integral = (that.orderPriceTotal-Number(that.shoppingData.price_express))* 0.1;
+                        }else {
+                            that.shoppingData.integral = 0;
+                        }
+                    }
+                    that.shoppingData.integral = that.shoppingData.integral.toFixed(2);
                     break;
             }
             this.$apply();
@@ -403,6 +462,7 @@
             this.getShoppingCarList(options);
             this.getDefaultAddress();
             this.setDeliveryTime();
+            this.getUserCoupon();
             if(options.addressInfo) {
                 this.getAddress(JSON.parse(options.addressInfo))
             }
@@ -417,6 +477,11 @@
             //配送和自取tab切换
             onChangeToggle(event) {
                 this.active = event.detail.index;
+                if(event.detail.index == 1) {
+                    this.orderPriceTotal -= this.shoppingData.price_express;
+                    this.shoppingData.price_express = 0;
+                    
+                }
             },
 
             onChangeName(e) {
@@ -458,7 +523,7 @@
             //选择积分抵扣
             integralChange(e) {
                 let that = this;
-                if(this.couponTxt == '选择优惠券') {
+                if(this.couponTxt == '有券可用' || this.couponTxt == '暂无可用') {
                     this.integralChecked = !this.integralChecked;
                     if(this.integralChecked) {
                         //选择积分抵扣
@@ -482,9 +547,11 @@
                                 that.shoppingData.integral = 0;
                             }
                         }
-                         that.shoppingData.integral = Math.floor(that.shoppingData.integral*100)/100
+                        that.countPrice = Number(this.integral);
+                        that.shoppingData.integral = Math.floor(that.shoppingData.integral*100)/100
                     }else {
                         //未选择积分抵扣
+                        that.countPrice = 0;
                        this.orderPriceTotal += Number(this.integral);
                        that.shoppingData.integral = that.canGetIntegral;
                     }
@@ -678,6 +745,7 @@
 <style lang="less" scoped>
     #Order {
         padding-bottom: 260rpx;
+        overflow: hidden;
     }
 	textarea {
 		font-size: 20px;
@@ -874,7 +942,21 @@
             .coupon_list_sel {
                 display: flex;
                 align-items: center;
+                padding-right: 44rpx;
+                text {
+                    color: #aaa;
+                    &.have {
+                        color: #333;
+                    }
+                    &.used {
+                        color: #f2ab23;
+                    }
+                }
+                .coupon_row {
+                    width: 40rpx;
+                    right: -16rpx;
 
+                }
             }
         }
     }
@@ -908,24 +990,32 @@
         }
 
         .pay_box {
-            padding: 25rpx 45rpx;
-
+            padding: 18rpx 45rpx;
+            position: relative;
+            height: 114rpx;
             .pay_num {
                 font-size: 40rpx;
                 color: #aa4146;
+                .pay {
+                    color: #7c7c7c;
+                }
+                .count {
+                    color: #f2ab23;
+                }
+            }
+            .pay_button {
+                position: absolute;
+                right: 0;
+                top: 0;
+                width: 290rpx;
+                height: 100%;
+                line-height: 106rpx;
+                text-align: center;
+                font-size: 38rpx;
+                color: #fff;
+                background: #ffa400;
             }
 
-            button {
-                width: 215rpx;
-                height: 75rpx;
-                line-height: 75rpx;
-                text-align: center;
-                font-size: 30rpx;
-                color: #fff;
-                background: #d7d7d7;
-                border: none;
-                box-shadow: none;
-            }
         }
     }
 

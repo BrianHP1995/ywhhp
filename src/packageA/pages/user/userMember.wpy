@@ -1,23 +1,13 @@
 <style lang="less" scoped>
     .member_bg {
-        background: #6ba6fb;
+        // background: #6ba6fb;
         position: absolute;
         min-height: 100%;
         width: 100%;
         box-sizing: border-box;
-        padding: 0 20rpx;
+        padding: 20rpx;
         overflow: hidden;
-
-        .bgfff {
-            position: absolute;
-            top: 0;
-            left: 20rpx;
-            right: 20rpx;
-            overflow: hidden;
-            padding: 20rpx;
-            box-sizing: border-box;
-            background: #fff;
-
+        padding-bottom: 40rpx;
             .member_box {
                 position: relative;
                 overflow: hidden;
@@ -26,6 +16,7 @@
                 height: 340rpx;
                 color: #fff;
                 z-index: 0;
+                margin-bottom: 30rpx;
 
                 image {
                     width: 100%;
@@ -58,53 +49,21 @@
             .diamond image {
                 box-shadow: 0px 2px 5px rgba(239, 240, 241, 0.8);
             }
-        }
     }
 </style>
 <template>
-    <view>
-        <view class="member_bg">
-            <view class="bgfff">
+        <view class="member_bg bgc-fff">
                 <view class="member_box silver">
-                    <image src="../../common/images/silver_member.png" mode="widthFix" />
-                    <view class="member_top">
-                        <view style="font-size:42rpx;">银卡会员</view>
-                        <view style="font-size:28rpx;margin-top:20rpx;text-transform:uppercase;">Silver card member</view>
-                    </view>
-                    <view class="member_bottom">
-                        <view style="font-size:27rpx;">消费任意金额即可成为大鱼燕窝银卡会员</view>
-                        <view style="font-size:27rpx;">消费可获得支付产品金额的3%积分</view>
-                    </view>
+                    <image src="../../common/images/silver_member.jpg" mode="widthFix" />
                 </view>
 
                 <view class="member_box gold">
-                    <image src="../../common/images/gold_member.png" mode="widthFix" />
-                    <view class="member_top">
-                        <view style="font-size:42rpx;">金卡会员</view>
-                        <view style="font-size:28rpx;margin-top:20rpx;text-transform:uppercase;">Gold card member</view>
-                    </view>
-                    <view class="member_bottom">
-                        <view style="font-size:27rpx;">累计消费满10000元即可成为大鱼燕窝金卡会员</view>
-                        <view style="font-size:27rpx;">消费可获得支付产品金额的5%积分</view>
-                    </view>
+                    <image src="../../common/images/gold_member.jpg" mode="widthFix" />
                 </view>
                 <view class="member_box diamond">
-                    <image src="../../common/images/diamond_member.png" mode="widthFix" />
-                    <view class="member_top">
-                        <view style="font-size:42rpx;">钻卡会员</view>
-                        <view style="font-size:28rpx;margin-top:20rpx;text-transform:uppercase;">Drill card member</view>
-                    </view>
-                    <view class="member_bottom">
-                        <view style="font-size:27rpx;">累计消费50000元即可成为大鱼燕窝暂时会员</view>
-                        <view style="font-size:27rpx;">消费可获得支付产品金额的10%积分</view>
-
-                        <!-- <view style="font-size:24rpx;margin-top:20rpx;">查看详情 <van-icon name="arrow" color="#fff" size="20rpx"/></view> -->
-                    </view>
+                    <image src="../../common/images/diamond_member.jpg" mode="widthFix" />
                 </view>
-
-            </view>
         </view>
-    </view>
 </template>
 <script>
     import wepy from 'wepy';

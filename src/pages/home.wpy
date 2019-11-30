@@ -8,6 +8,9 @@
                         <image class="wh-100" src='{{item.image}}' mode='aspectFill' data-item="{{item}}"></image>
                     </swiper-item>
                 </repeat>
+                <swiper-item class="wh-100" wx:if="{{bannerList.length == 0}}">
+                    <image class="wh-100" src='../common/images/index/banner.jpg' mode='aspectFill' ></image>
+                </swiper-item>
             </swiper>
             <view class="swiper_dots">
                 <repeat for="{{bannerList}}" data-index="index">
@@ -16,7 +19,7 @@
             </view>
         </view>
         <!-- 燕窝分类tabs 商品列表 -->
-        <view class="goodsType">
+        <view class="goodsType" wx:if="{{!detailShow}}">
             <view class="tabsWrap">
                 <view class="pos-r">
                     <view class="tabs_innerWrap pos-r {{tabs_isdown?'tabs_all': ''}}">
@@ -28,7 +31,7 @@
                             </block>
                         </scroll-view>
                     </view>
-                    <view class="downArrow pos-a bgc-fff" bindtap="tabsDown">
+                    <view class="downArrow pos-a bgc-fff" bindtap="tabsDown" wx:if="{{tabsList.length>0}}">
                         <image src="../common/images/index/back.png" mode="widthFix" class="{{tabs_isdown?'down':''}}"></image>
                     </view>
                 </view>
@@ -74,32 +77,34 @@
             </view>
         </view>
         <view class="bottom_logo t-c"><image class="display-ib" src="../common/images/logo.png" mode="widthFix"></image></view>
-        <view class="goodsDetail" wx:if="{{detailShow}}">
+        <view class="goodsDetail" style="height: 100%;" wx:if="{{detailShow}}">
 
-            <view class="back_btn" bindtap="backHome">
-                <image src="../common/images/index/back.png" /> 返回</view>
-            <view class="pro_banner">
-                <image src="{{goodsInfo.topimage}}" mode="widthFix"/>
-            </view>
-            <view class="pro_detail_cont">
-                <view class="pro_detail_tt">{{goodsInfo.title}}</view>
-                <view class="pro_detail_txt">{{goodsInfo.content}}</view>
-                <view class="pro_detail_buy">
-                    <view class="pos-r">¥ {{goodsInfo.goods_list[0].price_selling}}
-                        <view class="detail_pre_price center-y font-s22">原价￥{{goodsInfo.goods_list[0].price_market}}</view>
+            <!-- <scroll-view scroll-y style="height: 100%;"> -->
+                <view class="back_btn" bindtap="backHome">
+                    <image src="../common/images/index/back.png" /> 返回</view>
+                <view class="pro_banner">
+                    <image src="{{goodsInfo.topimage}}" mode="widthFix"/>
+                </view>
+                <view class="pro_detail_cont">
+                    <view class="pro_detail_tt">{{goodsInfo.title}}</view>
+                    <view class="pro_detail_txt">{{goodsInfo.content}}</view>
+                    <view class="pro_detail_buy">
+                        <view class="pos-r">¥ {{goodsInfo.goods_list[0].price_selling}}
+                            <view class="detail_pre_price center-y font-s22">原价￥{{goodsInfo.goods_list[0].price_market}}</view>
+                        </view>
+                        <button data-bean="{{goodsInfo}}" @tap.stop="openGoodsSel">购买</button>
                     </view>
-                    <button data-bean="{{goodsInfo}}" @tap.stop="openGoodsSel">购买</button>
                 </view>
-            </view>
-            <view class="pro_detail_img">
-                <image wx:for="{{goodsInfo.image}}" wx:key="index" mode="widthFix" style="margin-top: -16rpx;"
-                    src="{{item}}" />
-            </view>
-            <van-popup custom-class="popTips" overlay-style="display: none;" show="{{ showPop }}" position="top" overlay="false">
-            	<view style="padding: 20rpx 30rpx;">
-                    {{is_popup==0?'本商品支持全国配送，顺丰包邮到家哦！':'为保证产品的口感和配送时效，本产品目前仅在长沙河西部分区域配送，请注意查看最下方的配送地图。'}}
+                <view class="pro_detail_img">
+                    <image wx:for="{{goodsInfo.image}}" wx:key="index" mode="widthFix" style="margin-top: -16rpx;"
+                        src="{{item}}" />
                 </view>
-            </van-popup>
+                <van-popup custom-class="popTips" overlay-style="display: none;" show="{{ showPop }}" position="top" overlay="false">
+                	<view style="padding: 20rpx 30rpx;">
+                        {{is_popup==0?'本商品支持全国配送，顺丰包邮到家哦！':'为保证产品的口感和配送时效，本产品目前仅在长沙河西部分区域配送，请注意查看最下方的配送地图。'}}
+                    </view>
+                </van-popup>
+            <!-- </scroll-view> -->
         </view>
         <!-- 规格弹窗 :isShowPop.sync="isShowPop"-->
         <GoodsModelPop></GoodsModelPop>
@@ -172,11 +177,9 @@
         async getShoppingCarList(isClick) {
             let that = this;
             let result = await wepy.Api.getGoodsShoppingCart({});
-            if(result.code == 1) {
-                let shoppingData = result.result;
-                if (shoppingData.list.length > 0) {
-                    that.$invoke('GoodsShoppingCart', 'cacleShoppingCartData', shoppingData,isClick);
-                }
+            if(result.code == 1 || result.code == 2) {
+                let shoppingData = result;
+                that.$invoke('GoodsShoppingCart', 'cacleShoppingCartData', shoppingData,isClick);
             }
         }
         //获取首页商品分类列表
@@ -251,6 +254,7 @@
                 })
             })
         }
+        preventTouchMove() {}
         onPageScroll(e) {
             /**
              *  1. 页面加载完成后记录每个分类标题的位置scrollTop
@@ -473,10 +477,13 @@
                         height: 120px;
                         z-index: 9;
                     }
-
+                    .tabsScroll::-webkit-scrollbar{
+                        width: 0;
+                        height: 0;
+                        color: transparent;
+                    }
                     .tabsScroll {
                         white-space: nowrap;
-
                         &.scroll_down {
                             width: 100% !important;
                             white-space: pre-wrap;
@@ -522,6 +529,7 @@
             }
 
             .goodsListAll {
+                min-height: 500rpx;
                 .typeList {
                     .typeTitle {
                         padding: 14rpx 30rpx;
@@ -695,6 +703,7 @@
             background: #fff;
             min-height: 100%;
             width: 100%;
+            padding-bottom: 120rpx;
             .popTips {
               color: #d70000;
               font-size: 24rpx;

@@ -94,7 +94,12 @@
                                         wx.showToast({
                                             title: '支付成功'
                                         })
-                                        that.getOrderDetail(that.order_no);
+                                        setTimeout(() => {
+                                            wx.navigateTo({
+                                                url: './dispatchOrder'
+                                            })
+                                        },1000)
+                                        //that.getOrderDetail(that.order_no);
                                     }
 
                                 },
@@ -117,7 +122,12 @@
                             wx.showToast({
                                 title: '取消订单成功'
                             })
-                            that.getOrderDetail(that.order_no);
+                            setTimeout(() => {
+                                wx.navigateTo({
+                                    url: './dispatchOrder'
+                                })
+                            },1000)
+                            // that.getOrderDetail(that.order_no);
                         }
                     })
             }

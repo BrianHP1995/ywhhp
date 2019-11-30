@@ -1,6 +1,6 @@
 import wepy from 'wepy';
 const BASE_URL = 'https://api.dayuyanwo.com/api/';
-//const BASE_URL = 'http://test.goodwx.cn/api/';
+//const BASE_URL = 'http://apitest.dayuyanwo.com/api/';
 export default class Request{
     constructor() {}
     async wxRequest_post(params, acticon) {

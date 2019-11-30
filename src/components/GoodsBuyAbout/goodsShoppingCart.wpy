@@ -62,27 +62,31 @@
             },
             shoppingCartData: {} //购物车数据
         }
-        cacleShoppingCartData(shoppingData,isClick) {
+        cacleShoppingCartData(result,isClick) {
             let that = this;
-            that.shoppingCartData = shoppingData;
             let price = 0.00;
             let num = 0;
-            let data = shoppingData.list;
-            if(data.length>0) {
+            console.log(result);
+            if(result.code == 1) {
+                //购物车不为空
+                that.shoppingCartData = result.result;
+                let data = result.result.list;
                 //购物车数据不为空 -- 显示购物车
                 that.isShowCarTotal = true;
-            }else {
+                //计算购物车数据
+                data.forEach((item) => {
+                    price += parseFloat(item.price_selling)*item.number;
+                    num += Number(item.number);
+                })
+                that.shoppingCarTotal = {
+                    num,
+                    price: price.toFixed(2)
+                };
+            }else if(result.code == 2) {
+                //购物车为空
                 that.isShowCarTotal = false;
             }
-            //计算购物车数据
-            data.forEach((item) => {
-                price += parseFloat(item.price_selling)*item.number;
-                num += Number(item.number);
-            })
-            that.shoppingCarTotal = {
-                num,
-                price: price.toFixed(2)
-            };
+
             /**
              * 控制购物车详情展开
              *  isClick: 0-收起  -页面加载后展示购物车
@@ -115,10 +119,11 @@
                 let that = this;
                 this.shoppingCarTotal.num ++;
                 let item = e.currentTarget.dataset.item;
+                console.log(item)
                 let data = {
                     goods_id: item.goods_id, //商品id
                     spec_id: item.spec_id, //规格id
-                    attribute: item.attribute.split('&')[0] //属性id 多属性&拼接
+                    attribute: item.attribute //属性id 多属性&拼接
                 }
                 wepy.Api.addGoodsToShoppingCart(data)
                     .then((res) => {

@@ -13,9 +13,9 @@
             </form>
             <view class="coupon_cont">
                 <van-tabs active="{{ active }}" bind:change="onChange" line-width="30">
+                    <van-tab title="折扣券"></van-tab>
                     <van-tab title="免邮券"></van-tab>
                     <van-tab title="抵扣券"></van-tab>
-                    <van-tab title="折扣券"></van-tab>
                     <view class="couponList_wrap">
                         <view class="no_coupon t-c" wx:if="{{!couponSingleData.coupon.length}}">
                             <image class="display-ib" src="../../common/images/no_coupon.png" mode="widthFix" />
@@ -32,17 +32,17 @@
                                         <image src="../../common/images/coupon_zk.jpg" wx:if="{{couponSingleData.type==3}}"/>
                                     </view>
                                     <view class="coupon_detail" wx:if="{{couponSingleData.type==1}}">
-                                        <view class="coupon_detail_tt">免邮券</view>
+                                        <view class="coupon_detail_tt">{{couponSingleData.coupon_name}}</view>
                                         <view class="coupon_detail_txt">该卷可抵扣配送费，可与其他优惠卷同享。</view>
                                         <view class="coupon_detail_txt">有效期至 {{item.end_time}}</view>
                                     </view>
                                     <view class="coupon_detail" wx:if="{{couponSingleData.type==2}}">
-                                        <view class="coupon_detail_tt">{{couponSingleData.value}}元抵扣券</view>
+                                        <view class="coupon_detail_tt">{{couponSingleData.coupon_name}}</view>
                                         <view class="coupon_detail_txt">该卷可抵扣产品费用{{couponSingleData.value}}元，可与其他优惠券同享。</view>
                                         <view class="coupon_detail_txt">有效期至 {{item.end_time}}</view>
                                     </view>
                                     <view class="coupon_detail" wx:if="{{couponSingleData.type==3}}">
-                                        <view class="coupon_detail_tt">5折卷</view>
+                                        <view class="coupon_detail_tt">{{couponSingleData.coupon_name}}</view>
                                         <view class="coupon_detail_txt">该卷可用于【燕窝炖品】系列产品，享5折优惠（不含配送费），不可与其他优惠券同享。</view>
                                         <view class="coupon_detail_txt">有效期至 {{item.end_time}}</view>
                                     </view>
@@ -74,19 +74,40 @@
             active: 0,
             couponData: [],
             couponSingleData: [],
-            code: 0,  //0-查看优惠券  1-选择优惠券
+            code: 0,  //0-查看优惠券  1-选择优惠券,
+            couponType: 2
         }
         async getUserCoupon() {
             let that = this;
             let result = await wepy.Api.getUserCoupon({});
             that.couponData = result.result;
-            that.selectCouponType();
+            that.setCouponData(this.active);
             that.$apply();
 
         }
-        selectCouponType() {
+
+        setCouponData(active) {
             let that = this;
-            that.couponSingleData = that.couponData[that.active];
+            if(active == 0) {
+                that.couponData.forEach((item) => {
+                    if(item.type == 3) {
+                        that.couponSingleData = item;
+                    }
+                })
+            }else if(active == 1) {
+                that.couponData.forEach((item) => {
+                    if(item.type == 1) {
+                        that.couponSingleData = item;
+                    }
+                })
+            }else if(active == 2) {
+                that.couponData.forEach((item) => {
+                    if(item.type == 2) {
+                        that.couponSingleData = item;
+                    }
+                })
+            }
+            that.$apply();
         }
         onLoad(options) {
             this.getUserCoupon();
@@ -97,7 +118,7 @@
         methods = {
             onChange(e) {
                 this.active = e.detail.index;
-                this.selectCouponType();
+                this.setCouponData(e.detail.index);
             },
             selectCoupon(e) {
                 let couponInfo = JSON.stringify(e.currentTarget.dataset.item);

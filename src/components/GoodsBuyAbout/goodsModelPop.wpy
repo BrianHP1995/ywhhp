@@ -266,12 +266,12 @@ export default class GoodsModelPop extends wepy.component {
             }
             .goods_info {
                 border-bottom: 2rpx solid #e9e9e9;
-                padding: 40rpx 30rpx 20rpx 260rpx;
+                padding: 40rpx 30rpx 20rpx 250rpx;
                 .img {
-                    width: 220rpx;
-                    height: 220rpx;
+                    width: 210rpx;
+                    height: 210rpx;
                     left: 30rpx;
-                    top: 30rpx;
+                    top: 48rpx;
                 }
                 .info {
                     height: 232rpx;
