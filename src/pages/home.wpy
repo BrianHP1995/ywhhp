@@ -92,7 +92,7 @@
                         <view class="pos-r">¥ {{goodsInfo.goods_list[0].price_selling}}
                             <view class="detail_pre_price center-y font-s22">原价￥{{goodsInfo.goods_list[0].price_market}}</view>
                         </view>
-                        <button data-bean="{{goodsInfo}}" @tap.stop="openGoodsSel">购买</button>
+                        <button data-bean="{{goodsInfo}}" @tap.stop="openGoodsSel">选规格</button>
                     </view>
                 </view>
                 <view class="pro_detail_img">
@@ -196,6 +196,12 @@
             let result = await wepy.Api.getGoodsList({});
             if(result.code == 1) {
                 this.goodsList = result.result;
+                this.goodsList.forEach(item => {
+                    item.list.forEach(val => {
+                        val.goods_list[0].price_selling = parseFloat(val.goods_list[0].price_selling);
+                        val.goods_list[0].price_market = parseFloat(val.goods_list[0].price_market);
+                    })
+                })
                 this.$apply();
                 this.getGoodsTypeTopOffset();
             }
@@ -366,6 +372,8 @@
                             duration: 0
                         })
                         that.goodsInfo = res.result;
+                        that.goodsInfo.goods_list[0].price_selling = parseFloat(that.goodsInfo.goods_list[0].price_selling);
+                        that.goodsInfo.goods_list[0].price_market = parseFloat(that.goodsInfo.goods_list[0].price_market);
                         that.showPop = true;
                         that.is_popup = res.result.is_popup;
                         setTimeout(() => {

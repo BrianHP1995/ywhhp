@@ -85,11 +85,15 @@ export default class GoodsModelPop extends wepy.component {
         })
         let name = nameArry.join(';;');
         that.goodsPopInfo.goods_list.forEach((listItem, idx) => {
+
             if(listItem.goods_spec == name) {
                 that.selectedGoodsInfo.price = listItem.price_selling * that.selectedGoodsInfo.num;
                 that.$apply();
             }
         })
+        that.goodsPopInfo.goods_list[0].price_selling = parseFloat(that.goodsPopInfo.goods_list[0].price_selling);
+        that.goodsPopInfo.goods_list[0].price_market = parseFloat(that.goodsPopInfo.goods_list[0].price_market);
+        that.$apply();
     }
     data = {
         isShowPop: false,
@@ -335,11 +339,11 @@ export default class GoodsModelPop extends wepy.component {
             .goods_params {
                 position: relative;
                 margin: 30rpx 0;
-                height: 64rpx;
+                max-height: 64rpx;
                 overflow: hidden;
                 transition: all .4s;
                 &.on {
-                    height: 300rpx;
+                    max-height: 300rpx;
                     overflow: scroll;
                 }
                 .paramsList {

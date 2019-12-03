@@ -183,4 +183,8 @@ export default class Utils {
             }
         });
     }
+    static delPoint(num) {
+        console.log(num)
+        
+    }
 }

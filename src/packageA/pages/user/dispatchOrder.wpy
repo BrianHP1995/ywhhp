@@ -57,6 +57,9 @@
             let result = await wepy.Api.getDispatchOrderList({})
             if(result.code == 1) {
                 this.orderList = result.order;
+                this.orderList.forEach(item => {
+                    item.price_goods = parseFloat(item.price_goods);
+                })
                 this.$apply();
             }
         }

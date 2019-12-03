@@ -80,7 +80,7 @@
                 })
                 that.shoppingCarTotal = {
                     num,
-                    price: price.toFixed(2)
+                    price: parseFloat(price);
                 };
             }else if(result.code == 2) {
                 //购物车为空
