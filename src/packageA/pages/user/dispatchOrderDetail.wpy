@@ -136,6 +136,9 @@
 </script>
 
 <style lang="less" scoped>
+    view{
+        font-size: 30rpx;
+    }
     .DispatchOrderDetail {
         height: 100%;
         background: #f9f9f9;

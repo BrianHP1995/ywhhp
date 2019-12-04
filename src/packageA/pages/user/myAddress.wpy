@@ -11,8 +11,8 @@
                 <!-- 选择地址 -->
                 <!-- <view class="adr_select" @tap="adrSelect" data-item="{{item}}"><image src="../../common/images/select.png" mode="widthFix"></image></view> -->
                 <!-- 编辑地址 -->
-                <view class="adr_edit" @tap.stop="adrEdit"  data-item="{{item}}">编辑地址<!-- <image src="../../common/images/edit.png" mode="widthFix"></image> --></view>
-                <view class="adr_edit del" @tap.stop="adrDel"  data-item="{{item}}">删除地址</view>
+                <view class="adr_edit font-s30" @tap.stop="adrEdit"  data-item="{{item}}">编辑地址<!-- <image src="../../common/images/edit.png" mode="widthFix"></image> --></view>
+                <view class="adr_edit font-s30 del" @tap.stop="adrDel"  data-item="{{item}}">删除地址</view>
             </view>
         </van-panel>
         <view class="add_btn_box">

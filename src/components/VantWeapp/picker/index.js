@@ -15,9 +15,12 @@ var component_1 = require("../common/component");
 var shared_1 = require("./shared");
 component_1.VantComponent({
     classes: ['active-class', 'toolbar-class', 'column-class'],
-    props: __assign({}, shared_1.pickerProps, { valueKey: {
+    props: __assign(__assign({}, shared_1.pickerProps), { valueKey: {
             type: String,
             value: 'text'
+        }, toolbarPosition: {
+            type: String,
+            value: 'top'
         }, defaultIndex: {
             type: Number,
             value: 0
@@ -91,7 +94,7 @@ component_1.VantComponent({
         setColumnValue: function (index, value) {
             var column = this.getColumn(index);
             if (column == null) {
-                return Promise.reject('setColumnValue: 对应列不存在');
+                return Promise.reject(new Error('setColumnValue: 对应列不存在'));
             }
             return column.setValue(value);
         },
@@ -103,7 +106,7 @@ component_1.VantComponent({
         setColumnIndex: function (columnIndex, optionIndex) {
             var column = this.getColumn(columnIndex);
             if (column == null) {
-                return Promise.reject('setColumnIndex: 对应列不存在');
+                return Promise.reject(new Error('setColumnIndex: 对应列不存在'));
             }
             return column.setIndex(optionIndex);
         },
@@ -116,7 +119,7 @@ component_1.VantComponent({
             if (needReset === void 0) { needReset = true; }
             var column = this.children[index];
             if (column == null) {
-                return Promise.reject('setColumnValues: 对应列不存在');
+                return Promise.reject(new Error('setColumnValues: 对应列不存在'));
             }
             var isSame = JSON.stringify(column.data.options) === JSON.stringify(options);
             if (isSame) {

@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var component_1 = require("../common/component");
 var transition_1 = require("../mixins/transition");
-var safe_area_1 = require("../mixins/safe-area");
 component_1.VantComponent({
     classes: [
         'enter-class',
@@ -12,14 +11,16 @@ component_1.VantComponent({
         'leave-active-class',
         'leave-to-class'
     ],
-    mixins: [transition_1.transition(false), safe_area_1.safeArea()],
+    mixins: [transition_1.transition(false)],
     props: {
+        round: Boolean,
+        closeable: Boolean,
+        customStyle: String,
+        overlayStyle: String,
         transition: {
             type: String,
             observer: 'observeClass'
         },
-        customStyle: String,
-        overlayStyle: String,
         zIndex: {
             type: Number,
             value: 100
@@ -27,6 +28,14 @@ component_1.VantComponent({
         overlay: {
             type: Boolean,
             value: true
+        },
+        closeIcon: {
+            type: String,
+            value: 'cross'
+        },
+        closeIconPosition: {
+            type: String,
+            value: 'top-right'
         },
         closeOnClickOverlay: {
             type: Boolean,
@@ -36,12 +45,23 @@ component_1.VantComponent({
             type: String,
             value: 'center',
             observer: 'observeClass'
+        },
+        safeAreaInsetBottom: {
+            type: Boolean,
+            value: true
+        },
+        safeAreaInsetTop: {
+            type: Boolean,
+            value: false
         }
     },
     created: function () {
         this.observeClass();
     },
     methods: {
+        onClickCloseIcon: function () {
+            this.$emit('close');
+        },
         onClickOverlay: function () {
             this.$emit('click-overlay');
             if (this.data.closeOnClickOverlay) {
@@ -50,10 +70,13 @@ component_1.VantComponent({
         },
         observeClass: function () {
             var _a = this.data, transition = _a.transition, position = _a.position;
-            this.updateClasses(transition || position);
+            var updateData = {
+                name: transition || position
+            };
             if (transition === 'none') {
-                this.set({ duration: 0 });
+                updateData.duration = 0;
             }
+            this.setData(updateData);
         }
     }
 });

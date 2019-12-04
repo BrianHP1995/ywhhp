@@ -23,7 +23,7 @@ component_1.VantComponent({
         },
         delay: {
             type: Number,
-            value: 0
+            value: 1
         },
         speed: {
             type: Number,
@@ -44,23 +44,18 @@ component_1.VantComponent({
         backgroundColor: {
             type: String,
             value: BG_COLOR
-        }
+        },
+        wrapable: Boolean
     },
     data: {
-        show: true,
-        hasRightIcon: false
+        show: true
     },
     watch: {
         text: function () {
-            this.set({}, this.init);
+            this.setData({}, this.init);
         }
     },
     created: function () {
-        if (this.data.mode) {
-            this.set({
-                hasRightIcon: true
-            });
-        }
         this.resetAnimation = wx.createAnimation({
             duration: 0,
             timingFunction: 'linear'
@@ -74,7 +69,7 @@ component_1.VantComponent({
             var _this = this;
             Promise.all([
                 this.getRect('.van-notice-bar__content'),
-                this.getRect('.van-notice-bar__content-wrap')
+                this.getRect('.van-notice-bar__wrap')
             ]).then(function (rects) {
                 var contentRect = rects[0], wrapRect = rects[1];
                 if (contentRect == null ||
@@ -102,14 +97,14 @@ component_1.VantComponent({
             var _this = this;
             this.timer && clearTimeout(this.timer);
             this.timer = null;
-            this.set({
+            this.setData({
                 animationData: this.resetAnimation
                     .translateX(this.wrapWidth)
                     .step()
                     .export()
             });
             setTimeout(function () {
-                _this.set({
+                _this.setData({
                     animationData: _this.animation
                         .translateX(-_this.contentWidth)
                         .step()
@@ -123,7 +118,7 @@ component_1.VantComponent({
         onClickIcon: function () {
             this.timer && clearTimeout(this.timer);
             this.timer = null;
-            this.set({ show: false });
+            this.setData({ show: false });
         },
         onClick: function (event) {
             this.$emit('click', event);

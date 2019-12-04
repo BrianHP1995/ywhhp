@@ -58,7 +58,7 @@
             if(result.code == 1) {
                 this.orderList = result.order;
                 this.orderList.forEach(item => {
-                    item.price_goods = parseFloat(item.price_goods);
+                    item.price_goods = parseFloat(item.price_goods) + Number(item.price_express);
                 })
                 this.$apply();
             }

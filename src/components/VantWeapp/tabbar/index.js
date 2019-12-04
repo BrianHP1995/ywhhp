@@ -1,65 +1,66 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var component_1 = require("../common/component");
-var safe_area_1 = require("../mixins/safe-area");
 component_1.VantComponent({
-    mixins: [safe_area_1.safeArea()],
     relation: {
         name: 'tabbar-item',
         type: 'descendant',
         linked: function (target) {
-            this.children = this.children || [];
             this.children.push(target);
-            this.setActiveItem();
+            target.parent = this;
+            target.updateFromParent();
         },
         unlinked: function (target) {
-            this.children = this.children || [];
             this.children = this.children.filter(function (item) { return item !== target; });
-            this.setActiveItem();
+            this.updateChildren();
         }
     },
     props: {
-        active: Number,
-        activeColor: String,
+        active: {
+            type: null,
+            observer: 'updateChildren'
+        },
+        activeColor: {
+            type: String,
+            observer: 'updateChildren'
+        },
+        inactiveColor: {
+            type: String,
+            observer: 'updateChildren'
+        },
         fixed: {
+            type: Boolean,
+            value: true
+        },
+        border: {
             type: Boolean,
             value: true
         },
         zIndex: {
             type: Number,
             value: 1
+        },
+        safeAreaInsetBottom: {
+            type: Boolean,
+            value: true
         }
     },
-    watch: {
-        active: function (active) {
-            this.currentActive = active;
-            this.setActiveItem();
-        }
-    },
-    created: function () {
-        this.currentActive = this.data.active;
+    beforeCreate: function () {
+        this.children = [];
     },
     methods: {
-        setActiveItem: function () {
-            var _this = this;
-            if (!Array.isArray(this.children) || !this.children.length) {
+        updateChildren: function () {
+            var children = this.children;
+            if (!Array.isArray(children) || !children.length) {
                 return Promise.resolve();
             }
-            return Promise.all(this.children.map(function (item, index) {
-                return item.setActive({
-                    active: index === _this.currentActive,
-                    color: _this.data.activeColor
-                });
-            }));
+            return Promise.all(children.map(function (child) { return child.updateFromParent(); }));
         },
         onChange: function (child) {
-            var _this = this;
-            var active = (this.children || []).indexOf(child);
-            if (active !== this.currentActive && active !== -1) {
-                this.currentActive = active;
-                this.setActiveItem().then(function () {
-                    _this.$emit('change', active);
-                });
+            var index = this.children.indexOf(child);
+            var active = child.data.name || index;
+            if (active !== this.data.active) {
+                this.$emit('change', active);
             }
         }
     }

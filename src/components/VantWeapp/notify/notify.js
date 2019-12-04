@@ -1,12 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var utils_1 = require("../common/utils");
+var color_1 = require("../common/color");
 var defaultOptions = {
     selector: '#van-notify',
-    duration: 3000
+    type: 'danger',
+    message: '',
+    background: '',
+    duration: 3000,
+    zIndex: 110,
+    color: color_1.WHITE,
+    onClick: function () { },
+    onOpened: function () { },
+    onClose: function () { }
 };
-function parseOptions(text) {
-    return utils_1.isObj(text) ? text : { text: text };
+function parseOptions(message) {
+    return typeof message === 'string' ? { message: message } : message;
 }
 function getContext() {
     var pages = getCurrentPages();
@@ -16,6 +24,7 @@ function Notify(options) {
     options = Object.assign({}, defaultOptions, parseOptions(options));
     var context = options.context || getContext();
     var notify = context.selectComponent(options.selector);
+    delete options.context;
     delete options.selector;
     if (notify) {
         notify.set(options);

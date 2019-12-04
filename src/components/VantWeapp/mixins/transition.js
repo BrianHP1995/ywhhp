@@ -12,55 +12,50 @@ exports.transition = function (showDefaultValue) {
     return Behavior({
         properties: {
             customStyle: String,
+            // @ts-ignore
             show: {
                 type: Boolean,
                 value: showDefaultValue,
                 observer: 'observeShow'
             },
+            // @ts-ignore
             duration: {
-                type: [Number, Object],
+                type: null,
                 value: 300,
                 observer: 'observeDuration'
             },
             name: {
                 type: String,
-                value: 'fade',
-                observer: 'updateClasses'
+                value: 'fade'
             }
         },
         data: {
             type: '',
             inited: false,
-            display: false,
-            classNames: getClassNames('fade')
+            display: false
         },
         attached: function () {
             if (this.data.show) {
-                this.show();
+                this.enter();
             }
         },
         methods: {
             observeShow: function (value) {
-                if (value) {
-                    this.show();
-                }
-                else {
-                    this.leave();
-                }
+                value ? this.enter() : this.leave();
             },
-            updateClasses: function (name) {
-                this.set({
-                    classNames: getClassNames(name)
-                });
-            },
-            show: function () {
+            enter: function () {
                 var _this = this;
-                var _a = this.data, classNames = _a.classNames, duration = _a.duration;
-                var currentDuration = utils_1.isObj(duration) ? duration.leave : duration;
+                var _a = this.data, duration = _a.duration, name = _a.name;
+                var classNames = getClassNames(name);
+                var currentDuration = utils_1.isObj(duration) ? duration.enter : duration;
+                this.status = 'enter';
+                this.$emit('before-enter');
                 Promise.resolve()
                     .then(nextTick)
                     .then(function () {
-                    return _this.set({
+                    _this.checkStatus('enter');
+                    _this.$emit('enter');
+                    _this.setData({
                         inited: true,
                         display: true,
                         classes: classNames.enter,
@@ -69,38 +64,59 @@ exports.transition = function (showDefaultValue) {
                 })
                     .then(nextTick)
                     .then(function () {
-                    return _this.set({
+                    _this.checkStatus('enter');
+                    _this.transitionEnded = false;
+                    _this.setData({
                         classes: classNames['enter-to']
                     });
-                });
+                })
+                    .catch(function () { });
             },
             leave: function () {
                 var _this = this;
-                var _a = this.data, classNames = _a.classNames, duration = _a.duration;
-                var currentDuration = utils_1.isObj(duration) ? duration.leave : duration;
-                if (+currentDuration === 0) {
-                    this.onTransitionEnd();
+                if (!this.data.display) {
                     return;
                 }
+                var _a = this.data, duration = _a.duration, name = _a.name;
+                var classNames = getClassNames(name);
+                var currentDuration = utils_1.isObj(duration) ? duration.leave : duration;
+                this.status = 'leave';
+                this.$emit('before-leave');
                 Promise.resolve()
                     .then(nextTick)
                     .then(function () {
-                    return _this.set({
+                    _this.checkStatus('leave');
+                    _this.$emit('leave');
+                    _this.setData({
                         classes: classNames.leave,
                         currentDuration: currentDuration
                     });
                 })
                     .then(nextTick)
                     .then(function () {
-                    return _this.set({
+                    _this.checkStatus('leave');
+                    _this.transitionEnded = false;
+                    setTimeout(function () { return _this.onTransitionEnd(); }, currentDuration);
+                    _this.setData({
                         classes: classNames['leave-to']
                     });
-                });
+                })
+                    .catch(function () { });
+            },
+            checkStatus: function (status) {
+                if (status !== this.status) {
+                    throw new Error("incongruent status: " + status);
+                }
             },
             onTransitionEnd: function () {
-                if (!this.data.show) {
-                    this.set({ display: false });
-                    this.$emit('transitionEnd');
+                if (this.transitionEnded) {
+                    return;
+                }
+                this.transitionEnded = true;
+                this.$emit("after-" + this.status);
+                var _a = this.data, show = _a.show, display = _a.display;
+                if (!show && display) {
+                    this.setData({ display: false });
                 }
             }
         }

@@ -89,7 +89,8 @@
 
         globalData = {
             userInfo: null,
-            is_oauth: false
+            is_oauth: false,
+            isNewUserPopShow: true
         }
 
         constructor() {

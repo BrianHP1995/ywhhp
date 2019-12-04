@@ -10,6 +10,13 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var component_1 = require("../common/component");
 var utils_1 = require("../common/utils");
@@ -26,7 +33,7 @@ function padZero(val) {
 }
 function times(n, iteratee) {
     var index = -1;
-    var result = Array(n);
+    var result = Array(n < 0 ? 0 : n);
     while (++index < n) {
         result[index] = iteratee(index);
     }
@@ -46,15 +53,15 @@ function getMonthEndDay(year, month) {
 var defaultFormatter = function (_, value) { return value; };
 component_1.VantComponent({
     classes: ['active-class', 'toolbar-class', 'column-class'],
-    props: __assign({}, shared_1.pickerProps, { formatter: {
-            type: Function,
-            value: defaultFormatter
-        }, value: null, type: {
+    props: __assign(__assign({}, shared_1.pickerProps), { value: null, filter: null, type: {
             type: String,
             value: 'datetime'
         }, showToolbar: {
             type: Boolean,
             value: true
+        }, formatter: {
+            type: null,
+            value: defaultFormatter
         }, minDate: {
             type: Number,
             value: new Date(currentYear - 10, 0, 1).getTime()
@@ -79,50 +86,67 @@ component_1.VantComponent({
         columns: []
     },
     watch: {
-        value: function (val) {
+        value: 'updateValue',
+        type: 'updateValue',
+        minDate: 'updateValue',
+        maxDate: 'updateValue',
+        minHour: 'updateValue',
+        maxHour: 'updateValue',
+        minMinute: 'updateValue',
+        maxMinute: 'updateValue'
+    },
+    methods: {
+        updateValue: function () {
             var _this = this;
             var data = this.data;
-            val = this.correctValue(val);
+            var val = this.correctValue(this.data.value);
             var isEqual = val === data.innerValue;
             if (!isEqual) {
                 this.updateColumnValue(val).then(function () {
                     _this.$emit('input', val);
                 });
             }
+            else {
+                this.updateColumns();
+            }
         },
-        type: 'updateColumns',
-        minHour: 'updateColumns',
-        maxHour: 'updateColumns',
-        minMinute: 'updateColumns',
-        maxMinute: 'updateColumns'
-    },
-    methods: {
         getPicker: function () {
             if (this.picker == null) {
-                var picker_1 = (this.picker = this.selectComponent('.van-datetime-picker'));
+                this.picker = this.selectComponent('.van-datetime-picker');
+                var picker_1 = this.picker;
                 var setColumnValues_1 = picker_1.setColumnValues;
                 picker_1.setColumnValues = function () {
                     var args = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
                         args[_i] = arguments[_i];
                     }
-                    return setColumnValues_1.apply(picker_1, args.concat([false]));
+                    return setColumnValues_1.apply(picker_1, __spreadArrays(args, [false]));
                 };
             }
             return this.picker;
         },
         updateColumns: function () {
             var _a = this.data.formatter, formatter = _a === void 0 ? defaultFormatter : _a;
-            var results = this.getRanges().map(function (_a, index) {
+            var results = this.getOriginColumns().map(function (column) { return ({
+                values: column.values.map(function (value) { return formatter(column.type, value); })
+            }); });
+            return this.set({ columns: results });
+        },
+        getOriginColumns: function () {
+            var filter = this.data.filter;
+            var results = this.getRanges().map(function (_a) {
                 var type = _a.type, range = _a.range;
                 var values = times(range[1] - range[0] + 1, function (index) {
                     var value = range[0] + index;
                     value = type === 'year' ? "" + value : padZero(value);
-                    return formatter(type, value);
+                    return value;
                 });
-                return { values: values };
+                if (filter) {
+                    values = filter(type, values);
+                }
+                return { type: type, values: values };
             });
-            return this.set({ columns: results });
+            return results;
         },
         getRanges: function () {
             var data = this.data;
@@ -239,7 +263,7 @@ component_1.VantComponent({
             var picker = this.getPicker();
             if (data.type === 'time') {
                 var indexes = picker.getIndexes();
-                value = indexes[0] + data.minHour + ":" + (indexes[1] + data.minMinute);
+                value = +data.columns[0].values[indexes[0]] + ":" + +data.columns[1].values[indexes[1]];
             }
             else {
                 var values = picker.getValues();

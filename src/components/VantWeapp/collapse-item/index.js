@@ -38,7 +38,11 @@ component_1.VantComponent({
         this.updateExpanded()
             .then(nextTick)
             .then(function () {
-            _this.set({ transition: true });
+            var data = { transition: true };
+            if (_this.data.expanded) {
+                data.contentHeight = 'auto';
+            }
+            _this.setData(data);
         });
     },
     methods: {
@@ -71,11 +75,9 @@ component_1.VantComponent({
                         contentHeight: height ? height + "px" : 'auto'
                     });
                 }
-                else {
-                    return _this.set({ contentHeight: height + "px" })
-                        .then(nextTick)
-                        .then(function () { return _this.set({ contentHeight: 0 }); });
-                }
+                return _this.set({ contentHeight: height + "px" })
+                    .then(nextTick)
+                    .then(function () { return _this.set({ contentHeight: 0 }); });
             });
         },
         onClick: function () {
@@ -89,7 +91,7 @@ component_1.VantComponent({
         },
         onTransitionEnd: function () {
             if (this.data.expanded) {
-                this.set({
+                this.setData({
                     contentHeight: 'auto'
                 });
             }

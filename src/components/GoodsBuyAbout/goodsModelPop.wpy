@@ -1,7 +1,7 @@
 <template>
     <view class="goodsModelPop">
-        <van-popup show="{{ isShowPop }}" closeable close-icon-position="top-right"
-         z-index="999999" bind:close="onClose" custom-style="width: 90%;border-radius: 8rpx;">
+        <van-popup show="{{ isShowPop }}"
+         z-index="99999999" bind:close="onClose" custom-style="width: 90%;border-radius: 8rpx;">
             <view class="modelPopWrap pos-r">
                 <view class="closePop pos-a" bindtap="onClose">
                     <image src="../../common/images/index/close_btn.png" mode="widthFix" />

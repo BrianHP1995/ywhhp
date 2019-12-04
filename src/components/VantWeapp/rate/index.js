@@ -12,16 +12,16 @@ var __assign = (this && this.__assign) || function () {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var component_1 = require("../common/component");
+var utils_1 = require("../common/utils");
 component_1.VantComponent({
     field: true,
     classes: ['icon-class'],
     props: {
+        value: Number,
         readonly: Boolean,
         disabled: Boolean,
-        size: {
-            type: Number,
-            value: 20
-        },
+        allowHalf: Boolean,
+        size: null,
         icon: {
             type: String,
             value: 'star'
@@ -46,49 +46,53 @@ component_1.VantComponent({
             type: Number,
             value: 5
         },
-        value: {
-            type: Number,
-            value: 0
+        gutter: {
+            type: null,
+            observer: 'setGutterWithUnit'
+        },
+        touchable: {
+            type: Boolean,
+            value: true
         }
     },
     data: {
-        innerValue: 0
+        innerValue: 0,
+        gutterWithUnit: undefined
     },
     watch: {
         value: function (value) {
             if (value !== this.data.innerValue) {
-                this.set({ innerValue: value });
+                this.setData({ innerValue: value });
             }
         }
     },
-    computed: {
-        list: function () {
-            var _a = this.data, count = _a.count, innerValue = _a.innerValue;
-            return Array.from({ length: count }, function (_, index) { return index < innerValue; });
-        }
-    },
     methods: {
+        setGutterWithUnit: function (val) {
+            this.setData({
+                gutterWithUnit: utils_1.addUnit(val)
+            });
+        },
         onSelect: function (event) {
             var data = this.data;
-            var index = event.currentTarget.dataset.index;
+            var score = event.currentTarget.dataset.score;
             if (!data.disabled && !data.readonly) {
-                this.set({ innerValue: index + 1 });
-                this.$emit('input', index + 1);
-                this.$emit('change', index + 1);
+                this.setData({ innerValue: score + 1 });
+                this.$emit('input', score + 1);
+                this.$emit('change', score + 1);
             }
         },
         onTouchMove: function (event) {
             var _this = this;
-            var _a = event.touches[0], clientX = _a.clientX, clientY = _a.clientY;
-            this.getRect('.van-rate__item', true).then(function (list) {
-                var target = list.find(function (item) {
-                    return clientX >= item.left &&
-                        clientX <= item.right &&
-                        clientY >= item.top &&
-                        clientY <= item.bottom;
-                });
+            var touchable = this.data.touchable;
+            if (!touchable)
+                return;
+            var clientX = event.touches[0].clientX;
+            this.getRect('.van-rate__icon', true).then(function (list) {
+                var target = list
+                    .sort(function (item) { return item.right - item.left; })
+                    .find(function (item) { return clientX >= item.left && clientX <= item.right; });
                 if (target != null) {
-                    _this.onSelect(__assign({}, event, { currentTarget: target }));
+                    _this.onSelect(__assign(__assign({}, event), { currentTarget: target }));
                 }
             });
         }

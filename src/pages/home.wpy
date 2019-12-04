@@ -77,7 +77,7 @@
             </view>
         </view>
         <view class="bottom_logo t-c"><image class="display-ib" src="../common/images/logo.png" mode="widthFix"></image></view>
-        <view class="goodsDetail" style="height: 100%;" wx:if="{{detailShow}}">
+        <view class="goodsDetail" wx:if="{{detailShow}}">
 
             <!-- <scroll-view scroll-y style="height: 100%;"> -->
                 <view class="back_btn" bindtap="backHome">
@@ -90,17 +90,18 @@
                     <view class="pro_detail_txt">{{goodsInfo.content}}</view>
                     <view class="pro_detail_buy">
                         <view class="pos-r">¥ {{goodsInfo.goods_list[0].price_selling}}
-                            <view class="detail_pre_price center-y font-s22">原价￥{{goodsInfo.goods_list[0].price_market}}</view>
+                            <view class="detail_pre_price font-s22">原价￥{{goodsInfo.goods_list[0].price_market}}</view>
                         </view>
-                        <button data-bean="{{goodsInfo}}" @tap.stop="openGoodsSel">选规格</button>
+                        <button data-bean="{{goodsInfo}}" @tap.stop="openGoodsSel">购买</button>
                     </view>
                 </view>
                 <view class="pro_detail_img">
                     <image wx:for="{{goodsInfo.image}}" wx:key="index" mode="widthFix" style="margin-top: -16rpx;"
                         src="{{item}}" />
                 </view>
+                <view class="bottom_logo t-c"><image class="display-ib" src="../common/images/logo.png" mode="widthFix"></image></view>
                 <van-popup custom-class="popTips" overlay-style="display: none;" show="{{ showPop }}" position="top" overlay="false">
-                	<view style="padding: 20rpx 30rpx;">
+                	<view style="padding: 10rpx 20rpx;">
                         {{is_popup==0?'本商品支持全国配送，顺丰包邮到家哦！':'为保证产品的口感和配送时效，本产品目前仅在长沙河西部分区域配送，请注意查看最下方的配送地图。'}}
                     </view>
                 </van-popup>
@@ -109,6 +110,13 @@
         <!-- 规格弹窗 :isShowPop.sync="isShowPop"-->
         <GoodsModelPop></GoodsModelPop>
         <GoodsShoppingCart></GoodsShoppingCart>
+        <van-popup show="{{ isNewUserPopShow }}" custom-style="background: transparent;" z-index="999" bind:close="newUserPopClose">
+            <view class="newUserPop pos-r">
+                <image src="../common/images/index/newUser.png" mode="widthFix"></image>
+                <image class="newUser_close" src="../common/images/index/newUser_close.png" mode="widthFix" @tap.stop="newUserPopClose"></image>
+            </view>
+        </van-popup>
+
     </view>
 </template>
 <script>
@@ -145,7 +153,9 @@
             goodsInfo: {},
             detailShow: false,
             showPop: true,
-            is_popup: null
+            is_popup: null,
+            isNewUserPopShow: null,
+            homeScrollTop: 0
         }
         swiperChange(e) {
             this.currentSwiper = e.detail.current;
@@ -212,6 +222,8 @@
             this.getHomeBanner();
             this.getGoodsTypeList();
             this.getGoodsList();
+            this.isNewUserPopShow = this.$parent.globalData.isNewUserPopShow;
+            this.$apply();
         }
         //为了授权返回后可以请求到数据
         onShow() {
@@ -240,6 +252,9 @@
                 if (top > that.goodsTypeTopArr[i] - 40 && i > that.active || top < that.goodsTypeTopArr[i] && i <
                     that.active) {
                     that.active = i;
+                    if(i>4) {
+                        that.tabs_isdown = true;
+                    }
                     that.$apply()
                 }
 
@@ -274,8 +289,15 @@
                 that.showPop = false;
                 that.$apply();
             }
+            if(!that.detailShow) {
+                that.homeScrollTop = e.scrollTop;
+            }
         }
         methods = {
+            newUserPopClose() {
+                this.$parent.globalData.isNewUserPopShow = false;
+                this.isNewUserPopShow = false;
+            },
             switchNav(e) { //分类tabs点击事件
                 let that = this;
                 //当前索引
@@ -357,6 +379,9 @@
             //跳转商品详情
             linkGoodsDetail(e) {
                 let that = this;
+                wx.setNavigationBarTitle({
+                  title: '商品详情'
+                })
                 wx.showLoading({
                     title: '加载中'
                 })
@@ -378,6 +403,9 @@
                         that.is_popup = res.result.is_popup;
                         setTimeout(() => {
                             that.showPop = false;
+                            wx.setNavigationBarTitle({
+                              title: '首页'
+                            })
                         },5000)
 
                         wx.hideLoading()
@@ -387,6 +415,10 @@
             },
             backHome() {
                 this.detailShow = false;
+                wx.pageScrollTo({
+                    scrollTop: this.homeScrollTop,
+                    duration: 0
+                })
             }
         }
         //给子组件提供方法调用
@@ -416,6 +448,17 @@
     #Home {
         position: relative;
         height: 100%;
+        .newUserPop {
+            image {
+                width: 700rpx;
+            }
+            .newUser_close {
+                position: absolute;
+                right: 16rpx;
+                top: 16rpx;
+                width: 50rpx;
+            }
+        }
         .banner {
             position: relative;
 
@@ -711,7 +754,7 @@
             background: #fff;
             min-height: 100%;
             width: 100%;
-            padding-bottom: 120rpx;
+            padding-bottom: 180rpx;
             .popTips {
               color: #d70000;
               font-size: 24rpx;
@@ -748,8 +791,11 @@
                     color: #cd3720;
                     font-weight: bolder;
                     .detail_pre_price {
-                        right: -110%;
-                        top: 56%;
+                        display: inline-block;
+                        vertical-align: middle;
+                        margin-left: 10rpx;
+                        // right: -120%;
+                        // top: 56%;
                         color: #999;
                         font-weight: normal;
                         font-size: 22rpx;

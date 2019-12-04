@@ -1,8 +1,17 @@
-<view class="van-picker custom-class">
+<template name="toolbar">
   <view
     wx:if="{{ showToolbar }}"
     class="van-picker__toolbar van-hairline--top-bottom toolbar-class"
   >
+    <view
+      class="van-picker__cancel"
+      hover-class="van-picker__cancel--hover"
+      hover-stay-time="70"
+      data-type="cancel"
+      bindtap="emit"
+    >
+      {{ cancelButtonText }}
+    </view>
     <view wx:if="{{ title }}" class="van-picker__title van-ellipsis">{{ title }}</view>
     <view
       class="van-picker__confirm"
@@ -14,6 +23,10 @@
       {{ confirmButtonText }}
     </view>
   </view>
+</template>
+
+<view class="van-picker custom-class">
+  <template is="toolbar" wx:if="{{ toolbarPosition === 'top' }}" data="{{ showToolbar, cancelButtonText, title, confirmButtonText }}"></template>
   <view wx:if="{{ loading }}" class="van-picker__loading">
     <loading color="#1989fa"/>
   </view>
@@ -25,7 +38,7 @@
     <picker-column
       class="van-picker__column"
       wx:for="{{ isSimple(columns) ? [columns] : columns }}"
-      wx:key="{{ index }}"
+      wx:key="index"
       data-index="{{ index }}"
       custom-class="column-class"
       value-key="{{ valueKey }}"
@@ -41,6 +54,7 @@
       style="height: {{ itemHeight }}px"
     />
   </view>
+  <template is="toolbar" wx:if="{{ toolbarPosition === 'bottom' }}" data="{{ showToolbar, cancelButtonText, title, confirmButtonText }}"></template>
 </view>
 
 <wxs module="isSimple">
