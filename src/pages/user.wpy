@@ -27,7 +27,7 @@
             <view wx:for="{{userList}}" wx:key="index">
                 <van-cell is-link center url="{{item.link}}" link-type="navigateTo">
                     <view slot="title">
-                        <view class="user_list_txt">{{item.txt}}</view>
+                        <view class="user_list_txt pos-r">{{item.txt}} <text class="pos-a font-s28" style="right: 0;color: #f1a93d;" wx:if="{{index == 0 && hasUnPayed}}">您有未支付的订单</text></view>
                     </view>
                     <view slot="icon">
                         <view class="user_list_ico">
@@ -123,7 +123,8 @@
                 latitude: 28.198990,
                 name: '大鱼燕窝门店位置',
                 address: '湖南省长沙市岳麓区梅溪大街二段梅溪湖步步高L1层'
-            }
+            },
+            hasUnPayed: false
         }
         checkUserLogin() {
             let that = this;
@@ -165,6 +166,15 @@
                 that.$apply();
             }
         }
+        async getUserOrderList() {
+            let result = await wepy.Api.getDispatchOrderList({})
+            if(result.code == 1) {
+                result.order.forEach(item => {
+                    this.hasUnPayed = true;
+                })
+                this.$apply();
+            }
+        }
         openMap() {
             let that = this;
             wx.openLocation({
@@ -176,7 +186,7 @@
             })
         }
         onLoad(options) {
-
+            this.getUserOrderList();
         }
         onShow() {
             //检测登录状态

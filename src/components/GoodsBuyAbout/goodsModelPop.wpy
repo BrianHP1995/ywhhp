@@ -11,10 +11,10 @@
                     <view class="info">
                         <view class="title font-s38 c-000">{{goodsPopInfo.title}}</view>
                         <view class="con font-s24 c-666">{{goodsPopInfo.introduce}}</view>
-                        <view class="price pos-r font-s36">￥{{goodsPopInfo.goods_list[0].price_selling}} <view class="pre_price center-y font-s22">原价￥{{goodsPopInfo.goods_list[0].price_market}}</view></view>
+                        <view class="price pos-r font-s36">￥{{goodsPopInfo.goods_list[0].price_selling}} <view class="pre_price font-s22">原价￥{{goodsPopInfo.goods_list[0].price_market}}</view></view>
                     </view>
                 </view>
-                <view class="params_selectDown font-s26 c-000 {{isGoodsParamsSpread?'on':''}}" bindtap="goodsParamsSpread">
+                <!-- <view class="params_selectDown font-s26 c-000 {{isGoodsParamsSpread?'on':''}}" bindtap="goodsParamsSpread">
                     <view class="txt_all" wx:if="{{isGoodsParamsSpread}}">全部</view>
                     <view class="txt">
                         {{isGoodsParamsSpread?'收起':'展开'}}
@@ -22,12 +22,12 @@
                             <image src="../../common/images/index/back.png" mode="widthFix"></image>
                         </view>
                     </view>
-                </view>
-                <view class="goods_params {{isGoodsParamsSpread?'on':''}}">
+                </view> -->
+                <view class="goods_params on">
                     <repeat for="{{goodsAttribute}}" index="dindex">
                         <view class="goodsTemp" >
                             <view class="paramsList pos-r">
-                                <view class="params_name pos-a">{{item.name}}</view>
+                                <view class="params_name pos-a font-s30">{{item.name}}</view>
                                 <view class="params_itemCon display-flex flex-wrap">
                                     <repeat for="{{item.list}}" item="con">
                                         <view class="option {{con.active? 'on' : ''}}" data-dindex="{{dindex}}" data-index="{{index}}" data-item="{{item}}" bindtap="attributeChange">{{con.name}}</view>
@@ -38,7 +38,7 @@
                     </repeat>
                     <repeat for="{{goodsFlavor}}" index="dindex">
                         <view class="paramsList pos-r">
-                            <view class="params_name pos-a">{{item.name}}</view>
+                            <view class="params_name pos-a font-s30">{{item.name}}</view>
                             <view class="params_itemCon display-flex flex-wrap">
                                 <repeat for="{{item.list}}" item="con">
                                     <view class="option {{con.active? 'on' : ''}}" data-dindex="{{dindex}}"
@@ -98,7 +98,7 @@ export default class GoodsModelPop extends wepy.component {
     data = {
         isShowPop: false,
         goodsPopInfo: {},
-        isGoodsParamsSpread: false,  //商品口味参数选项下拉
+        //isGoodsParamsSpread: false,  //商品口味参数选项下拉
         goodsAttribute: [],   //商品属性
         goodsFlavor: [],  //商品规格参数
         selectedGoodsInfo: {
@@ -110,7 +110,7 @@ export default class GoodsModelPop extends wepy.component {
 
     methods = {
         goodsParamsSpread() {
-            this.isGoodsParamsSpread = !this.isGoodsParamsSpread;
+            //this.isGoodsParamsSpread = !this.isGoodsParamsSpread;
         },
         onOpen(goodsInfo) {
             let that = this;
@@ -270,12 +270,12 @@ export default class GoodsModelPop extends wepy.component {
             }
             .goods_info {
                 border-bottom: 2rpx solid #e9e9e9;
-                padding: 40rpx 30rpx 20rpx 250rpx;
+                padding: 40rpx 30rpx 20rpx 240rpx;
                 .img {
-                    width: 210rpx;
-                    height: 210rpx;
+                    width: 200rpx;
+                    height: 200rpx;
                     left: 30rpx;
-                    top: 48rpx;
+                    top: 52rpx;
                 }
                 .info {
                     height: 232rpx;
@@ -288,20 +288,13 @@ export default class GoodsModelPop extends wepy.component {
                         color: #d72300;
                         padding: 10rpx 0rpx;
                         .pre_price {
-                            left: 42%;
-                            top: 56%;
                             color: #999;
-                            // &:before {
-                            //     display: block;
-                            //     content: '';
-                            //     width: 108%;
-                            //     height: 1rpx;
-                            //     background: #999;
-                            //     position: absolute;
-                            //     top: 48%;
-                            //     left: 0;
-                            //     transform: translateY(-50%);
-                            // }
+                            display: inline-block;
+                            vertical-align: middle;
+                            margin-left: 10rpx;
+                            color: #999;
+                            font-weight: normal;
+                            font-size: 22rpx;
                         }
                     }
                 }

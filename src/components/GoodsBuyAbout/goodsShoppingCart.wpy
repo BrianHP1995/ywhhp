@@ -43,10 +43,12 @@
                 <button class="give_mine c-fff font-s30" bindtap="sureOrder">自己喝</button>
             </view>
         </view>
+        <van-dialog id="van-dialog" />
     </view>
 </template>
 <script>
     import wepy from 'wepy';
+    import Dialog from '../VantWeapp/dialog/dialog';
     export default class GoodsShoppingCart extends wepy.component {
 
         //props 接收父组件传递过来的值
@@ -95,6 +97,7 @@
             that.isShowCar = isClick?true:false;
             that.$apply();
         }
+
         methods = {
             giveFriends() {
                 //微信送好友  -- 暂不开放
@@ -104,10 +107,70 @@
                 })
             },
             sureOrder() {
-                //自己喝  -- 跳转订单确认下单页面
-                wx.navigateTo({
-                    url: '/packageA/pages/index/sureOrder'
-                })
+                let that = this;
+
+                //获取订单列表，如果有未支付订单，提示支付
+                let status = null;
+                wepy.Api.getDispatchOrderList({})
+                    .then(res => {
+                        if(res.code == 1) {
+                            res.order.forEach(item => {
+                                if(item.status == 0) {
+                                    //有未支付订单
+                                    status = 0;
+                                }
+                            })
+                            if(status == 0) {
+                                //弹窗
+                                Dialog.confirm({
+                                  title: '提示',
+                                  message: '您有订单尚未支付，可能会占用您的优惠券哦~',
+                                  confirmButtonText: '去支付',
+                                  cancelButtonText: '继续下单',
+                                   width: '80%',
+                                   confirmButtonColor: '#ffa400'
+                                }).then(() => {
+                                    wx.navigateTo({
+                                        url: '../packageA/pages/user/dispatchOrder'
+                                    })
+                                }).catch(() => {
+                                    wx.navigateTo({
+                                        url: '/packageA/pages/index/sureOrder'
+                                    })
+                                });
+                                // wx.showModal({
+                                //     title: '提示',
+                                //     content: '您有订单尚未支付，可能会占用您的优惠券哦~',
+                                //     cancelText: '继续下单',
+                                //     confirmText: '去支付',
+                                //     confirmColor: '#ffa400',
+                                //     cancelColor: '#ffa400',
+                                //     success(res) {
+                                //         if (res.confirm) {
+                                //             wx.navigateTo({
+                                //                 url: '../packageA/pages/user/dispatchOrder'
+                                //             })
+                                //         } else if (res.cancel) {
+                                //            wx.navigateTo({
+                                //                url: '/packageA/pages/index/sureOrder'
+                                //            })
+                                //         }
+                                //     }
+
+                                // })
+                            }else {
+                                //自己喝  -- 跳转订单确认下单页面
+                                wx.navigateTo({
+                                    url: '/packageA/pages/index/sureOrder'
+                                })
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    })
+
+
             },
             openCar() {
                 this.isShowCar = !this.isShowCar;
@@ -289,17 +352,6 @@
                     border: none;
                     border-radius: 8rpx;
                     margin-right: 10rpx;
-                    // background: -webkit-linear-gradient(#c10404,
-                    //     #a20000);
-                    // /* Safari 5.1 to 6.0 */
-                    // background: -o-linear-gradient(#c10404,
-                    //     #a20000);
-                    // /* Opera 11.1 to 12.0 */
-                    // background: -moz-linear-gradient(#c10404,
-                    //     #a20000);
-                    // /* Firefox 3.6 to 15 */
-                    // background: linear-gradient(#c10404,
-                    //     #a20000);
                     background: #eee;
 
                     &:after {

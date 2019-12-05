@@ -132,6 +132,7 @@
                 "van-tabs": "../components/VantWeapp/tabs/index", //tab标签
                 'van-popup': '../components/VantWeapp/popup/index', //弹窗
                 'van-stepper': '../components/VantWeapp/stepper/index',
+                "van-dialog": "../components/VantWeapp/dialog/index"
             },
             enablePullDownRefresh: false,
         }

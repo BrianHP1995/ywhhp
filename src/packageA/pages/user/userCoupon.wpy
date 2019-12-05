@@ -122,9 +122,12 @@
             },
             selectCoupon(e) {
                 let couponInfo = JSON.stringify(e.currentTarget.dataset.item);
-                wx.navigateTo({
-                    url: `../index/sureOrder?couponInfo=${couponInfo}`
-                })
+                if(this.code == 1) {
+                    wx.navigateTo({
+                        url: `../index/sureOrder?couponInfo=${couponInfo}`
+                    })
+                }
+                
             }
         }
     }

@@ -22,6 +22,11 @@
             </view>
             <!-- 自提预留姓名和电话 -->
             <van-cell-group  wx:if="{{active === 1}}">
+                <!-- <view class="getPhone display-flex pos-r">
+                    <view class="font-bold font-s30 phone_tit">联系电话</view>
+                    <view class="phone_input font-s30"><input type="text" placeholder="为方便您取燕窝,请填写手机号"></view>
+                    <button open-type="getPhoneNumber" class="getSelf center-y font-s30" bindgetphonenumber="getPhoneSelf">自动填写</button>
+                </view> -->
                 <van-field value="{{name}}" name="name" placeholder="请输入预留姓名" border="false" bind:change="onChangeName" />
                 <van-field value="{{mobile}}" name="mobile" placeholder="请输入预留电话" border="false" bind:change="onChangeTel" />
             </van-cell-group>
@@ -44,7 +49,9 @@
                         </view>
                     </repeat>
                     <view class="order_flex_box jifen borderBot pos-r">
-                        <view class="order_fl">您是<text wx:if="{{userMemberGrade == 1}}">银卡</text><text wx:if="{{userMemberGrade == 2}}">金卡</text><text wx:if="{{userMemberGrade ==3}}">钻卡</text>会员本次订单可获得积分</view>
+                        <view class="order_fl">
+                            <image class="log_vip display-ib" src="../../common/images/v1.png" mode="widthFix" wx:if="{{userMemberGrade == 1}}"/><image class="log_vip display-ib" src="../../common/images/v2.png" mode="widthFix" wx:if="{{userMemberGrade == 2}}"/><image class="log_vip display-ib" src="../../common/images/v3.png" mode="widthFix" wx:if="{{userMemberGrade == 3}}"/>您是<text style="color: #ffa400;" wx:if="{{userMemberGrade == 1}}">银卡会员</text><text style="color: #ffa400;" wx:if="{{userMemberGrade == 2}}">金卡会员</text><text style="color: #ffa400;" wx:if="{{userMemberGrade ==3}}">钻卡会员</text>本次订单可获得积分
+                        </view>
 
                         <view class="">(tips: 积分可用于下次购买金额抵扣)</view>
                         <view class="order_fr value center-y">{{shoppingData.integral}}</view>
@@ -63,20 +70,17 @@
             <view class="coupon_list_box">
                 <view class="borderBot coupon_list pos-r">
                     <view class="coupon_list_tt_coupon pos-r">
-                        <view>优惠券</view>
+                        <view><image class="log display-ib" src="../../common/images/quan.png" mode="widthFix"></image>优惠券</view>
                     </view>
                     <view class="coupon_list_sel pos-r font-s30" bindtap="toCouponPage">
                         <text class="{{couponChecked ?'used':'notChecked'}}">{{couponTxt}}</text>
-
                     </view>
                     <view class="coupon_switch center-y">
                         <van-switch size="24px" active-color="#ffa400" checked="{{ couponChecked }}" bind:change="couponChange" disabled="{{couponDisabled}}"/>
                     </view>
                 </view>
                 <view class="coupon_list_tt borderBot font-s30 display-flex">
-                     <!-- bindtap="integralChange" -->
-                    <view>积分可抵扣{{integral}}元</view>
-                    <!-- <van-checkbox value="{{integralChecked}}">积分可抵扣{{integral}}元</van-checkbox> -->
+                    <view><image class="log display-ib" src="../../common/images/jf.png" mode="widthFix"></image>积分可抵扣{{integral}}元</view>
                     <view>
                         <van-switch size="24px" active-color="#ffa400" checked="{{ integralChecked }}" bind:change="integralChange" disabled="{{integralDisabled}}"/>
                     </view>
@@ -344,9 +348,9 @@
                 that.userMemberGrade = result.result.vip_level;
 
                 if(result.result.integral<= that.orderPriceTotal) {
-                    that.integral = result.result.integral;
+                    that.integral = Number(result.result.integral);
                 }else {
-                    that.integral = that.orderPriceTotal;
+                    that.integral = Number(that.orderPriceTotal);
                 }
                 that.$apply();
                 //获取选择的优惠券信息
@@ -408,15 +412,17 @@
                      * */
                     if(arry_count.length>0) {
                         that.getCouonInfo(arry_count[0]);
-                    }else if(arry_red> 0) {
+                    }else if(arry_red.length> 0) {
+                        console.log(11111)
                         that.getCouonInfo(arry_red[0]);
-                    }else if(array_freeMail> 0) {
+                    }else if(array_freeMail.length> 0) {
                         that.getCouonInfo(array_freeMail[0]);
                     }
                 }
                 if(CouponLen == 0) {
                     that.couponTxt = "暂无可用";
                     that.couponDisabled = true;
+                    that.couponChecked = false;
                 }
                 that.$apply();
             }
@@ -451,7 +457,7 @@
                     }
 
                     if(that.userMemberGrade == 1) {
-                        
+
                         if(data.value* 0.03 > that.shoppingData.integral) {
                             that.countIntegral = that.shoppingData.integral;
                         }else {
@@ -501,7 +507,7 @@
                         }else {
                             that.countIntegral = that.countPrice* 0.03;
                         }
-                        
+
                     }else if(that.userMemberGrade == 2) {
                         if(that.countPrice* 0.05 > that.shoppingData.integral) {
                             that.countIntegral = that.shoppingData.integral;
@@ -564,6 +570,7 @@
             })
         }
         methods = {
+
             //配送和自取tab切换
             onChangeToggle(event) {
                 this.active = event.detail.index;
@@ -571,6 +578,9 @@
                     this.orderPriceTotal -= this.shoppingData.price_express;
                     this.shoppingData.price_express = 0;
                 }
+            },
+            getPhoneSelf(e) {
+                console.log(e);
             },
             onChangeName(e) {
                 //修改电话
@@ -859,6 +869,29 @@
 		border-left: 2px solid #409eff;
 		border-right: 2px solid #409eff;
 	}
+    .getPhone {
+        padding: 30rpx 35rpx;
+        background: #fff;
+        .phone_tit {
+            padding-top: 8rpx;
+        }
+        .phone_input {
+            margin-left: 36rpx;
+            height: 100%;
+            width: 70%;
+        }
+        .getSelf {
+            right: 0;
+            background: none;
+            padding: 10rpx 18rpx;
+            outline: none;
+            font-size: 30rpx;
+            border-radius: 8rpx;
+            color: #ffa400;
+            border: 2rpx solid #ffa400;
+            line-height: 0;
+        }
+    }
     .addr_sel_box {
         padding: 25rpx 0;
 
@@ -1009,6 +1042,12 @@
                 .order_fr.value {
                     right: 0;
                 }
+                .log_vip {
+                    width: 36rpx;
+                    vertical-align: middle;
+                    margin-right: 16rpx;
+                    margin-top: -4rpx;
+                }
             }
 
             .order_info_tips {
@@ -1058,6 +1097,12 @@
             color: #000;
             width: 100%;
             padding: 4rpx 0;
+            .log {
+                width: 40rpx;
+                vertical-align: middle;
+                margin-right: 10rpx;
+                margin-top: -2rpx;
+            }
         }
         .coupon_list_tt {
             padding: 20rpx 0;
@@ -1068,6 +1113,11 @@
             align-items: center;
             justify-content: space-between;
             width: 100%;
+            .log {
+                width: 40rpx;
+                vertical-align: middle;
+                margin-right: 10rpx;
+            }
         }
     }
 
