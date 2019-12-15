@@ -170,7 +170,9 @@
             let result = await wepy.Api.getDispatchOrderList({})
             if(result.code == 1) {
                 result.order.forEach(item => {
-                    this.hasUnPayed = true;
+                    if(item.status == 0) {
+                        this.hasUnPayed = true; 
+                    }
                 })
                 this.$apply();
             }

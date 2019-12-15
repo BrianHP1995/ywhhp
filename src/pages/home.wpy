@@ -2,7 +2,7 @@
     <view id="Home" class="wh-100">
         <!-- banner -->
         <view class="banner">
-            <swiper autoplay="true" interval="3000" duration="1000" circular="true" class="b_img" bindchange="swiperChange">
+            <swiper autoplay="true" interval="5000" duration="1000" circular="true" class="b_img" bindchange="swiperChange">
                 <repeat for='{{bannerList}}'>
                     <swiper-item class="wh-100">
                         <image class="wh-100" src='{{item.image}}' mode='aspectFill' data-item="{{item}}"></image>
