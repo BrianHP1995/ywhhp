@@ -40,18 +40,18 @@
                         'iconPath': 'common/images/tabBar/index.png',
                         'selectedIconPath': 'common/images/tabBar/indexActive.png'
                     },
-                    // {
-                    //     'pagePath': 'pages/groupBuy',
-                    //     'text': '拼团',
-                    //     'iconPath': 'common/images/tabBar/buy.png',
-                    //     'selectedIconPath': 'common/images/tabBar/buyActive.png'
-                    // },
-                    // {
-                    //     'pagePath': 'pages/fridge',
-                    //     'text': '冰箱',
-                    //     'iconPath': 'common/images/tabBar/fridge.png',
-                    //     'selectedIconPath': 'common/images/tabBar/fridgeActive.png'
-                    // },
+                    {
+                        'pagePath': 'pages/groupBuy',
+                        'text': '拼团',
+                        'iconPath': 'common/images/tabBar/buy.png',
+                        'selectedIconPath': 'common/images/tabBar/buyActive.png'
+                    },
+                    {
+                        'pagePath': 'pages/fridge',
+                        'text': '冰箱',
+                        'iconPath': 'common/images/tabBar/fridge.png',
+                        'selectedIconPath': 'common/images/tabBar/fridgeActive.png'
+                    },
                     {
                         'pagePath': 'pages/user',
                         'text': '我的',

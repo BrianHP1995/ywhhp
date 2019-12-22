@@ -1,8 +1,8 @@
 <template>
-    <view id="Fridge pos-r">
-        <view class="center-xy font-bold font-s36 c-000">即将上线，敬请期待</view>
+    <view id="Fridge">
+        <!-- <view class="center-xy font-bold font-s36 c-000">即将上线，敬请期待</view> -->
         <!-- 什么是燕窝库 -->
-        <!-- <view class="fridge_explain t-r" wx:if="{{showTips}}">
+        <view class="fridge_explain t-r" wx:if="{{showTips}}">
             <view class="title font-bold t-l font-s32">什么是燕窝库？</view>
             <view class="content t-l font-s26 c-999">
                 在大鱼燕窝购买的入库套餐，会自动存档到库里。平时想喝就下单，我们会尽快送到您手上。库里的燕窝也可以像发红包一样直接微信送给好友，大家一起分享，乐趣多多。
@@ -14,11 +14,11 @@
             <view class="handle_close c-fff display-ib" @tap="closeShowTips">
                 <image class="display-ib" src="../common/images/index/select.png" mode="widthFix"></image>我知道了
             </view>
-        </view> -->
+        </view>
         <!-- 冰箱banner -->
-        <!-- <view class="fridge_banner">
+        <view class="fridge_banner">
             <image src="../common/images/index/fridge_banner.jpg" mode="widthFix"></image>
-        </view> -->
+        </view>
         <!-- 配送时间 -->
         <!-- <view class="delivery_time_box t-c">
             <view class="delivery_time_txt">选择鲜炖燕窝配送时间</view>
@@ -32,7 +32,7 @@
                     title="请选择配送时间" columns="{{ deliveryTimeList }}" default-index="{{ defaultIndex }}" bind:confirm="onConfirm" />
             </van-popup>
         </view> -->
-        <!-- <view class="stock_box">
+        <view class="stock_box">
             <view class="stock_tt font-s40 font-bold">套餐区</view>
             <view class="stock_list">
                 <repeat for="{{4}}">
@@ -79,7 +79,7 @@
                 <van-picker show-toolbar toolbar-class="selPopToolbar" active-class="selActive" cancel-button-text=""
                     title="请选择配送时间" columns="{{ deliveryTimeList }}" default-index="{{ defaultIndex }}" bind:confirm="onConfirm" />
             </van-popup>
-        </view> -->
+        </view>
     </view>
 </template>
 
@@ -107,6 +107,13 @@
             // this.activeCityTxt = `${data.province}省${data.city}市${data.area}${data.address}`;
             // this.$apply();
         }
+        async getFridgeGoods() {
+            let that = this;
+            let result = await wepy.Api.getFridgeGoods({type: 1});
+        }
+        onLoad() {
+            this.getFridgeGoods();
+        }
         methods = {
             closeShowTips(){
                 this.showTips = false;
@@ -129,7 +136,7 @@
     }
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
     #Fridge {
         height: 100%;
         .fridge_explain {

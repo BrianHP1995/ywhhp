@@ -104,4 +104,10 @@ export default class Api{
     cancleOrder(params) {
         return this.request.wxRequest_token(params, 'member/cancelOrder')
     }
+
+    /** 冰箱库相关 */
+    getFridgeGoods(params) {
+        return this.request.wxRequest_token(params, 'member/getIceBox')
+    }
+    
 }
