@@ -68,7 +68,6 @@
             let that = this;
             let price = 0.00;
             let num = 0;
-            console.log(result);
             if(result.code == 1) {
                 //购物车不为空
                 that.shoppingCartData = result.result;

@@ -56,7 +56,7 @@
                                         <view class="stock_warning pos-a t-c c-fff font-s24" wx:if="{{item.num<10}}">库存紧张</view>
                                     </view>
                                     <view class="goods_info">
-                                        <view class="info_title font-s32 font-bold" @tap.stop='linkGoodsDetail' data-item="{{item}}">{{item.title}}
+                                        <view class="info_title display-ib font-s32 font-bold" @tap.stop='linkGoodsDetail' data-item="{{item}}">{{item.title}}
                                             <view class="good_type_hot temp center-y font-s22 c-fff t-c" wx:if="{{item.type == 1}}">热</view>
                                             <view class="good_type_ice temp center-y font-s22 c-fff t-c" wx:if="{{item.type == 2}}">冰</view>
                                         </view>

@@ -109,5 +109,10 @@ export default class Api{
     getFridgeGoods(params) {
         return this.request.wxRequest_token(params, 'member/getIceBox')
     }
-    
+    updateIceBox(params) {
+        return this.request.wxRequest_token(params, 'member/updateIceBox')
+    }
+    createFoodsOrder(params) {
+        return this.request.wxRequest_token(params, 'order/createAutoOrder')
+    }
 }

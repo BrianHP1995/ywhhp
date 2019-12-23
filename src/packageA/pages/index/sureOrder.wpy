@@ -85,7 +85,14 @@
                         <van-switch size="24px" active-color="#ffa400" checked="{{ integralChecked }}" bind:change="integralChange" disabled="{{integralDisabled}}"/>
                     </view>
                 </view>
+                <view class="coupon_list_tt package_food display-flex">
+                    <view class="font-s28">每次送几瓶</view>
+                    <view class="font-s28">
+                    	<van-stepper integer disable-input input-width="40px" max="4" min="1" value="3" bind:change="onFoodNumChange" />
+                    </view>
+                </view>
             </view>
+
             <view class="content_box">
                 <view class="content_box_tt center-y font-s30">备注: </view>
                 <view class="textarea" wx:if="{{!showSelTime}}">
@@ -110,10 +117,23 @@
                 </van-popup>
             </view>
             <view class="fixed_botom">
-                <view class="delivery_time_sel">
+                <view class="delivery_time_sel" wx:if="{{false}}">
                     <view class="font-s30">时间预约</view>
                     <view bindtap="selTime" class="font-s30"><text style="margin-right:10rpx;">{{mainActiveIndex == 0?'今天':'明天'}} </text><text style="margin-right:10rpx;">{{timeTxt}} </text><van-icon name="arrow" size="12px" color="#b4b4b4"/></view>
                 </view>
+                <view class="delivery_time_sel" wx:if="{{true}}">
+                    <view class="font-s30">配送时间</view>
+                    <view bindtap="selTimeFood" class="font-s30"><text style="margin-right:10rpx;">周一 </text><van-icon name="arrow" size="12px" color="#b4b4b4"/></view>
+                </view>
+                <van-popup
+                    show="{{ showSelFoodTime }}"
+                    position="bottom"
+                    overlay="{{ true }}"
+                    bind:close="onClosePopFood"
+                    custom-style="height: 50%"
+                    >
+                    <van-picker columns="{{ foodColumns }}" bind:change="onChangeFood" />
+                </van-popup>
                 <view class="pay_box">
                     <view class="pay_num">
                         <view class="pay font-s32">还需支付 <text class="font-bold font-s36 c-000">￥{{orderPriceTotal}}</text></view>
@@ -147,7 +167,9 @@
                 'van-popup': '../../components/VantWeapp/popup/index',
                 'van-tree-select': '../../components/VantWeapp/tree-select/index',
                 'van-field': '../../components/VantWeapp/field/index',
-                "van-switch": "../../components/VantWeapp/switch/index"
+                "van-switch": "../../components/VantWeapp/switch/index",
+                "van-picker": "../../components/VantWeapp/picker/index",
+                'van-stepper': '../components/VantWeapp/stepper/index',
             }
         }
         data = {
@@ -194,7 +216,11 @@
             couponChecked: true,
             couponDisabled: false,
             countIntegral: 0,
-            countPrice_integral: 0
+            countPrice_integral: 0,
+            foodColumns: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+            showSelFoodTime: false,
+            foodNum: 1,
+            foodSendTime: '周一'
         }
         //设置配送时间选择
         async setDeliveryTime() {
@@ -631,6 +657,15 @@
                 }
 
             },
+            onChangeFood(event) {
+                this.foodSendTime = event.detail.value;
+            },
+            onClosePopFood() {
+                this.showSelFoodTime = false;
+            },
+            onFoodNumChange(e) {
+                this.foodNum = e.detail;
+            },
             //选择积分抵扣
             integralChange(e) {
                 let that = this;
@@ -681,6 +716,9 @@
             selTime() {
                 this.showSelTime = true;
             },
+            selTimeFood() {
+                this.showSelFoodTime = true;
+            },
             //关闭时间选择弹窗
             onClosePop() {
                 this.showSelTime = false;
@@ -725,55 +763,109 @@
                         })
                         return false;
                     }else {
-                        let orderData = {
-                            address_id: that.receiverInfo.id, //收货地址id   int（不传为自提）
-                            coupon_id: that.couponChecked?that.couponInfo.id:'', //优惠券id  （和积分抵扣二选一）
-                            deduct: that.integralChecked?'1': '0', //是否积分抵扣 1是使用 0是不使用
-                            remark: that.textAreaMsg, //备注留言
-                            type: that.mainActiveIndex == 0?1:2, //1 今天 2明天  int
-                            date: that.timeTxt, //送达时间 例:尽快送达 例：12：30
-                        }
-                        wepy.Api.createDeliveryOrder(orderData)
-                            .then((res) => {
-                                if(res.code == 1) {
-                                    //创建订单成功，调取微信支付
-                                    wx.requestPayment({
-                                        timeStamp: res.result.timeStamp,
-                                        nonceStr: res.result.nonceStr,
-                                        package: res.result.package,
-                                        signType: 'MD5',
-                                        paySign: res.result.paySign,
-                                        success (data) {
-                                            if(data.errMsg == 'requestPayment:ok') {
-                                                wx.showToast({
-                                                    title: '支付成功'
-                                                })
-                                                setTimeout(() => {
-                                                   wx.navigateTo({
-                                                       url: '../user/dispatchOrder'
-                                                   })
-                                                },1000)
-                                            }
-
-                                        },
-                                        fail (err) {
-                                            wx.showToast({
-                                                icon: 'none',
-                                                title: '支付失败'
+                        /*
+                            if(普通商品) {
+                                let orderData = {
+                                    address_id: that.receiverInfo.id, //收货地址id   int（不传为自提）
+                                    coupon_id: that.couponChecked?that.couponInfo.id:'', //优惠券id  （和积分抵扣二选一）
+                                    deduct: that.integralChecked?'1': '0', //是否积分抵扣 1是使用 0是不使用
+                                    remark: that.textAreaMsg, //备注留言
+                                    type: that.mainActiveIndex == 0?1:2, //1 今天 2明天  int
+                                    date: that.timeTxt, //送达时间 例:尽快送达 例：12：30
+                                }
+                                wepy.Api.createDeliveryOrder(orderData)
+                                    .then((res) => {
+                                        if(res.code == 1) {
+                                            //创建订单成功，调取微信支付
+                                            wx.requestPayment({
+                                                timeStamp: res.result.timeStamp,
+                                                nonceStr: res.result.nonceStr,
+                                                package: res.result.package,
+                                                signType: 'MD5',
+                                                paySign: res.result.paySign,
+                                                success (data) {
+                                                    if(data.errMsg == 'requestPayment:ok') {
+                                                        wx.showToast({
+                                                            title: '支付成功'
+                                                        })
+                                                        setTimeout(() => {
+                                                           wx.navigateTo({
+                                                               url: '../user/dispatchOrder'
+                                                           })
+                                                        },1000)
+                                                    }
+                                
+                                                },
+                                                fail (err) {
+                                                    wx.showToast({
+                                                        icon: 'none',
+                                                        title: '支付失败'
+                                                    })
+                                                    // wx.setStorage({
+                                                    //     key: 'payInfo',
+                                                    //     data: JSON.stringify(res.result);
+                                                    // })
+                                                    setTimeout(() => {
+                                                        wx.navigateTo({
+                                                            url: '../user/dispatchOrder'
+                                                        })
+                                                    },1000)
+                                                }
                                             })
-                                            // wx.setStorage({
-                                            //     key: 'payInfo',
-                                            //     data: JSON.stringify(res.result);
-                                            // })
-                                            setTimeout(() => {
-                                                wx.navigateTo({
-                                                    url: '../user/dispatchOrder'
-                                                })
-                                            },1000)
                                         }
                                     })
+                            }else if(月卡商品) {
+                                let orderData = {
+                                    coupon_id: that.couponChecked?that.couponInfo.id:'', //优惠券id  （和积分抵扣二选一）
+                                    deduct: that.integralChecked?'1': '0', //是否积分抵扣 1是使用 0是不使用
+                                    remark: that.textAreaMsg, //备注留言
+                                    week: that.foodSendTime,
+                                    number_express: that.foodNum
                                 }
-                            })
+                                wepy.Api.createFoodsOrder(orderData)
+                                    .then((res) => {
+                                        if(res.code == 1) {
+                                            //创建订单成功，调取微信支付
+                                            wx.requestPayment({
+                                                timeStamp: res.result.timeStamp,
+                                                nonceStr: res.result.nonceStr,
+                                                package: res.result.package,
+                                                signType: 'MD5',
+                                                paySign: res.result.paySign,
+                                                success (data) {
+                                                    if(data.errMsg == 'requestPayment:ok') {
+                                                        wx.showToast({
+                                                            title: '支付成功'
+                                                        })
+                                                        setTimeout(() => {
+                                                           wx.navigateTo({
+                                                               url: '../user/dispatchOrder'
+                                                           })
+                                                        },1000)
+                                                    }
+                                
+                                                },
+                                                fail (err) {
+                                                    wx.showToast({
+                                                        icon: 'none',
+                                                        title: '支付失败'
+                                                    })
+                                                    // wx.setStorage({
+                                                    //     key: 'payInfo',
+                                                    //     data: JSON.stringify(res.result);
+                                                    // })
+                                                    setTimeout(() => {
+                                                        wx.navigateTo({
+                                                            url: '../user/dispatchOrder'
+                                                        })
+                                                    },1000)
+                                                }
+                                            })
+                                        }
+                                    })
+                            }
+                        */
+                        
                     }
                 }else {
                     //自提
@@ -789,63 +881,117 @@
                            title: '请输入预留电话'
                         })
                         return false;
-                    }else if(that.timeTxt == '22:00-10:00暂停配送') {
+                    }else if(that.timeTxt == '22:00-10:00暂停配送') { //&&加并且为普通商品
                         wx.showToast({
                            icon: 'none',
                            title: '请选择正确的配送时间'
                         })
                         return false;
                     }else {
-                        let orderData = {
-                            name: that.name,  //收货人姓名  （自提时必传）
-                            mobile: that.mobile, //收货人电话 （自提时必传）
-                            coupon_id: that.couponChecked?that.couponInfo.id:'', //优惠券id  （和积分抵扣二选一）
-                            deduct: that.integralChecked?'1': '0', //是否积分抵扣 1是使用 0是不使用
-                            remark: that.textAreaMsg, //备注留言
-                            type: that.mainActiveIndex == 0?1:2, //1 今天 2明天  int
-                            date: that.timeTxt, //送达时间 例:尽快送达 例：12：30
-                        }
-                        wepy.Api.createDeliveryOrder(orderData)
-                            .then((res) => {
-                                if(res.code == 1) {
-                                    //创建订单成功，调取微信支付
-                                    wx.requestPayment({
-                                        timeStamp: res.result.timeStamp,
-                                        nonceStr: res.result.nonceStr,
-                                        package: res.result.package,
-                                        signType: 'MD5',
-                                        paySign: res.result.paySign,
-                                        success (data) {
-                                            if(data.errMsg == 'requestPayment:ok') {
-                                                wx.showToast({
-                                                    title: '支付成功'
-                                                })
-                                                setTimeout(() => {
-                                                   wx.navigateTo({
-                                                       url: '../user/dispatchOrder'
-                                                   })
-                                                },1000)
-                                            }
-
-                                        },
-                                        fail (err) {
-                                            // wx.setStorage({
-                                            //     key: 'payInfo',
-                                            //     data: JSON.stringify(res.result);
-                                            // })
-                                            wx.showToast({
-                                                icon: 'none',
-                                                title: '支付失败'
+                        /*
+                            if(普通商品) {
+                                let orderData = {
+                                    name: that.name,  //收货人姓名  （自提时必传）
+                                    mobile: that.mobile, //收货人电话 （自提时必传）
+                                    coupon_id: that.couponChecked?that.couponInfo.id:'', //优惠券id  （和积分抵扣二选一）
+                                    deduct: that.integralChecked?'1': '0', //是否积分抵扣 1是使用 0是不使用
+                                    remark: that.textAreaMsg, //备注留言
+                                    type: that.mainActiveIndex == 0?1:2, //1 今天 2明天  int
+                                    date: that.timeTxt, //送达时间 例:尽快送达 例：12：30
+                                }
+                                wepy.Api.createDeliveryOrder(orderData)
+                                    .then((res) => {
+                                        if(res.code == 1) {
+                                            //创建订单成功，调取微信支付
+                                            wx.requestPayment({
+                                                timeStamp: res.result.timeStamp,
+                                                nonceStr: res.result.nonceStr,
+                                                package: res.result.package,
+                                                signType: 'MD5',
+                                                paySign: res.result.paySign,
+                                                success (data) {
+                                                    if(data.errMsg == 'requestPayment:ok') {
+                                                        wx.showToast({
+                                                            title: '支付成功'
+                                                        })
+                                                        setTimeout(() => {
+                                                           wx.navigateTo({
+                                                               url: '../user/dispatchOrder'
+                                                           })
+                                                        },1000)
+                                                    }
+                                
+                                                },
+                                                fail (err) {
+                                                    // wx.setStorage({
+                                                    //     key: 'payInfo',
+                                                    //     data: JSON.stringify(res.result);
+                                                    // })
+                                                    wx.showToast({
+                                                        icon: 'none',
+                                                        title: '支付失败'
+                                                    })
+                                                    setTimeout(() => {
+                                                        wx.navigateTo({
+                                                            url: '../user/dispatchOrder'
+                                                        })
+                                                    },1000)
+                                                }
                                             })
-                                            setTimeout(() => {
-                                                wx.navigateTo({
-                                                    url: '../user/dispatchOrder'
-                                                })
-                                            },1000)
                                         }
                                     })
+                            }else if(月卡商品) {
+                                let orderData = {
+                                    coupon_id: that.couponChecked?that.couponInfo.id:'', //优惠券id  （和积分抵扣二选一）
+                                    deduct: that.integralChecked?'1': '0', //是否积分抵扣 1是使用 0是不使用
+                                    remark: that.textAreaMsg, //备注留言
+                                    week: that.foodSendTime,
+                                    number_express: that.foodNum
                                 }
-                            })
+                                wepy.Api.createFoodsOrder(orderData)
+                                    .then((res) => {
+                                        if(res.code == 1) {
+                                            //创建订单成功，调取微信支付
+                                            wx.requestPayment({
+                                                timeStamp: res.result.timeStamp,
+                                                nonceStr: res.result.nonceStr,
+                                                package: res.result.package,
+                                                signType: 'MD5',
+                                                paySign: res.result.paySign,
+                                                success (data) {
+                                                    if(data.errMsg == 'requestPayment:ok') {
+                                                        wx.showToast({
+                                                            title: '支付成功'
+                                                        })
+                                                        setTimeout(() => {
+                                                           wx.navigateTo({
+                                                               url: '../user/dispatchOrder'
+                                                           })
+                                                        },1000)
+                                                    }
+                                
+                                                },
+                                                fail (err) {
+                                                    // wx.setStorage({
+                                                    //     key: 'payInfo',
+                                                    //     data: JSON.stringify(res.result);
+                                                    // })
+                                                    wx.showToast({
+                                                        icon: 'none',
+                                                        title: '支付失败'
+                                                    })
+                                                    setTimeout(() => {
+                                                        wx.navigateTo({
+                                                            url: '../user/dispatchOrder'
+                                                        })
+                                                    },1000)
+                                                }
+                                            })
+                                        }
+                                    })
+                            }
+                        */
+                        
                     }
                 }
 
