@@ -116,7 +116,6 @@
                 <image class="newUser_close" src="../common/images/index/newUser_close.png" mode="widthFix" @tap.stop="newUserPopClose"></image>
             </view>
         </van-popup>
-
     </view>
 </template>
 <script>
@@ -156,7 +155,8 @@
             showPop: true,
             is_popup: null,
             isNewUserPopShow: null,
-            homeScrollTop: 0
+            homeScrollTop: 0,
+            shoppingCartType: null, //1-普通商品 ；2-月卡商品
         }
         swiperChange(e) {
             this.currentSwiper = e.detail.current;
@@ -190,7 +190,9 @@
             let result = await wepy.Api.getGoodsShoppingCart({});
             if(result.code == 1 || result.code == 2) {
                 let shoppingData = result;
+                that.shoppingCartType = result.result.type;
                 that.$invoke('GoodsShoppingCart', 'cacleShoppingCartData', shoppingData,isClick);
+                that.$apply();
             }
         }
         //获取首页商品分类列表
@@ -336,19 +338,21 @@
                 that.checkLoginState()
                     .then((res) => {
                         that.goodsPopInfo = e.currentTarget.dataset.bean;
-                        let typeId = e.currentTarget.dataset.item.type;
+                        let typeId = e.currentTarget.dataset.bean.type;
                         let goods_id = e.currentTarget.dataset.bean.goods_id;
                         /**
                          *  typeId: 不同燕窝直接购买，定时配送跳转定时配送页面
                          *      1- 普通燕窝
                          *      2- 定时配送燕窝
                          * */
-                        // if(typeId == 1)
+                        if(typeId == 1 && that.shoppingCartType == 1 || typeId == 2 && that.shoppingCartType == 2 || that.shoppingCartType == null) {
                             that.$invoke('GoodsModelPop', 'onOpen', that.goodsPopInfo);
-                        // else
-                        //     wepy.navigateTo({
-                        //         url: `../packageA/pages/index/timingOrder?goods_id=${goods_id}`
-                        //     })
+                        }else {
+                            wx.showToast({
+                                title: '月卡商品和普通商品不能同时加入购物车奥！',
+                                icon: 'none'
+                            })
+                        }
                     })
                     .catch(err => {
                         wepy.Utils.showModal({

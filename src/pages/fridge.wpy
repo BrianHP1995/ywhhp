@@ -19,19 +19,6 @@
         <view class="fridge_banner">
             <image src="../common/images/index/fridge_banner.jpg" mode="widthFix"></image>
         </view>
-        <!-- 配送时间 -->
-        <!-- <view class="delivery_time_box t-c">
-            <view class="delivery_time_txt">选择鲜炖燕窝配送时间</view>
-
-            <view class="delivery_time_sel" bindtap="selDeliveryTime">
-                {{ deliveryTime }}
-                <image style="width:40rpx" src="../common/images/index/give_time.png" mode="widthFix" />
-            </view>
-            <van-popup show="{{ showDeliveryTime }}" position="bottom" bind:close="onClose">
-                <van-picker show-toolbar toolbar-class="selPopToolbar" active-class="selActive" cancel-button-text=""
-                    title="请选择配送时间" columns="{{ deliveryTimeList }}" default-index="{{ defaultIndex }}" bind:confirm="onConfirm" />
-            </van-popup>
-        </view> -->
         <view class="stock_box">
             <view class="stock_tt font-s40 font-bold">套餐区</view>
             <view class="stock_list">
