@@ -82,7 +82,6 @@
                     'pages/user/userScore',
                     'pages/user/systemSetting',
                     'pages/group/groupBuyDetail',  //拼团详情
-
                 ]
             }],
         }

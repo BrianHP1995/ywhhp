@@ -61,9 +61,7 @@
                 that.show1 = false;
                 that.$apply();
             },
-            onClickNav({
-                detail = {}
-            }) {
+            onClickNav({detail = {}}) {
                 const that = this;
                 that.mainActiveIndex = detail.index || 0;
                 this.$apply();
@@ -79,22 +77,45 @@
             //选择收货地址
             adrSelect(e) {
                 let that = this;
-                console.log(e)
                 let data = e.currentTarget.dataset.item;
+                /*
+                   判断： pageFrom-如果来自个人中心，只有查看功能
+                     else:
+                         获取本地存储from
+                            fridge: 来自冰箱页面的选择地址
+                            sureOrder: 来自下单页面的选择
+                */
                 if(that.pageFrom == 'user') {
                     return false;
                 }else {
-                    wx.navigateTo({
-                        url: `../index/sureOrder?addressInfo=${JSON.stringify(data)}`
+                    wx.getStorage({
+                        key: 'from',
+                        success(res) {
+                            wx.setStorage({
+                                key: 'addressInfo',
+                                data,
+                                success(res) {
+                                    if(res.data == 'fridge') {
+                                        wx.navigateTo({
+                                            url: `../../../pages/fridge?from=address`
+                                        })
+                                    }else if(res.data == 'sureOrder'){
+                                        wx.navigateTo({
+                                            url: `../index/sureOrder?from=address`
+                                        })
+                                    }
+                                    wx.removeStorage({key: 'from'});
+                                },
+                                fail() {
+                                    wx.showToast({
+                                        title: '系统错误',
+                                        icon: 'none'
+                                    })
+                                }
+                            })
+                        }
                     })
                 }
-                //获取上一个页面的信息并调用获取配送地址方法
-                // let prevPage = getCurrentPages()[getCurrentPages().length-2];
-                // prevPage.getAddress(data);
-                // //返回上一页
-                // wx.navigateBack({
-                //     delta: 1
-                // })
             },
             // 编辑地址
             adrEdit(e) {

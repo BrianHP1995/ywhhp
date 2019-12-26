@@ -408,10 +408,17 @@
             that.$apply();
         }
         //获取选择的地址
-        async getAddress(data) {
-            this.receiverInfo = data;
-            this.activeCityTxt = `${data.province}省${data.city}市${data.area}${data.address}`;
-            this.$apply();
+        async getAddress() {
+            wx.getStorage({
+                key: 'addressInfo',
+                success(res) {
+                    let data = res.data;
+                    this.receiverInfo = data;
+                    this.activeCityTxt = `${data.province}省${data.city}市${data.area}${data.address}`;
+                    this.$apply();
+                    wx.removeStorage({key: 'addressInfo'});
+                }
+            })
         }
         //获取优惠券信息
         async getUserCoupon(options) {
@@ -594,8 +601,8 @@
             this.getDefaultAddress();
             this.setDeliveryTime();
             this.getUserInfo(options);
-            if(options.addressInfo) {
-                this.getAddress(JSON.parse(options.addressInfo))
+            if(options.from && options.from == 'address') {
+                this.getAddress()
             }
 
         }
@@ -634,8 +641,20 @@
                  *
                  * */
                 if(this.active == 0) {
-                    wx.navigateTo({
-                        url: '../user/myAddress'
+                    wx.setStorage({
+                        key: 'form',
+                        data: 'sureOrder',
+                        success() {
+                            wx.navigateTo({
+                                url: '../user/myAddress'
+                            })
+                        },
+                        fail() {
+                            wx.showToast({
+                                title: '系统错误',
+                                icon: 'none'
+                            })
+                        }
                     })
                 }else {
                     this.openMap();

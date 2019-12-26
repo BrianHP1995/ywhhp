@@ -1,18 +1,17 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-var color_1 = require("../common/color");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+import { RED } from '../common/color';
+import { safeArea } from '../mixins/safe-area';
+VantComponent({
+    mixins: [safeArea()],
     props: {
-        message: String,
-        background: String,
-        type: {
-            type: String,
-            value: 'danger'
-        },
+        text: String,
         color: {
             type: String,
-            value: color_1.WHITE
+            value: '#fff'
+        },
+        backgroundColor: {
+            type: String,
+            value: RED
         },
         duration: {
             type: Number,
@@ -21,42 +20,26 @@ component_1.VantComponent({
         zIndex: {
             type: Number,
             value: 110
-        },
-        safeAreaInsetTop: {
-            type: Boolean,
-            value: false
         }
     },
-    created: function () {
-        var statusBarHeight = wx.getSystemInfoSync().statusBarHeight;
-        this.setData({ statusBarHeight: statusBarHeight });
-    },
     methods: {
-        show: function () {
-            var _this = this;
-            var _a = this.data, duration = _a.duration, onOpened = _a.onOpened;
+        show() {
+            const { duration } = this.data;
             clearTimeout(this.timer);
-            this.setData({
+            this.set({
                 show: true
-            }, onOpened);
+            });
             if (duration > 0 && duration !== Infinity) {
-                this.timer = setTimeout(function () {
-                    _this.hide();
+                this.timer = setTimeout(() => {
+                    this.hide();
                 }, duration);
             }
         },
-        hide: function () {
-            var onClose = this.data.onClose;
+        hide() {
             clearTimeout(this.timer);
-            this.setData({
+            this.set({
                 show: false
-            }, onClose);
-        },
-        onTap: function (event) {
-            var onClick = this.data.onClick;
-            if (onClick) {
-                onClick(event.detail);
-            }
+            });
         }
     }
 });

@@ -1,16 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-var utils_1 = require("../common/utils");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+VantComponent({
     field: true,
     relation: {
         name: 'radio-group',
         type: 'ancestor',
-        linked: function (target) {
+        linked(target) {
             this.parent = target;
         },
-        unlinked: function () {
+        unlinked() {
             this.parent = null;
         }
     },
@@ -28,32 +25,20 @@ component_1.VantComponent({
         shape: {
             type: String,
             value: 'round'
-        },
-        iconSize: {
-            type: null,
-            observer: 'setIconSizeUnit'
         }
     },
-    data: {
-        iconSizeWithUnit: '20px'
-    },
     methods: {
-        setIconSizeUnit: function (val) {
-            this.setData({
-                iconSizeWithUnit: utils_1.addUnit(val)
-            });
-        },
-        emitChange: function (value) {
-            var instance = this.parent || this;
+        emitChange(value) {
+            const instance = this.parent || this;
             instance.$emit('input', value);
             instance.$emit('change', value);
         },
-        onChange: function (event) {
+        onChange(event) {
             console.log(event);
             this.emitChange(this.data.name);
         },
-        onClickLabel: function () {
-            var _a = this.data, disabled = _a.disabled, labelDisabled = _a.labelDisabled, name = _a.name;
+        onClickLabel() {
+            const { disabled, labelDisabled, name } = this.data;
             if (!disabled && !labelDisabled) {
                 this.emitChange(name);
             }

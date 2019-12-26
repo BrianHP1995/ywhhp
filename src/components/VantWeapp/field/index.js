@@ -1,8 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-var utils_1 = require("../common/utils");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+import { getSystemInfoSync } from '../common/utils';
+VantComponent({
     field: true,
     classes: ['input-class', 'right-icon-class'],
     props: {
@@ -23,15 +21,12 @@ component_1.VantComponent({
         password: Boolean,
         iconClass: String,
         clearable: Boolean,
-        clickable: Boolean,
         inputAlign: String,
-        placeholder: String,
         customStyle: String,
         confirmType: String,
         confirmHold: Boolean,
-        holdKeyboard: Boolean,
         errorMessage: String,
-        arrowDirection: String,
+        placeholder: String,
         placeholderStyle: String,
         errorMessageAlign: String,
         selectionEnd: {
@@ -73,38 +68,36 @@ component_1.VantComponent({
     },
     data: {
         focused: false,
-        system: utils_1.getSystemInfoSync().system.split(' ').shift().toLowerCase()
+        system: getSystemInfoSync().system.split(' ').shift().toLowerCase()
     },
     methods: {
-        onInput: function (event) {
-            var _this = this;
-            var _a = (event.detail || {}).value, value = _a === void 0 ? '' : _a;
-            this.setData({ value: value }, function () {
-                _this.emitChange(value);
+        onInput(event) {
+            const { value = '' } = event.detail || {};
+            this.set({ value }, () => {
+                this.emitChange(value);
             });
         },
-        onFocus: function (event) {
-            this.setData({ focused: true });
+        onFocus(event) {
+            this.set({ focused: true });
             this.$emit('focus', event.detail);
         },
-        onBlur: function (event) {
-            this.setData({ focused: false });
+        onBlur(event) {
+            this.set({ focused: false });
             this.$emit('blur', event.detail);
         },
-        onClickIcon: function () {
+        onClickIcon() {
             this.$emit('click-icon');
         },
-        onClear: function () {
-            var _this = this;
-            this.setData({ value: '' }, function () {
-                _this.emitChange('');
-                _this.$emit('clear', '');
+        onClear() {
+            this.set({ value: '' }, () => {
+                this.emitChange('');
+                this.$emit('clear', '');
             });
         },
-        onConfirm: function () {
+        onConfirm() {
             this.$emit('confirm', this.data.value);
         },
-        emitChange: function (value) {
+        emitChange(value) {
             this.$emit('input', value);
             this.$emit('change', value);
         }

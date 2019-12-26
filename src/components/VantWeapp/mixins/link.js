@@ -1,6 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.link = Behavior({
+export const link = Behavior({
     properties: {
         url: String,
         linkType: {
@@ -9,11 +7,10 @@ exports.link = Behavior({
         }
     },
     methods: {
-        jumpLink: function (urlKey) {
-            if (urlKey === void 0) { urlKey = 'url'; }
-            var url = this.data[urlKey];
+        jumpLink(urlKey = 'url') {
+            const url = this.data[urlKey];
             if (url) {
-                wx[this.data.linkType]({ url: url });
+                wx[this.data.linkType]({ url });
             }
         }
     }

@@ -1,7 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+import { safeArea } from '../mixins/safe-area';
+VantComponent({
+    mixins: [safeArea()],
     classes: [
         'bar-class',
         'price-class',
@@ -35,24 +35,20 @@ component_1.VantComponent({
             value: 2,
             observer: 'updatePrice'
         },
-        suffixLabel: String,
-        safeAreaInsetBottom: {
-            type: Boolean,
-            value: true
-        }
+        suffixLabel: String
     },
     methods: {
-        updatePrice: function () {
-            var _a = this.data, price = _a.price, decimalLength = _a.decimalLength;
-            this.setData({
+        updatePrice() {
+            const { price, decimalLength } = this.data;
+            this.set({
                 hasPrice: typeof price === 'number',
                 priceStr: (price / 100).toFixed(decimalLength)
             });
         },
-        updateTip: function () {
-            this.setData({ hasTip: typeof this.data.tip === 'string' });
+        updateTip() {
+            this.set({ hasTip: typeof this.data.tip === 'string' });
         },
-        onSubmit: function (event) {
+        onSubmit(event) {
             this.$emit('submit', event.detail);
         }
     }

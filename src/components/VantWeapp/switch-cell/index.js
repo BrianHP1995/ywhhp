@@ -1,17 +1,18 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+VantComponent({
     field: true,
     props: {
         value: null,
+        icon: String,
         title: String,
+        label: String,
         border: Boolean,
         checked: Boolean,
         loading: Boolean,
         disabled: Boolean,
         activeColor: String,
         inactiveColor: String,
+        useLabelSlot: Boolean,
         size: {
             type: String,
             value: '24px'
@@ -26,15 +27,15 @@ component_1.VantComponent({
         }
     },
     watch: {
-        checked: function (value) {
-            this.set({ value: value });
+        checked(value) {
+            this.set({ value });
         }
     },
-    created: function () {
+    created() {
         this.set({ value: this.data.checked });
     },
     methods: {
-        onChange: function (event) {
+        onChange(event) {
             this.$emit('change', event.detail);
         }
     }

@@ -1,13 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-var nextTick = function () { return new Promise(function (resolve) { return setTimeout(resolve, 20); }); };
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+const nextTick = () => new Promise(resolve => setTimeout(resolve, 20));
+VantComponent({
     classes: ['title-class', 'content-class'],
     relation: {
         name: 'collapse',
         type: 'ancestor',
-        linked: function (parent) {
+        linked(parent) {
             this.parent = parent;
         }
     },
@@ -33,65 +31,63 @@ component_1.VantComponent({
         expanded: false,
         transition: false
     },
-    mounted: function () {
-        var _this = this;
+    mounted() {
         this.updateExpanded()
             .then(nextTick)
-            .then(function () {
-            var data = { transition: true };
-            if (_this.data.expanded) {
+            .then(() => {
+            const data = { transition: true };
+            if (this.data.expanded) {
                 data.contentHeight = 'auto';
             }
-            _this.setData(data);
+            this.set(data);
         });
     },
     methods: {
-        updateExpanded: function () {
+        updateExpanded() {
             if (!this.parent) {
                 return Promise.resolve();
             }
-            var _a = this.parent.data, value = _a.value, accordion = _a.accordion;
-            var _b = this.parent.children, children = _b === void 0 ? [] : _b;
-            var name = this.data.name;
-            var index = children.indexOf(this);
-            var currentName = name == null ? index : name;
-            var expanded = accordion
+            const { value, accordion } = this.parent.data;
+            const { children = [] } = this.parent;
+            const { name } = this.data;
+            const index = children.indexOf(this);
+            const currentName = name == null ? index : name;
+            const expanded = accordion
                 ? value === currentName
-                : (value || []).some(function (name) { return name === currentName; });
-            var stack = [];
+                : (value || []).some((name) => name === currentName);
+            const stack = [];
             if (expanded !== this.data.expanded) {
                 stack.push(this.updateStyle(expanded));
             }
-            stack.push(this.set({ index: index, expanded: expanded }));
+            stack.push(this.set({ index, expanded }));
             return Promise.all(stack);
         },
-        updateStyle: function (expanded) {
-            var _this = this;
+        updateStyle(expanded) {
             return this.getRect('.van-collapse-item__content')
-                .then(function (rect) { return rect.height; })
-                .then(function (height) {
+                .then((rect) => rect.height)
+                .then((height) => {
                 if (expanded) {
-                    return _this.set({
-                        contentHeight: height ? height + "px" : 'auto'
+                    return this.set({
+                        contentHeight: height ? `${height}px` : 'auto'
                     });
                 }
-                return _this.set({ contentHeight: height + "px" })
+                return this.set({ contentHeight: `${height}px` })
                     .then(nextTick)
-                    .then(function () { return _this.set({ contentHeight: 0 }); });
+                    .then(() => this.set({ contentHeight: 0 }));
             });
         },
-        onClick: function () {
+        onClick() {
             if (this.data.disabled) {
                 return;
             }
-            var _a = this.data, name = _a.name, expanded = _a.expanded;
-            var index = this.parent.children.indexOf(this);
-            var currentName = name == null ? index : name;
+            const { name, expanded } = this.data;
+            const index = this.parent.children.indexOf(this);
+            const currentName = name == null ? index : name;
             this.parent.switch(currentName, !expanded);
         },
-        onTransitionEnd: function () {
+        onTransitionEnd() {
             if (this.data.expanded) {
-                this.setData({
+                this.set({
                     contentHeight: 'auto'
                 });
             }

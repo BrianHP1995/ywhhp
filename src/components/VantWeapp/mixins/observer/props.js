@@ -1,25 +1,22 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function observeProps(props) {
+export function observeProps(props) {
     if (!props) {
         return;
     }
-    Object.keys(props).forEach(function (key) {
-        var prop = props[key];
+    Object.keys(props).forEach(key => {
+        let prop = props[key];
         if (prop === null || !('type' in prop)) {
             prop = { type: prop };
         }
-        var observer = prop.observer;
-        prop.observer = function () {
+        let { observer } = prop;
+        prop.observer = function (...args) {
             if (observer) {
                 if (typeof observer === 'string') {
                     observer = this[observer];
                 }
-                observer.apply(this, arguments);
+                observer.apply(this, args);
             }
             this.set();
         };
         props[key] = prop;
     });
 }
-exports.observeProps = observeProps;

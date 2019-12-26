@@ -38,8 +38,8 @@
                                     <image class="timeImg" src="../common/images/index/give_time.png" mode="widthFix" />
                                 </view>
                             </view>
-                            <view class="delivery_time_box t-c" bindtap="selDeliveryAdr">
-                                <view class="delivery_time_txt display-flex">配送地址<view class="value">家</view></view>
+                            <view class="delivery_time_box t-c" bindtap="selDeliveryAdr" data-item="{{item}}">
+                                <view class="delivery_time_txt display-flex">配送地址<view class="value">{{addressInfo}}</view></view>
                                 <view class="delivery_time_sel">
                                     <image class="adrImg" src="../common/images/index/back.png" mode="widthFix" />
                                 </view>
@@ -86,11 +86,13 @@
             showDeliveryTime: false,
             deliveryTime: '周一',
             defaultIndex: 0,
-            deliveryTimeList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日', '暂停'],
+            deliveryTimeList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日', '暂停配送'],
+            choosedGoodsId: '',
+            addressInfo: {}
         }
         async getAddress(data) {
-            console.log(data)
-            //this.address = data;
+            // console.log(data)
+            // this.address = data;
             // this.activeCityTxt = `${data.province}省${data.city}市${data.area}${data.address}`;
             // this.$apply();
         }
@@ -98,8 +100,49 @@
             let that = this;
             let result = await wepy.Api.getFridgeGoods({type: 1});
         }
-        onLoad() {
+        async updateIceBox() {
+            let that = this;
+            let params = {
+                id: that.choosedGoodsId,
+                address_id: that.addressInfo.address_id,
+                express_time: that.deliveryTime  //1-7 0-暂停配送
+            }
+            let result = await Api.updateIceBox({params});
+            if(result.code == 1) {
+                wx.showToast({
+                    title: '修改成功'
+                })
+            }else {
+                wx.showToast({
+                    title: '修改失败，请重新选择'
+                })
+            }
+        }
+        getAddressInfo() {
+            let that = this;
+            wx.getStorage({
+                key: 'addressInfo',
+                success(res) {
+                    that.addressInfo = res.data;
+                    that.$apply();
+                    wx.removeStorage({key: 'addressInfo'});
+                    that.updateIceBox();
+                },
+                fail() {
+                    wx.showToast({
+                        title: '地址修改失败，请重新操作',
+                        icon: 'none'
+                    })
+                }
+            })
+
+        }
+        onLoad(options) {
             this.getFridgeGoods();
+            if(options.from && options.from == 'address') {
+                //获取重新选择的收货地址
+                this.getAddressInfo();
+            }
         }
         methods = {
             closeShowTips(){
@@ -108,16 +151,29 @@
             selDeliveryTime() {
                 this.showDeliveryTime = true;
             },
-            selDeliveryAdr() {
-                wepy.navigateTo({
-                    url: '../packageA/pages/user/myAddress'
+            selDeliveryAdr(event) {
+                wx.setStorage({
+                    key: 'form',
+                    data: 'fridge',
+                    success() {
+                        wepy.navigateTo({
+                            url: '../packageA/pages/user/myAddress'
+                        })
+                    },
+                    fail() {
+                        wx.showToast({
+                            title: '系统错误',
+                            icon: 'none'
+                        })
+                    }
                 })
             },
             onConfirm(event) {
                 let that = this
                 that.deliveryTime = event.detail.value;
-                //that.weekend = event.detail.index + 1
                 that.showDeliveryTime = false;
+                //调用修改属性接口
+                that.updateIceBox();
             },
         }
     }

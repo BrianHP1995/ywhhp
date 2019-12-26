@@ -1,7 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+VantComponent({
     relation: {
         name: 'row',
         type: 'ancestor'
@@ -14,11 +12,11 @@ component_1.VantComponent({
         style: ''
     },
     methods: {
-        setGutter: function (gutter) {
-            var padding = gutter / 2 + "px";
-            var style = gutter ? "padding-left: " + padding + "; padding-right: " + padding + ";" : '';
+        setGutter(gutter) {
+            const padding = `${gutter / 2}px`;
+            const style = gutter ? `padding-left: ${padding}; padding-right: ${padding};` : '';
             if (style !== this.data.style) {
-                this.setData({ style: style });
+                this.set({ style });
             }
         }
     }

@@ -1,8 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-var color_1 = require("../common/color");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+import { GREEN } from '../common/color';
+VantComponent({
     props: {
         icon: String,
         steps: Array,
@@ -13,12 +11,7 @@ component_1.VantComponent({
         },
         activeColor: {
             type: String,
-            value: color_1.GREEN
-        },
-        activeIcon: {
-            type: String,
-            value: 'checked'
-        },
-        inactiveIcon: String
+            value: GREEN
+        }
     }
 });

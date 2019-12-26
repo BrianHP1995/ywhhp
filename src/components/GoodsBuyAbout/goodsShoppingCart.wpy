@@ -137,26 +137,6 @@
                                         url: '/packageA/pages/index/sureOrder'
                                     })
                                 });
-                                // wx.showModal({
-                                //     title: '提示',
-                                //     content: '您有订单尚未支付，可能会占用您的优惠券哦~',
-                                //     cancelText: '继续下单',
-                                //     confirmText: '去支付',
-                                //     confirmColor: '#ffa400',
-                                //     cancelColor: '#ffa400',
-                                //     success(res) {
-                                //         if (res.confirm) {
-                                //             wx.navigateTo({
-                                //                 url: '../packageA/pages/user/dispatchOrder'
-                                //             })
-                                //         } else if (res.cancel) {
-                                //            wx.navigateTo({
-                                //                url: '/packageA/pages/index/sureOrder'
-                                //            })
-                                //         }
-                                //     }
-
-                                // })
                             }else {
                                 //自己喝  -- 跳转订单确认下单页面
                                 wx.navigateTo({

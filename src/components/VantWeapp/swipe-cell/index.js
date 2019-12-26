@@ -1,11 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-var touch_1 = require("../mixins/touch");
-var utils_1 = require("../common/utils");
-var THRESHOLD = 0.3;
-var ARRAY = [];
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+import { touch } from '../mixins/touch';
+const THRESHOLD = 0.3;
+VantComponent({
     props: {
         disabled: Boolean,
         leftWidth: {
@@ -16,51 +12,42 @@ component_1.VantComponent({
             type: Number,
             value: 0
         },
-        asyncClose: Boolean,
-        name: {
-            type: [Number, String],
-            value: ''
-        }
+        asyncClose: Boolean
     },
-    mixins: [touch_1.touch],
+    mixins: [touch],
     data: {
         catchMove: false
     },
-    created: function () {
+    created() {
         this.offset = 0;
-        ARRAY.push(this);
-    },
-    destroyed: function () {
-        var _this = this;
-        ARRAY = ARRAY.filter(function (item) { return item !== _this; });
     },
     methods: {
-        open: function (position) {
-            var _a = this.data, leftWidth = _a.leftWidth, rightWidth = _a.rightWidth;
-            var offset = position === 'left' ? leftWidth : -rightWidth;
+        open(position) {
+            const { leftWidth, rightWidth } = this.data;
+            const offset = position === 'left' ? leftWidth : -rightWidth;
             this.swipeMove(offset);
-            this.$emit('open', {
-                position: position,
-                name: this.data.name
-            });
         },
-        close: function () {
+        close() {
             this.swipeMove(0);
         },
-        swipeMove: function (offset) {
-            if (offset === void 0) { offset = 0; }
-            this.offset = utils_1.range(offset, -this.data.rightWidth, this.data.leftWidth);
-            var transform = "translate3d(" + this.offset + "px, 0, 0)";
-            var transition = this.dragging
+        swipeMove(offset = 0) {
+            this.offset = offset;
+            const transform = `translate3d(${offset}px, 0, 0)`;
+            const transition = this.draging
                 ? 'none'
-                : 'transform .6s cubic-bezier(0.18, 0.89, 0.32, 1)';
-            this.setData({
-                wrapperStyle: "\n        -webkit-transform: " + transform + ";\n        -webkit-transition: " + transition + ";\n        transform: " + transform + ";\n        transition: " + transition + ";\n      "
+                : '.6s cubic-bezier(0.18, 0.89, 0.32, 1)';
+            this.set({
+                wrapperStyle: `
+        -webkit-transform: ${transform};
+        -webkit-transition: ${transition};
+        transform: ${transform};
+        transition: ${transition};
+      `
             });
         },
-        swipeLeaveTransition: function () {
-            var _a = this.data, leftWidth = _a.leftWidth, rightWidth = _a.rightWidth;
-            var offset = this.offset;
+        swipeLeaveTransition() {
+            const { leftWidth, rightWidth } = this.data;
+            const { offset } = this;
             if (rightWidth > 0 && -offset > rightWidth * THRESHOLD) {
                 this.open('right');
             }
@@ -70,49 +57,53 @@ component_1.VantComponent({
             else {
                 this.swipeMove(0);
             }
-            this.setData({ catchMove: false });
+            this.set({ catchMove: false });
         },
-        startDrag: function (event) {
+        startDrag(event) {
             if (this.data.disabled) {
                 return;
             }
+            this.draging = true;
             this.startOffset = this.offset;
+            this.firstDirection = '';
             this.touchStart(event);
         },
-        noop: function () { },
-        onDrag: function (event) {
-            var _this = this;
+        noop() { },
+        onDrag(event) {
             if (this.data.disabled) {
                 return;
             }
             this.touchMove(event);
-            if (this.direction !== 'horizontal') {
+            if (!this.firstDirection) {
+                this.firstDirection = this.direction;
+                this.set({ catchMove: this.firstDirection === 'horizontal' });
+            }
+            if (this.firstDirection === 'vertical') {
                 return;
             }
-            this.dragging = true;
-            ARRAY.filter(function (item) { return item !== _this; }).forEach(function (item) { return item.close(); });
-            this.setData({ catchMove: true });
-            this.swipeMove(this.startOffset + this.deltaX);
+            const { leftWidth, rightWidth } = this.data;
+            const offset = this.startOffset + this.deltaX;
+            if ((rightWidth > 0 && -offset > rightWidth) ||
+                (leftWidth > 0 && offset > leftWidth)) {
+                return;
+            }
+            this.swipeMove(offset);
         },
-        endDrag: function () {
+        endDrag() {
             if (this.data.disabled) {
                 return;
             }
-            this.dragging = false;
+            this.draging = false;
             this.swipeLeaveTransition();
         },
-        onClick: function (event) {
-            var _a = event.currentTarget.dataset.key, position = _a === void 0 ? 'outside' : _a;
+        onClick(event) {
+            const { key: position = 'outside' } = event.currentTarget.dataset;
             this.$emit('click', position);
             if (!this.offset) {
                 return;
             }
             if (this.data.asyncClose) {
-                this.$emit('close', {
-                    position: position,
-                    instance: this,
-                    name: this.data.name
-                });
+                this.$emit('close', { position, instance: this });
             }
             else {
                 this.swipeMove(0);

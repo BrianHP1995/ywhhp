@@ -113,7 +113,7 @@
         			ico: '../common/images/user/give.png'
         		},
         		{
-        			link: '/packageA/pages/user/myAddress?from=user',
+        			link: '../packageA/pages/user/myAddress?from=user',
         			txt: '我的地址',
         			ico: '../common/images/user/address.png'
         		}
@@ -171,7 +171,7 @@
             if(result.code == 1) {
                 result.order.forEach(item => {
                     if(item.status == 0) {
-                        this.hasUnPayed = true; 
+                        this.hasUnPayed = true;
                     }
                 })
                 this.$apply();

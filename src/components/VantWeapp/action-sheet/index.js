@@ -1,16 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+import { safeArea } from '../mixins/safe-area';
+VantComponent({
+    mixins: [safeArea()],
     props: {
         show: Boolean,
         title: String,
         cancelText: String,
-        description: String,
-        round: {
-            type: Boolean,
-            value: true
-        },
+        customStyle: String,
+        overlayStyle: String,
         zIndex: {
             type: Number,
             value: 100
@@ -26,36 +23,21 @@ component_1.VantComponent({
         closeOnClickOverlay: {
             type: Boolean,
             value: true
-        },
-        closeOnClickAction: {
-            type: Boolean,
-            value: true
-        },
-        safeAreaInsetBottom: {
-            type: Boolean,
-            value: true
         }
     },
     methods: {
-        onSelect: function (event) {
-            var index = event.currentTarget.dataset.index;
-            var item = this.data.actions[index];
+        onSelect(event) {
+            const { index } = event.currentTarget.dataset;
+            const item = this.data.actions[index];
             if (item && !item.disabled && !item.loading) {
                 this.$emit('select', item);
-                if (this.data.closeOnClickAction) {
-                    this.onClose();
-                }
             }
         },
-        onCancel: function () {
+        onCancel() {
             this.$emit('cancel');
         },
-        onClose: function () {
+        onClose() {
             this.$emit('close');
-        },
-        onClickOverlay: function () {
-            this.$emit('click-overlay');
-            this.onClose();
         }
     }
 });

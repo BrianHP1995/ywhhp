@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-var color_1 = require("../common/color");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+VantComponent({
     field: true,
     classes: ['node-class'],
     props: {
@@ -25,26 +22,19 @@ component_1.VantComponent({
         }
     },
     watch: {
-        checked: function (value) {
-            var loadingColor = this.getLoadingColor(value);
-            this.setData({ value: value, loadingColor: loadingColor });
+        checked(value) {
+            this.set({ value });
         }
     },
-    created: function () {
-        var value = this.data.checked;
-        var loadingColor = this.getLoadingColor(value);
-        this.setData({ value: value, loadingColor: loadingColor });
+    created() {
+        this.set({ value: this.data.checked });
     },
     methods: {
-        getLoadingColor: function (checked) {
-            var _a = this.data, activeColor = _a.activeColor, inactiveColor = _a.inactiveColor;
-            return checked ? activeColor || color_1.BLUE : inactiveColor || color_1.GRAY_DARK;
-        },
-        onClick: function () {
-            var _a = this.data, activeValue = _a.activeValue, inactiveValue = _a.inactiveValue;
+        onClick() {
+            const { activeValue, inactiveValue } = this.data;
             if (!this.data.disabled && !this.data.loading) {
-                var checked = this.data.checked === activeValue;
-                var value = checked ? inactiveValue : activeValue;
+                const checked = this.data.checked === activeValue;
+                const value = checked ? inactiveValue : activeValue;
                 this.$emit('input', value);
                 this.$emit('change', value);
             }

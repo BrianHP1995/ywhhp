@@ -1,18 +1,14 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var basic_1 = require("../mixins/basic");
-var index_1 = require("../mixins/observer/index");
+import { basic } from '../mixins/basic';
+import { observe } from '../mixins/observer/index';
 function mapKeys(source, target, map) {
-    Object.keys(map).forEach(function (key) {
+    Object.keys(map).forEach(key => {
         if (source[key]) {
             target[map[key]] = source[key];
         }
     });
 }
-function VantComponent(vantOptions) {
-    var _a;
-    if (vantOptions === void 0) { vantOptions = {}; }
-    var options = {};
+function VantComponent(vantOptions = {}) {
+    const options = {};
     mapKeys(vantOptions, options, {
         data: 'data',
         props: 'properties',
@@ -25,18 +21,18 @@ function VantComponent(vantOptions) {
         destroyed: 'detached',
         classes: 'externalClasses'
     });
-    var relation = vantOptions.relation;
+    const { relation } = vantOptions;
     if (relation) {
-        options.relations = Object.assign(options.relations || {}, (_a = {},
-            _a["../" + relation.name + "/index"] = relation,
-            _a));
+        options.relations = Object.assign(options.relations || {}, {
+            [`../${relation.name}/index`]: relation
+        });
     }
     // add default externalClasses
     options.externalClasses = options.externalClasses || [];
     options.externalClasses.push('custom-class');
     // add default behaviors
     options.behaviors = options.behaviors || [];
-    options.behaviors.push(basic_1.basic);
+    options.behaviors.push(basic);
     // map field to form-field behavior
     if (vantOptions.field) {
         options.behaviors.push('wx://form-field');
@@ -46,7 +42,7 @@ function VantComponent(vantOptions) {
         multipleSlots: true,
         addGlobalClass: true
     };
-    index_1.observe(vantOptions, options);
+    observe(vantOptions, options);
     Component(options);
 }
-exports.VantComponent = VantComponent;
+export { VantComponent };

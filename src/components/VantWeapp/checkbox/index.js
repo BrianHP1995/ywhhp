@@ -1,20 +1,17 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-var utils_1 = require("../common/utils");
+import { VantComponent } from '../common/component';
 function emit(target, value) {
     target.$emit('input', value);
     target.$emit('change', value);
 }
-component_1.VantComponent({
+VantComponent({
     field: true,
     relation: {
         name: 'checkbox-group',
         type: 'ancestor',
-        linked: function (target) {
+        linked(target) {
             this.parent = target;
         },
-        unlinked: function () {
+        unlinked() {
             this.parent = null;
         }
     },
@@ -29,17 +26,10 @@ component_1.VantComponent({
         shape: {
             type: String,
             value: 'round'
-        },
-        iconSize: {
-            type: null,
-            observer: 'setSizeWithUnit'
         }
     },
-    data: {
-        sizeWithUnit: '20px'
-    },
     methods: {
-        emitChange: function (value) {
+        emitChange(value) {
             if (this.parent) {
                 this.setParentValue(this.parent, value);
             }
@@ -47,22 +37,22 @@ component_1.VantComponent({
                 emit(this, value);
             }
         },
-        toggle: function () {
-            var _a = this.data, disabled = _a.disabled, value = _a.value;
+        toggle() {
+            const { disabled, value } = this.data;
             if (!disabled) {
                 this.emitChange(!value);
             }
         },
-        onClickLabel: function () {
-            var _a = this.data, labelDisabled = _a.labelDisabled, disabled = _a.disabled, value = _a.value;
+        onClickLabel() {
+            const { labelDisabled, disabled, value } = this.data;
             if (!disabled && !labelDisabled) {
                 this.emitChange(!value);
             }
         },
-        setParentValue: function (parent, value) {
-            var parentValue = parent.data.value.slice();
-            var name = this.data.name;
-            var max = parent.data.max;
+        setParentValue(parent, value) {
+            const parentValue = parent.data.value.slice();
+            const { name } = this.data;
+            const { max } = parent.data;
             if (value) {
                 if (max && parentValue.length >= max) {
                     return;
@@ -73,17 +63,12 @@ component_1.VantComponent({
                 }
             }
             else {
-                var index = parentValue.indexOf(name);
+                const index = parentValue.indexOf(name);
                 if (index !== -1) {
                     parentValue.splice(index, 1);
                     emit(parent, parentValue);
                 }
             }
-        },
-        setSizeWithUnit: function (size) {
-            this.set({
-                sizeWithUnit: utils_1.addUnit(size)
-            });
-        },
+        }
     }
 });

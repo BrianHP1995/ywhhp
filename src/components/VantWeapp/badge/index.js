@@ -1,11 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+VantComponent({
     relation: {
         type: 'ancestor',
         name: 'badge-group',
-        linked: function (target) {
+        linked(target) {
             this.parent = target;
         }
     },
@@ -14,20 +12,19 @@ component_1.VantComponent({
         title: String
     },
     methods: {
-        onClick: function () {
-            var _this = this;
-            var parent = this.parent;
+        onClick() {
+            const { parent } = this;
             if (!parent) {
                 return;
             }
-            var index = parent.badges.indexOf(this);
-            parent.setActive(index).then(function () {
-                _this.$emit('click', index);
+            const index = parent.badges.indexOf(this);
+            parent.setActive(index).then(() => {
+                this.$emit('click', index);
                 parent.$emit('change', index);
             });
         },
-        setActive: function (active) {
-            return this.set({ active: active });
+        setActive(active) {
+            return this.set({ active });
         }
     }
 });
