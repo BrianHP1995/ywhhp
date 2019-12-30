@@ -115,4 +115,20 @@ export default class Api{
     createFoodsOrder(params) {
         return this.request.wxRequest_token(params, 'order/createAutoOrder')
     }
+    //拼团相关
+    getGroupGoodsList(params) {
+        return this.request.wxRequest_token(params, 'open/getGroupGoodsList')
+    }
+    getGroupGoodsDetail(params) {
+        return this.request.wxRequest_token(params, 'open/getGroupGoodsDetail')
+    }
+    createGroupOrder(params) {
+        return this.request.wxRequest_token(params, 'groupgoods/createGroupOrder')
+    }
+    groupOrderPay(params) {
+        return this.request.wxRequest_token(params, 'groupgoods/groupOrderPay')
+    }
+    joinGroupOrder(params) {
+        return this.request.wxRequest_token(params, 'groupgoods/joinGroupOrder')
+    }
 }

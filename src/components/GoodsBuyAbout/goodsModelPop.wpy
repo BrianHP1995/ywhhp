@@ -68,9 +68,6 @@ export default class GoodsModelPop extends wepy.component {
     //props 接收父组件传递过来的值
     props = {
     }
-    components = {
-
-    }
     caclePopPriceTotal() {
         //计算规格弹窗选中规格价格总和： 所有规格中的active属性值为true的价格总和
         let that = this;
@@ -113,6 +110,7 @@ export default class GoodsModelPop extends wepy.component {
             //this.isGoodsParamsSpread = !this.isGoodsParamsSpread;
         },
         onOpen(goodsInfo) {
+            console.log(goodsInfo)
             let that = this;
             //每次打开规格弹窗选中的信息还原
             that.selectedGoodsInfo = {

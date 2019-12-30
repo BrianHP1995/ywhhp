@@ -1,7 +1,7 @@
 import wepy from 'wepy';
 //const BASE_URL = 'https://api.dayuyanwo.com/api/';
-//const BASE_URL = 'http://apitest.dayuyanwo.com/api/';
-const BASE_URL = 'http://admintest.dayuyanwo.com/api/';
+const BASE_URL = 'http://apitest.dayuyanwo.com/api/';
+//const BASE_URL = 'http://admintest.dayuyanwo.com/api/';
 export default class Request{
     constructor() {}
     async wxRequest_post(params, acticon) {

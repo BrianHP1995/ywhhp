@@ -156,7 +156,7 @@
             is_popup: null,
             isNewUserPopShow: null,
             homeScrollTop: 0,
-            shoppingCartType: null, //1-普通商品 ；2-月卡商品
+            //shoppingCartType: null, //1-普通商品 ；2-月卡商品
         }
         swiperChange(e) {
             this.currentSwiper = e.detail.current;
@@ -190,7 +190,7 @@
             let result = await wepy.Api.getGoodsShoppingCart({});
             if(result.code == 1 || result.code == 2) {
                 let shoppingData = result;
-                that.shoppingCartType = result.result.type;
+                //that.shoppingCartType = result.result.type;
                 that.$invoke('GoodsShoppingCart', 'cacleShoppingCartData', shoppingData,isClick);
                 that.$apply();
             }
@@ -345,14 +345,15 @@
                          *      1- 普通燕窝
                          *      2- 定时配送燕窝
                          * */
-                        if(typeId == 1 && that.shoppingCartType == 1 || typeId == 2 && that.shoppingCartType == 2 || that.shoppingCartType == null) {
-                            that.$invoke('GoodsModelPop', 'onOpen', that.goodsPopInfo);
-                        }else {
-                            wx.showToast({
-                                title: '月卡商品和普通商品不能同时加入购物车奥！',
-                                icon: 'none'
-                            })
-                        }
+                        that.$invoke('GoodsModelPop', 'onOpen', that.goodsPopInfo);
+                        // if(typeId == 1 && that.shoppingCartType == 1 || typeId == 2 && that.shoppingCartType == 2 || that.shoppingCartType == null) {
+                        //     that.$invoke('GoodsModelPop', 'onOpen', that.goodsPopInfo);
+                        // }else {
+                        //     wx.showToast({
+                        //         title: '月卡商品和普通商品不能同时加入购物车奥！',
+                        //         icon: 'none'
+                        //     })
+                        // }
                     })
                     .catch(err => {
                         wepy.Utils.showModal({

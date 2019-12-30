@@ -22,24 +22,24 @@
         <view class="stock_box">
             <view class="stock_tt font-s40 font-bold">套餐区</view>
             <view class="stock_list">
-                <repeat for="{{4}}">
+                <repeat for="{{autoMaticGoods}}">
                     <view class="pro_box">
                         <view class="pro_img">
-                            <image src="../common/images/index/buy_pro_all.jpg" mode="widthFix"/>
+                            <image src="{{item.goods_logo}}" mode="widthFix"/>
                         </view>
                         <view class="pro_cont bgc-fff display-flex">
-                            <view class="pro_tt font-bold font-s26">成长燕窝</view>
-                            <view class="pro_num">1杯</view>
+                            <view class="pro_tt font-bold font-s26">{{item.goods_title}}</view>
+                            <view class="pro_num">{{item.total}}杯</view>
                         </view>
                         <view class="stock_option t-c font-s24 c-fff">
                             <view class="delivery_time_box t-c" bindtap="selDeliveryTime">
-                                <view class="delivery_time_txt display-flex">配送时间<view class="value">{{ deliveryTime }}</view></view>
+                                <view class="delivery_time_txt display-flex">配送时间<view class="value">{{ item.express_time }}</view></view>
                                 <view class="delivery_time_sel">
                                     <image class="timeImg" src="../common/images/index/give_time.png" mode="widthFix" />
                                 </view>
                             </view>
                             <view class="delivery_time_box t-c" bindtap="selDeliveryAdr" data-item="{{item}}">
-                                <view class="delivery_time_txt display-flex">配送地址<view class="value">{{addressInfo}}</view></view>
+                                <view class="delivery_time_txt display-flex">配送地址<view class="value">{{addressInfo.lable}}</view></view>
                                 <view class="delivery_time_sel">
                                     <image class="adrImg" src="../common/images/index/back.png" mode="widthFix" />
                                 </view>
@@ -48,16 +48,16 @@
                     </view>
                 </repeat>
             </view>
-            <view class="stock_tt font-s40 font-bold">炖品区</view>
+            <view class="stock_tt font-s40 font-bold" style="margin-top: 30rpx;">炖品区</view>
             <view class="stock_list">
-                <repeat for="{{4}}">
-                    <view class="pro_box">
+                <repeat for="{{ordinaryGoods}}">
+                    <view class="pro_box" bindtap="openModelPop" data-bean='{{item}}'>
                         <view class="pro_img">
-                            <image src="../common/images/index/buy_pro_all.jpg" mode="widthFix"/>
+                            <image src="{{item.goods_logo}}" mode="widthFix"/>
                         </view>
                         <view class="pro_cont bgc-fff display-flex">
-                            <view class="pro_tt font-bold font-s26">成长燕窝</view>
-                            <view class="pro_num">1杯</view>
+                            <view class="pro_tt font-bold font-s26">{{item.goods_title}}</view>
+                            <view class="pro_num">{{item.total}}杯</view>
                         </view>
                     </view>
                 </repeat>
@@ -67,11 +67,16 @@
                     title="请选择配送时间" columns="{{ deliveryTimeList }}" default-index="{{ defaultIndex }}" bind:confirm="onConfirm" />
             </van-popup>
         </view>
+        <!-- 规格弹窗 -->
+        <GoodsModelPop></GoodsModelPop>
+        <GoodsShoppingCart></GoodsShoppingCart>
     </view>
 </template>
 
 <script>
     import wepy from 'wepy';
+    import GoodsModelPop from '../components/GoodsBuyAbout/goodsModelPop'
+    import GoodsShoppingCart from '../components/GoodsBuyAbout/goodsShoppingCart'
     export default class Fridge extends wepy.page {
         config = {
             navigationBarTitleText: "冰箱库",
@@ -81,6 +86,10 @@
             },
             enablePullDownRefresh: false,
         }
+        components = {
+            GoodsModelPop,
+            GoodsShoppingCart
+        }
         data = {
             showTips: true,
             showDeliveryTime: false,
@@ -88,26 +97,58 @@
             defaultIndex: 0,
             deliveryTimeList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日', '暂停配送'],
             choosedGoodsId: '',
-            addressInfo: {}
-        }
-        async getAddress(data) {
-            // console.log(data)
-            // this.address = data;
-            // this.activeCityTxt = `${data.province}省${data.city}市${data.area}${data.address}`;
-            // this.$apply();
+            addressInfo: {},
+            ordinaryGoods: [
+                {
+                    "id": 1,
+                    "order_no": 675901484134,
+                    "member_id": 20,
+                    "type": 1,
+                    "goods_id": 67468881373737,
+                    "goods_title": "鲜炖燕窝（儿童型）",
+                    "goods_logo": "https://api.dayuyanwo.com/upload/b6fc7f10c8fa937a/a960b637742b7ad3.jpg",
+                    "goods_spec": "基础型半年卡",
+                    "address_id": 7,
+                    "total": 210,
+                    "number_express": 3,
+                    "express_time": "2",
+                }
+            ], //普通商品
+            autoMaticGoods: [
+                {
+                    "id": 1,
+                    "order_no": 675901484134,
+                    "member_id": 20,
+                    "type": 1,
+                    "goods_id": 67554598370844,
+                    "goods_title": "鲜炖燕窝（儿童型）",
+                    "goods_logo": "https://api.dayuyanwo.com/upload/b6fc7f10c8fa937a/a960b637742b7ad3.jpg",
+                    "goods_spec": "基础型半年卡",
+                    "address_id": 7,
+                    "total": 210,
+                    "number_express": 3,
+                    "express_time": "2",
+                }
+            ], //自动配送商品，套餐
         }
         async getFridgeGoods() {
             let that = this;
-            let result = await wepy.Api.getFridgeGoods({type: 1});
+            //自动配送商品
+            let result_autoMatic = await wepy.Api.getFridgeGoods({type: 1});
+            that.autoMaticGoods = result_autoMatic.result;
+            //普通商品
+            let result_ordinary = await wepy.Api.getFridgeGoods({type: 2});
+            that.ordinaryGoods = result_ordinary.result;
         }
         async updateIceBox() {
             let that = this;
             let params = {
                 id: that.choosedGoodsId,
-                address_id: that.addressInfo.address_id,
+                address_id: that.addressInfo.id,
                 express_time: that.deliveryTime  //1-7 0-暂停配送
             }
-            let result = await Api.updateIceBox({params});
+            // console.log(params);
+            let result = await wepy.Api.updateIceBox({params});
             if(result.code == 1) {
                 wx.showToast({
                     title: '修改成功'
@@ -121,17 +162,24 @@
         getAddressInfo() {
             let that = this;
             wx.getStorage({
-                key: 'addressInfo',
-                success(res) {
-                    that.addressInfo = res.data;
-                    that.$apply();
-                    wx.removeStorage({key: 'addressInfo'});
-                    that.updateIceBox();
-                },
-                fail() {
-                    wx.showToast({
-                        title: '地址修改失败，请重新操作',
-                        icon: 'none'
+                key: 'from',
+                success(fromRes) {
+                    that.choosedGoodsId = fromRes.data.goodsId;
+                    wx.getStorage({
+                        key: 'addressInfo',
+                        success(res) {
+                            that.addressInfo = res.data;
+                            that.$apply();
+                            that.updateIceBox();
+                            wx.removeStorage({key: 'addressInfo'});
+                            wx.removeStorage({key: 'from'});
+                        },
+                        fail() {
+                            wx.showToast({
+                                title: '地址修改失败，请重新操作',
+                                icon: 'none'
+                            })
+                        }
                     })
                 }
             })
@@ -151,10 +199,14 @@
             selDeliveryTime() {
                 this.showDeliveryTime = true;
             },
-            selDeliveryAdr(event) {
+            selDeliveryAdr(e) {
+                let item = e.currentTarget.dataset.item;
                 wx.setStorage({
-                    key: 'form',
-                    data: 'fridge',
+                    key: 'from',
+                    data: {
+                        fromName: 'fridge',
+                        goodsId: item.goods_id
+                    },
                     success() {
                         wepy.navigateTo({
                             url: '../packageA/pages/user/myAddress'
@@ -175,6 +227,21 @@
                 //调用修改属性接口
                 that.updateIceBox();
             },
+            openModelPop(e) {
+                let that = this;
+                let goods_id = e.currentTarget.dataset.bean.goods_id;
+                wepy.Api.getGoodsDetail({goods_id})
+                    .then(res => {
+                        this.$invoke('GoodsModelPop', 'onOpen', res.result);
+                    })
+                    .catch(err => {
+                        wx.showToast({
+                            title: err,
+                            icon: 'none'
+                        })
+                    })
+
+            }
         }
     }
 </script>

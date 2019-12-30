@@ -77,7 +77,7 @@
             //选择收货地址
             adrSelect(e) {
                 let that = this;
-                let data = e.currentTarget.dataset.item;
+                let adrData = e.currentTarget.dataset.item;
                 /*
                    判断： pageFrom-如果来自个人中心，只有查看功能
                      else:
@@ -90,21 +90,21 @@
                 }else {
                     wx.getStorage({
                         key: 'from',
-                        success(res) {
+                        success(fromRes) {
                             wx.setStorage({
                                 key: 'addressInfo',
-                                data,
+                                data: adrData,
                                 success(res) {
-                                    if(res.data == 'fridge') {
-                                        wx.navigateTo({
-                                            url: `../../../pages/fridge?from=address`
+                                    if(fromRes.data.fromName== 'fridge') {
+                                        wx.reLaunch({
+                                            url: '../../../pages/fridge?from=address'
                                         })
-                                    }else if(res.data == 'sureOrder'){
+                                    }else if(fromRes.data.fromName == 'sureOrder'){
                                         wx.navigateTo({
                                             url: `../index/sureOrder?from=address`
                                         })
                                     }
-                                    wx.removeStorage({key: 'from'});
+                                    
                                 },
                                 fail() {
                                     wx.showToast({

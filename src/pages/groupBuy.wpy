@@ -1,12 +1,12 @@
 <template>
     <view id="GroupBuy" class="pos-r">
-        <view class="center-xy font-bold font-s36 c-000">即将上线，敬请期待</view>
+        <!-- <view class="center-xy font-bold font-s36 c-000">即将上线，敬请期待</view> -->
         <!-- 拼团banner -->
-        <!-- <view class="groupBuy_banner">
+        <view class="groupBuy_banner">
             <image src="http://test.goodwx.cn/upload/bf78dd17d3b541ec/dddf60e3dc48404d.jpg" mode="widthFix"></image>
-        </view> -->
+        </view>
         <!-- 拼团切换 -->
-        <!-- <view class="buy_cont">
+        <view class="buy_cont">
         	<view class="buy_tt_box display-flex">
         		<view class="buy_tt t-c" bindtap="changeBuyType">
         			<image wx:if="{{ buyType == 1 }}" src="../common/images/index/buy_tt_bg.png" mode="widthFix" />
@@ -23,19 +23,19 @@
         			</view>
         		</view>
         	</view>
-        </view> -->
+        </view>
         <!-- 拼团商品 -->
-        <!-- <view class="group_goods">
-            <repeat for="{{3}}">
-                <view class="buy_list" bindtap="linkGroupBuyDetail">
-                	<image mode="widthFix" src="../common/images/index/buy_pro.jpg" />
+        <view class="group_goods">
+            <repeat for="{{groupGoodsList}}">
+                <view class="buy_list" bindtap="linkGroupBuyDetail" data-item="{{item}}">
+                	<image mode="widthFix" src="{{item.logo}}" />
                 	<view class="buy_detail">
-                		<view class="buy_detail_tt">限时专享 | 金奖美式 （热）1杯子装</view>
+                		<view class="buy_detail_tt">{{item.title}}</view>
                 		<view class="buy_detail_other">
                 			<view class="buy_detail_bot_fl pos-r">
-                				<text class="new_price">¥3.8</text>
-                				<text class="old_price">¥22</text>
-                				<view class="group_num c-fff center-y font-s24">三人团</view>
+                				<text class="new_price">¥{{item.goods_list.price_selling}}</text>
+                				<text class="old_price">¥{{item.goods_list.price_market}}</text>
+                				<view class="group_num c-fff center-y font-s24">{{item.group_number}}人团</view>
                 			</view>
                 			<view class="buy_detail_bot_fr">
                 				<button>去开团</button>
@@ -44,8 +44,8 @@
                 	</view>
                 </view>
             </repeat>
-            <view class="t-c center-xy">暂无数据</view>
-        </view> -->
+            <!-- <view class="t-c center-xy">暂无数据</view> -->
+        </view>
 
     </view>
 </template>
@@ -61,14 +61,27 @@
         }
         data = {
             buyType: 1, //1--老带新团2--全民参与
+            groupGoodsList: [],
+        }
+        async getGroupGoodsList() {
+            let result = await wepy.Api.getGroupGoodsList({group_type: this.buyType})
+            if(result.code == 1) {
+                this.groupGoodsList = result.result;
+            }
+            this.$apply();
+        }
+        onLoad() {
+            this.getGroupGoodsList();
         }
         methods = {
             changeBuyType() {
                 this.buyType=this.buyType == 1?2:1;
+                this.getGroupGoodsList();
             },
-            linkGroupBuyDetail() {
+            linkGroupBuyDetail(e) {
+                let goodsId = e.currentTarget.dataset.item.goods_id;
                 wx.navigateTo({
-                    url: '../packageA/pages/group/groupBuyDetail'
+                    url: '../packageA/pages/group/groupBuyDetail?goodsId='+goodsId
                 })
             }
         }
@@ -77,9 +90,12 @@
 </script>
 
 <style lang="less" scoped>
-    
+
     #GroupBuy {
         height: 100%;
+        .groupBuy_banner {
+            height: 260rpx;
+        }
         .buy_cont {
         	.buy_tt_box {
         		padding: 24rpx 0 0;

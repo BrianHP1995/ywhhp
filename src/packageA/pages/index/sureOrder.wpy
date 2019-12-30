@@ -642,8 +642,10 @@
                  * */
                 if(this.active == 0) {
                     wx.setStorage({
-                        key: 'form',
-                        data: 'sureOrder',
+                        key: 'from',
+                        data: {
+                            fromName: 'sureOrder'
+                        },
                         success() {
                             wx.navigateTo({
                                 url: '../user/myAddress'
@@ -838,10 +840,6 @@
                                                 icon: 'none',
                                                 title: '支付失败'
                                             })
-                                            // wx.setStorage({
-                                            //     key: 'payInfo',
-                                            //     data: JSON.stringify(res.result);
-                                            // })
                                             setTimeout(() => {
                                                 wx.navigateTo({
                                                     url: '../user/dispatchOrder'

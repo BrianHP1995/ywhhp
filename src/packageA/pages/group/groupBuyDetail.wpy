@@ -6,8 +6,8 @@
         </view>
         <!-- 拼团详情 -->
         <view class="but_detail">
-            <view class="buy_tt font-s32 pos-r">限时专享 | 金奖美式 （热）1杯子装
-                <view class="group_num c-fff font-s24 display-ib">三人团</view>
+            <view class="buy_tt font-s32 pos-r">{{groupGoodsDetail.title}}
+                <view class="group_num c-fff font-s24 display-ib">{{groupGoodsDetail.group_number}}人团</view>
             </view>
             <view class="mail_tips font-s26">下单需另付配送费</view>
             <view class="other_tips font-s26 c-666">存入冰箱库，永久有效</view>
@@ -36,7 +36,7 @@
             </view>
         </view>
         <!-- 已开团用户 -->
-        <view class="group_opend">
+        <!-- <view class="group_opend">
             <view class="title font-s34">已有用户开团，可直接参与</view>
             <view class="group_user display-flex pos-r">
                 <view class="img"><image src="../../common/images/user_ico.png"></image></view>
@@ -46,14 +46,14 @@
                 </view>
                 <view class="join_btn center-y c-fff font-s26">16元拼团</view>
             </view>
-        </view>
+        </view> -->
         <!-- 发起拼团 -->
         <view class="add_btn_box">
             <view class="group_price">
                 <view class="deli_price">￥16</view>
                 <view class="deli_tips">另需配送费</view>
             </view>
-            <button class="add_address_btn" bindtap="allUser">发起拼团</button>
+            <button class="add_address_btn" bindtap="startGroup">发起拼团</button>
         </view>
     </view>
 </template>
@@ -62,15 +62,52 @@
     import wepy from 'wepy';
     export default class GroupBuyDetail extends wepy.page {
         config = {
-            navigationBarTitleText: "拼团详情",
+            navigationBarTitleText: "商品详情",
             usingComponents: {},
             enablePullDownRefresh: false,
         }
         data = {
-
+            goods_id: '',
+            groupGoodsDetail: {}
+        }
+        async getGroupGoodsDetail(goodsId) {
+            let that = this;
+            that.goods_id = goodsId;
+            let result = await wepy.Api.getGroupGoodsDetail({goods_id: goodsId})
+            if(result.code == 1) {
+                that.groupGoodsDetail = result.result;
+            }
+            that.$apply();
+        }
+        onLoad(options) {
+            this.getGroupGoodsDetail(options.goodsId);
         }
         methods = {
+            startGroup() {
+                //创建拼团订单
+                let that = this;
+                let params = {
+                    goods_id: that.groupGoodsDetail.goods_id,
+                    spec_id: that.groupGoodsDetail.goods_list.spec_id
+                }
+                // wx.navigateTo({
+                //     url: './groupOrderDetail?goodsId='+that.groupGoodsDetail.goods_id
+                // })
+                wepy.Api.createGroupOrder(params)
+                    .then(res => {
+                        if(res.code == 1) {
+                            wx.navigateTo({
+                                url: './groupOrderDetail?order_no='+res.group_order_no+"&goodsId="+ that.groupGoodsDetail.goods_id
+                            })
+                        }else {
+                            wx.showToast({
+                                title: res.msg,
+                                icon: 'none'
+                            })
+                        }
+                    })
 
+            }
         }
     }
 </script>
