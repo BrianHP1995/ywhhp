@@ -1,18 +1,27 @@
 import { VantComponent } from '../common/component';
+import { addUnit, isDef } from '../common/utils';
+const LONG_PRESS_START_TIME = 600;
+const LONG_PRESS_INTERVAL = 200;
+// add num and avoid float number
+function add(num1, num2) {
+    const cardinal = Math.pow(10, 10);
+    return Math.round((num1 + num2) * cardinal) / cardinal;
+}
 VantComponent({
     field: true,
-    classes: [
-        'input-class',
-        'plus-class',
-        'minus-class'
-    ],
+    classes: ['input-class', 'plus-class', 'minus-class'],
     props: {
         value: null,
         integer: Boolean,
         disabled: Boolean,
-        inputWidth: String,
+        inputWidth: null,
+        buttonSize: null,
         asyncChange: Boolean,
         disableInput: Boolean,
+        decimalLength: {
+            type: Number,
+            value: null
+        },
         min: {
             type: null,
             value: 1
@@ -36,14 +45,6 @@ VantComponent({
         disablePlus: Boolean,
         disableMinus: Boolean
     },
-    computed: {
-        minusDisabled() {
-            return this.data.disabled || this.data.disableMinus || this.data.value <= this.data.min;
-        },
-        plusDisabled() {
-            return this.data.disabled || this.data.disablePlus || this.data.value >= this.data.max;
-        }
-    },
     watch: {
         value(value) {
             if (value === '') {
@@ -51,26 +52,37 @@ VantComponent({
             }
             const newValue = this.range(value);
             if (typeof newValue === 'number' && +this.data.value !== newValue) {
-                this.set({ value: newValue });
+                this.setData({ value: newValue });
             }
         },
-        max: 'check',
-        min: 'check',
+        inputWidth() {
+            this.set({
+                inputStyle: this.computeInputStyle()
+            });
+        },
+        buttonSize() {
+            this.set({
+                inputStyle: this.computeInputStyle(),
+                buttonStyle: this.computeButtonStyle()
+            });
+        }
     },
     data: {
-        focus: false
+        focus: false,
+        inputStyle: '',
+        buttonStyle: ''
     },
     created() {
-        this.set({
+        this.setData({
             value: this.range(this.data.value)
         });
     },
     methods: {
-        check() {
-            const newValue = this.range(this.data.value);
-            if (typeof newValue === 'number' && +this.data.value !== newValue) {
-                this.set({ value: newValue });
+        isDisabled(type) {
+            if (type === 'plus') {
+                return this.data.disabled || this.data.disablePlus || this.data.value >= this.data.max;
             }
+            return this.data.disabled || this.data.disableMinus || this.data.value <= this.data.min;
         },
         onFocus(event) {
             this.$emit('focus', event.detail);
@@ -83,33 +95,78 @@ VantComponent({
         // limit value range
         range(value) {
             value = String(value).replace(/[^0-9.-]/g, '');
-            return Math.max(Math.min(this.data.max, value), this.data.min);
+            // format range
+            value = value === '' ? 0 : +value;
+            value = Math.max(Math.min(this.data.max, value), this.data.min);
+            // format decimal
+            if (isDef(this.data.decimalLength)) {
+                value = value.toFixed(this.data.decimalLength);
+            }
+            return value;
         },
         onInput(event) {
             const { value = '' } = event.detail || {};
             this.triggerInput(value);
         },
-        onChange(type) {
-            if (this.data[`${type}Disabled`]) {
+        onChange() {
+            const { type } = this;
+            if (this.isDisabled(type)) {
                 this.$emit('overlimit', type);
                 return;
             }
             const diff = type === 'minus' ? -this.data.step : +this.data.step;
-            const value = Math.round((+this.data.value + diff) * 100) / 100;
+            const value = add(+this.data.value, diff);
             this.triggerInput(this.range(value));
             this.$emit(type);
         },
-        onMinus() {
-            this.onChange('minus');
+        longPressStep() {
+            this.longPressTimer = setTimeout(() => {
+                this.onChange();
+                this.longPressStep();
+            }, LONG_PRESS_INTERVAL);
         },
-        onPlus() {
-            this.onChange('plus');
+        onTap(event) {
+            const { type } = event.currentTarget.dataset;
+            this.type = type;
+            this.onChange();
+        },
+        onTouchStart(event) {
+            clearTimeout(this.longPressTimer);
+            const { type } = event.currentTarget.dataset;
+            this.type = type;
+            this.isLongPress = false;
+            this.longPressTimer = setTimeout(() => {
+                this.isLongPress = true;
+                this.onChange();
+                this.longPressStep();
+            }, LONG_PRESS_START_TIME);
+        },
+        onTouchEnd() {
+            clearTimeout(this.longPressTimer);
         },
         triggerInput(value) {
-            this.set({
+            this.setData({
                 value: this.data.asyncChange ? this.data.value : value
             });
             this.$emit('change', value);
+        },
+        computeInputStyle() {
+            let style = '';
+            if (this.data.inputWidth) {
+                style = `width: ${addUnit(this.data.inputWidth)};`;
+            }
+            if (this.data.buttonSize) {
+                style += `height: ${addUnit(this.data.buttonSize)};`;
+            }
+            return style;
+        },
+        computeButtonStyle() {
+            let style = '';
+            const size = addUnit(this.data.buttonSize);
+            if (this.data.buttonSize) {
+                style = `width: ${size};height: ${size};`;
+            }
+            return style;
         }
     }
 });

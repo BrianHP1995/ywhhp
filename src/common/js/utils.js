@@ -19,63 +19,65 @@ export default class Utils {
             m = date.getMinutes(),
             s = date.getSeconds();
 
-            if (M < 10) {
-                M = '0' + M;
-            }
-            if (D < 10) {
-                D = '0' + D;
-            }
-            if (H < 10) {
-                H = '0' + H;
-            }
-            if (m < 10) {
-                m = '0' + m;
-            }
-            if (s < 10) {
-                s = '0' + s;
-            }
+        if (M < 10) {
+            M = '0' + M;
+        }
+        if (D < 10) {
+            D = '0' + D;
+        }
+        if (H < 10) {
+            H = '0' + H;
+        }
+        if (m < 10) {
+            m = '0' + m;
+        }
+        if (s < 10) {
+            s = '0' + s;
+        }
 
-            d = timeNow - publishTime;
-            d_days = parseInt(d / 86400);
-            d_hours = parseInt(d / 3600);
-            d_minutes = parseInt(d / 60);
-            d_seconds = parseInt(d);
+        d = timeNow - publishTime;
+        d_days = parseInt(d / 86400);
+        d_hours = parseInt(d / 3600);
+        d_minutes = parseInt(d / 60);
+        d_seconds = parseInt(d);
 
-            if (d_days > 0 && d_days < 3) {
-                return d_days + '天前';
-            } else if (d_days <= 0 && d_hours > 0) {
-                return d_hours + '小时前';
-            } else if (d_hours <= 0 && d_minutes > 0) {
-                return d_minutes + '分钟前';
-            } else if (d_seconds < 60) {
-                if (d_seconds <= 0) {
-                    return '刚刚';
-                } else {
-                    return d_seconds + '秒前';
-                }
-            } else if (d_days >= 3 && d_days < 30) {
-                return M + '-' + D + ' ' + H + ':' + m;
-            } else if (d_days >= 30) {
-                return Y + '-' + M + '-' + D + ' ' + H + ':' + m;
+        if (d_days > 0 && d_days < 3) {
+            return d_days + '天前';
+        } else if (d_days <= 0 && d_hours > 0) {
+            return d_hours + '小时前';
+        } else if (d_hours <= 0 && d_minutes > 0) {
+            return d_minutes + '分钟前';
+        } else if (d_seconds < 60) {
+            if (d_seconds <= 0) {
+                return '刚刚';
+            } else {
+                return d_seconds + '秒前';
             }
+        } else if (d_days >= 3 && d_days < 30) {
+            return M + '-' + D + ' ' + H + ':' + m;
+        } else if (d_days >= 30) {
+            return Y + '-' + M + '-' + D + ' ' + H + ':' + m;
+        }
     }
     static throttle(fn, gapTime) { // 防止重复点击导致页面多次跳转
         if (gapTime == null || gapTime == undefined) {
             gapTime = 1500;
         }
         let _lastTime = null;
-        return function () {
-            let _nowTime = + new Date();
+        return function() {
+            let _nowTime = +new Date();
             if (_nowTime - _lastTime > gapTime || !_lastTime) {
-                fn.apply(this, arguments);   //将this和参数传给原函数
+                fn.apply(this, arguments); //将this和参数传给原函数
                 _lastTime = _nowTime;
             }
         };
     }
 
     static starCount(count) { //计算评星数量, 进而转化为数组
-        var starNum = count * 10 / 10, stars = [], i = 0;
-        do{
+        var starNum = count * 10 / 10,
+            stars = [],
+            i = 0;
+        do {
             if (starNum >= 1) {
                 stars[i] = 'full';
             } else if (starNum >= 0.1) {
@@ -85,14 +87,14 @@ export default class Utils {
             }
             starNum--;
             i++;
-        }while(i<5);
+        } while (i < 5);
         return stars;
     }
 
     static setStorage(key, value) {
         wx.setStorage({
-          key: key,
-          data: value
+            key: key,
+            data: value
         });
     }
 
@@ -101,7 +103,9 @@ export default class Utils {
     }
 
     static removeStorage(key) {
-        wx.removeStorage({key: key})
+        wx.removeStorage({
+            key: key
+        })
     }
 
     static testEmail(email) {
@@ -123,7 +127,10 @@ export default class Utils {
         });
     }
 
-    static showModal({content, callback}) {
+    static showModal({
+        content,
+        callback
+    }) {
         wx.showModal({
             title: '提示',
             content: content,
@@ -133,14 +140,16 @@ export default class Utils {
             confirmText: '确定',
             confirmColor: '#3CC51F',
             success: res => {
-                if(res.confirm){
+                if (res.confirm) {
                     callback && callback();
                 }
             }
         });
     }
 
-    static saveImg({url}) { //保存图片到本地相册
+    static saveImg({
+        url
+    }) { //保存图片到本地相册
         let that = this;
         wx.getImageInfo({
             src: url,
@@ -160,18 +169,20 @@ export default class Utils {
         });
     }
 
-    static isLogin({callbackOk, callbackErr}) {
+    static isLogin({
+        callbackOk,
+        callbackErr
+    }) {
         let that = this;
         wx.getSetting({
             success: function(res) {
-                if(res.authSetting['scope.userInfo']) { //已经授权
+                if (res.authSetting['scope.userInfo']) { //已经授权
                     if (that.getStorage('token')) {
                         callbackOk && callbackOk();
-                    }
-                    else {
+                    } else {
                         callbackErr && callbackErr();
                     }
-                }else {
+                } else {
                     callbackErr && callbackErr();
                 }
             },
@@ -185,6 +196,91 @@ export default class Utils {
     }
     static delPoint(num) {
         console.log(num)
-        
+
+    }
+
+    static cnnumtonum(chnStr) {
+        var chnNumChar = {
+            零: 0,
+            一: 1,
+            二: 2,
+            三: 3,
+            四: 4,
+            五: 5,
+            六: 6,
+            七: 7,
+            八: 8,
+            九: 9
+        };
+        var chnNameValue = {
+            十: {
+                value: 10,
+                secUnit: false
+            },
+            百: {
+                value: 100,
+                secUnit: false
+            },
+            千: {
+                value: 1000,
+                secUnit: false
+            },
+            万: {
+                value: 10000,
+                secUnit: true
+            },
+            亿: {
+                value: 100000000,
+                secUnit: true
+            }
+        };
+
+        var expNumChar = {
+            十: 10,
+            十一: 11,
+            十二: 12,
+            十三: 13,
+            十四: 14,
+            十五: 15,
+            十六: 16,
+            十七: 17,
+            十八: 18,
+            十九: 19
+        };
+        if (expNumChar[chnStr]) {
+            return expNumChar[chnStr];
+        }
+        var rtn = 0;
+        var section = 0;
+        var number = 0;
+        var secUnit = false;
+        var str = chnStr.split('');
+        for (var i = 0; i < str.length; i++) {
+            var num = chnNumChar[str[i]];
+            if (typeof num !== 'undefined') {
+                number = num;
+                if (i === str.length - 1) {
+                    section += number;
+                }
+            } else {
+
+                var cunit = chnNameValue[str[i]];
+
+                if (typeof cunit == 'undefined') {
+                    return false;
+                }
+                var unit = chnNameValue[str[i]].value;
+                secUnit = chnNameValue[str[i]].secUnit;
+                if (secUnit) {
+                    section = (section + number) * unit;
+                    rtn += section;
+                    section = 0;
+                } else {
+                    section += (number * unit);
+                }
+                number = 0;
+            }
+        }
+        return rtn + section;
     }
 }

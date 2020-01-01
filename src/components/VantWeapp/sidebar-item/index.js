@@ -1,7 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var component_1 = require("../common/component");
-component_1.VantComponent({
+import { VantComponent } from '../common/component';
+VantComponent({
     classes: [
         'active-class',
         'disabled-class',
@@ -9,7 +7,7 @@ component_1.VantComponent({
     relation: {
         type: 'ancestor',
         name: 'sidebar',
-        linked: function (target) {
+        linked(target) {
             this.parent = target;
         }
     },
@@ -20,20 +18,19 @@ component_1.VantComponent({
         disabled: Boolean
     },
     methods: {
-        onClick: function () {
-            var _this = this;
-            var parent = this.parent;
+        onClick() {
+            const { parent } = this;
             if (!parent || this.data.disabled) {
                 return;
             }
-            var index = parent.children.indexOf(this);
-            parent.setActive(index).then(function () {
-                _this.$emit('click', index);
+            const index = parent.children.indexOf(this);
+            parent.setActive(index).then(() => {
+                this.$emit('click', index);
                 parent.$emit('change', index);
             });
         },
-        setActive: function (selected) {
-            return this.setData({ selected: selected });
+        setActive(selected) {
+            return this.setData({ selected });
         }
     }
 });

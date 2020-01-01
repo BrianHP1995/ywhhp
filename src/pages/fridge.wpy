@@ -22,6 +22,10 @@
         <view class="stock_box">
             <view class="stock_tt font-s40 font-bold">套餐区</view>
             <view class="stock_list">
+                <view class="no_fridge_order" wx:if="{{!autoMaticGoods.length>0}}">
+                    <view class="no_order_txt">您暂无订单奥~</view>
+                    <view class="no_order_img"><image src="../common/images/logo.png" mode="widthFix"></image></view>
+                </view>
                 <repeat for="{{autoMaticGoods}}">
                     <view class="pro_box">
                         <view class="pro_img">
@@ -39,7 +43,7 @@
                                 </view>
                             </view>
                             <view class="delivery_time_box t-c" bindtap="selDeliveryAdr" data-item="{{item}}">
-                                <view class="delivery_time_txt display-flex">配送地址<view class="value">{{addressInfo.lable}}</view></view>
+                                <view class="delivery_time_txt display-flex">配送地址<view class="value">{{item.addressLable}}</view></view>
                                 <view class="delivery_time_sel">
                                     <image class="adrImg" src="../common/images/index/back.png" mode="widthFix" />
                                 </view>
@@ -50,6 +54,10 @@
             </view>
             <view class="stock_tt font-s40 font-bold" style="margin-top: 30rpx;">炖品区</view>
             <view class="stock_list">
+                <view class="no_fridge_order" wx:if="{{!ordinaryGoods.length>0}}">
+                    <view class="no_order_txt">您暂无订单奥~</view>
+                    <view class="no_order_img"><image src="../common/images/logo.png" mode="widthFix"></image></view>
+                </view>
                 <repeat for="{{ordinaryGoods}}">
                     <view class="pro_box" bindtap="openModelPop" data-bean='{{item}}'>
                         <view class="pro_img">
@@ -98,57 +106,106 @@
             deliveryTimeList: ['周一', '周二', '周三', '周四', '周五', '周六', '周日', '暂停配送'],
             choosedGoodsId: '',
             addressInfo: {},
-            ordinaryGoods: [
-                {
-                    "id": 1,
-                    "order_no": 675901484134,
-                    "member_id": 20,
-                    "type": 1,
-                    "goods_id": 67468881373737,
-                    "goods_title": "鲜炖燕窝（儿童型）",
-                    "goods_logo": "https://api.dayuyanwo.com/upload/b6fc7f10c8fa937a/a960b637742b7ad3.jpg",
-                    "goods_spec": "基础型半年卡",
-                    "address_id": 7,
-                    "total": 210,
-                    "number_express": 3,
-                    "express_time": "2",
+            ordinaryGoods: [], //普通商品
+            autoMaticGoods: [], //自动配送商品，套餐
+        }
+        checkUserLogin() {
+            let that = this;
+            wepy.Utils.isLogin({
+                callbackOk: () => {
+                    //已经登录
+                    //获取用户信息
+                    this.getFridgeGoods();
+                },
+                callbackErr: () => {
+                    //未登录
+                    wepy.Utils.showModal({
+                        content: '你还未登录，登录后可获得完整体验',
+                        callback: () => {
+                            wepy.navigateTo({url: './oauth'})
+                        }
+                    })
                 }
-            ], //普通商品
-            autoMaticGoods: [
-                {
-                    "id": 1,
-                    "order_no": 675901484134,
-                    "member_id": 20,
-                    "type": 1,
-                    "goods_id": 67554598370844,
-                    "goods_title": "鲜炖燕窝（儿童型）",
-                    "goods_logo": "https://api.dayuyanwo.com/upload/b6fc7f10c8fa937a/a960b637742b7ad3.jpg",
-                    "goods_spec": "基础型半年卡",
-                    "address_id": 7,
-                    "total": 210,
-                    "number_express": 3,
-                    "express_time": "2",
-                }
-            ], //自动配送商品，套餐
+            })
         }
         async getFridgeGoods() {
             let that = this;
             //自动配送商品
             let result_autoMatic = await wepy.Api.getFridgeGoods({type: 1});
             that.autoMaticGoods = result_autoMatic.result;
+            that.autoMaticGoods.forEach(item => {
+                switch(item.express_time) {
+                    case '0':
+                        item.express_time = '暂停配送';
+                        break;
+                    case '1':
+                        item.express_time = '周一';
+                        break;
+                    case '2':
+                        item.express_time = '周二';
+                        break;
+                    case '3':
+                        item.express_time = '周三';
+                        break;
+                    case '4':
+                        item.express_time = '周四';
+                        break;
+                    case '5':
+                        item.express_time = '周五';
+                        break;
+                    case '6':
+                        item.express_time = '周六';
+                        break;
+                    case '7':
+                        item.express_time = '周日';
+                        break;
+                }
+                wepy.Api.getAddressById({id: item.address_id})
+                    .then(res => {
+                        item.addressLable = res.result.lable;
+                    })
+            })
+
             //普通商品
             let result_ordinary = await wepy.Api.getFridgeGoods({type: 2});
             that.ordinaryGoods = result_ordinary.result;
+            that.$apply();
         }
-        async updateIceBox() {
+        async updateIceBox(id) {
             let that = this;
+            let sendTimeId = null;
+            switch(that.deliveryTime) {
+                case '暂停配送':
+                    sendTimeId = 0;
+                    break;
+                case '周一':
+                    sendTimeId = 1;
+                    break;
+                case '周二':
+                    sendTimeId = 2;
+                    break;
+                case '周三':
+                    sendTimeId = 3;
+                    break;
+                case '周四':
+                    sendTimeId = 4;
+                    break;
+                case '周五':
+                    sendTimeId = 5;
+                    break;
+                case '周六':
+                    sendTimeId = 6;
+                    break;
+                case '周日':
+                    sendTimeId = 7;
+                    break;
+            }
             let params = {
                 id: that.choosedGoodsId,
-                address_id: that.addressInfo.id,
-                express_time: that.deliveryTime  //1-7 0-暂停配送
+                address_id: id,
+                express_time: sendTimeId  //1-7 0-暂停配送
             }
-            // console.log(params);
-            let result = await wepy.Api.updateIceBox({params});
+            let result = await wepy.Api.updateIceBox(params);
             if(result.code == 1) {
                 wx.showToast({
                     title: '修改成功'
@@ -164,13 +221,13 @@
             wx.getStorage({
                 key: 'from',
                 success(fromRes) {
-                    that.choosedGoodsId = fromRes.data.goodsId;
+                    that.choosedGoodsId = fromRes.data.id;
                     wx.getStorage({
                         key: 'addressInfo',
                         success(res) {
-                            that.addressInfo = res.data;
-                            that.$apply();
-                            that.updateIceBox();
+                            // that.addressInfo = res.data;
+                            // that.$apply();
+                            that.updateIceBox(res.data.id);
                             wx.removeStorage({key: 'addressInfo'});
                             wx.removeStorage({key: 'from'});
                         },
@@ -183,14 +240,14 @@
                     })
                 }
             })
-
+            that.$apply();
         }
         onLoad(options) {
-            this.getFridgeGoods();
             if(options.from && options.from == 'address') {
                 //获取重新选择的收货地址
                 this.getAddressInfo();
             }
+            this.checkUserLogin()
         }
         methods = {
             closeShowTips(){
@@ -205,7 +262,7 @@
                     key: 'from',
                     data: {
                         fromName: 'fridge',
-                        goodsId: item.goods_id
+                        id: item.id
                     },
                     success() {
                         wepy.navigateTo({
@@ -331,7 +388,20 @@
         		align-items: center;
         		justify-content: space-between;
         		padding: 15rpx 35rpx 0;
-
+                .no_fridge_order {
+                    width: 100%;
+                    margin-top: 60rpx;
+                    .no_order_txt {
+                        text-align: center;
+                        color: #999;
+                        font-size: 30rpx;
+                    }
+                    .no_order_img {
+                        width: 360rpx;
+                        margin: 0 auto;
+                        margin-top: 40rpx;
+                    }
+                }
         		.pro_box {
         			width: 280rpx;
         			box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.1);

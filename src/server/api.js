@@ -88,6 +88,11 @@ export default class Api{
     createDeliveryOrder(params) {
         return this.request.wxRequest_token(params, 'order/createOrder')
     }
+    createAutoOrder(params) {
+        return this.request.wxRequest_token(params, 'order/createAutoOrder')
+    }
+    
+    
     //获取配送订单列表
     getDispatchOrderList(params) {
         return this.request.wxRequest_token({}, 'member/getOrder')

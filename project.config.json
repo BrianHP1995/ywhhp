@@ -56,16 +56,16 @@
 				},
 				{
 					"id": 1,
-					"name": "packageA/pages/user/userCoupon",
-					"pathName": "packageA/pages/user/userCoupon",
+					"name": "拼团成功",
+					"pathName": "packageA/pages/group/groupPaySucced",
 					"query": "",
 					"scene": null
 				},
 				{
 					"id": 2,
-					"name": "packageA/pages/user/dispatchOrder",
-					"pathName": "packageA/pages/user/dispatchOrder",
-					"query": "",
+					"name": "packageA/pages/group/groupOrderDetail",
+					"pathName": "packageA/pages/group/groupOrderDetail",
+					"query": "goodsId=67554598370844&order_no=232232323&isFollow=true",
 					"scene": null
 				},
 				{

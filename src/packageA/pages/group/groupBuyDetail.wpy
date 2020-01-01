@@ -12,9 +12,9 @@
             <view class="mail_tips font-s26">下单需另付配送费</view>
             <view class="other_tips font-s26 c-666">存入冰箱库，永久有效</view>
             <view class="price pos-r">
-                <text class="new_price font-s42">¥16</text>
+                <text class="new_price font-s42">¥{{groupGoodsDetail.goods_list.price_selling}}</text>
                 <text class="price_tips font-s18">拼团价</text>
-                <text class="old_price c-666 font-s28">¥35</text>
+                <text class="old_price c-666 font-s28">¥{{groupGoodsDetail.goods_list.price_market}}</text>
             </view>
         </view>
         <!-- 拼团规则 -->
@@ -50,7 +50,7 @@
         <!-- 发起拼团 -->
         <view class="add_btn_box">
             <view class="group_price">
-                <view class="deli_price">￥16</view>
+                <view class="deli_price">￥{{groupGoodsDetail.goods_list.price_selling}}</view>
                 <view class="deli_tips">另需配送费</view>
             </view>
             <button class="add_address_btn" bindtap="startGroup">发起拼团</button>
@@ -68,7 +68,8 @@
         }
         data = {
             goods_id: '',
-            groupGoodsDetail: {}
+            groupGoodsDetail: {},
+            //groupPrice: null
         }
         async getGroupGoodsDetail(goodsId) {
             let that = this;
@@ -76,6 +77,7 @@
             let result = await wepy.Api.getGroupGoodsDetail({goods_id: goodsId})
             if(result.code == 1) {
                 that.groupGoodsDetail = result.result;
+                //that.groupPrice = result.result.goods_list.price_selling;
             }
             that.$apply();
         }

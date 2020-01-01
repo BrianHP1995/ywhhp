@@ -95,7 +95,7 @@
 
             <view class="content_box">
                 <view class="content_box_tt center-y font-s30">备注: </view>
-                <view class="textarea" wx:if="{{!showSelTime}}">
+                <view class="textarea" wx:if="{{!showSelTime && !showSelFoodTime}}">
                     <textarea class="font-s26" bindblur="bindTextAreaBlur" placeholder-style="color:#ededed;" placeholder="" />
                 </view>
 
@@ -123,7 +123,7 @@
                 </view>
                 <view class="delivery_time_sel" wx:else>
                     <view class="font-s30">配送时间</view>
-                    <view bindtap="selTimeFood" class="font-s30"><text style="margin-right:10rpx;">周一 </text><van-icon name="arrow" size="12px" color="#b4b4b4"/></view>
+                    <view bindtap="selTimeFood" class="font-s30"><text style="margin-right:10rpx;">{{foodSendTime}} </text><van-icon name="arrow" size="12px" color="#b4b4b4"/></view>
                 </view>
                 <van-popup
                     show="{{ showSelFoodTime }}"
@@ -132,7 +132,7 @@
                     bind:close="onClosePopFood"
                     custom-style="height: 50%"
                     >
-                    <van-picker columns="{{ foodColumns }}" bind:change="onChangeFood" />
+                    <van-picker columns="{{ foodColumns }}" show-toolbar bind:cancel="onClosePopFood" bind:confirm="onChangeFood"/>
                 </van-popup>
                 <view class="pay_box">
                     <view class="pay_num">
@@ -217,11 +217,12 @@
             couponDisabled: false,
             countIntegral: 0,
             countPrice_integral: 0,
-            foodColumns: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+            foodColumns: ['周一', '周二', '周三', '周四', '周五', '周六','周日', '暂停配送'],
             showSelFoodTime: false,
             foodNum: 1,
             foodSendTime: '周一',
-            isGeneralGoods: true
+            isGeneralGoods: true, //商品类型 true-普通商品  false-自动配送
+
         }
         //设置配送时间选择
         async setDeliveryTime() {
@@ -338,21 +339,26 @@
                 /*
                     区分是普通商品还是定时配送商品,显示顶部切换（套餐没有自提）
                 */
-                if(result.result.type == 1) {
+                if(result.result.list[0].type == 1) {
                     that.isGeneralGoods = true;
-                }else if(result.result.type == 2) {
+                }else if(result.result.list[0].type == 2) {
                     that.isGeneralGoods = false;
                 }
                 that.shoppingData = result.result;
-                that.canGetIntegral = result.result.integral;
+                that.canGetIntegral = result.result.integral; //可以获得的积分
                 that.shoppingData.list.forEach((item) => {
                     let arrSpec = [];
                     item.flavor = '';
-                    arrSpec = item.goods_spec.split(';;');
-                    arrSpec.forEach(val => {
-                        item.flavor += `/${val.split('::')[1]}`;
+                    arrSpec = item.goods_spec.split(';;')
+                    arrSpec.forEach((val,idx) => {
+                        if(idx == 0)
+                            item.flavor =  `${val.split('::')[1]}`;
+                        else
+                            item.flavor += `/${val.split('::')[1]}`;
                     })
-                    item.flavor = `${item.attribute.replace('&','/')}${item.flavor}`;
+                    if(item.attribute) {
+                        item.flavor = `${item.attribute.replace('&','/')}${item.flavor}`;
+                    }
                     item.price_selling = parseFloat(item.price_selling);
                 })
                 that.shoppingData.price_express = parseFloat(that.shoppingData.price_express);
@@ -688,7 +694,9 @@
 
             },
             onChangeFood(event) {
+                console.log(event)
                 this.foodSendTime = event.detail.value;
+                this.showSelFoodTime = false;
             },
             onClosePopFood() {
                 this.showSelFoodTime = false;
@@ -803,53 +811,112 @@
                                 type: that.mainActiveIndex == 0?1:2, //1 今天 2明天  int
                                 date: that.timeTxt, //送达时间 例:尽快送达 例：12：30
                             }
+                            wepy.Api.createDeliveryOrder(orderData)
+                                .then((res) => {
+                                    if(res.code == 1) {
+                                        //创建订单成功，调取微信支付
+                                        wx.requestPayment({
+                                            timeStamp: res.result.timeStamp,
+                                            nonceStr: res.result.nonceStr,
+                                            package: res.result.package,
+                                            signType: 'MD5',
+                                            paySign: res.result.paySign,
+                                            success (data) {
+                                                if(data.errMsg == 'requestPayment:ok') {
+                                                    wx.showToast({
+                                                        title: '支付成功'
+                                                    })
+                                                    setTimeout(() => {
+                                                       wx.navigateTo({
+                                                           url: '../user/dispatchOrder'
+                                                       })
+                                                    },1000)
+                                                }
+
+                                            },
+                                            fail (err) {
+                                                wx.showToast({
+                                                    icon: 'none',
+                                                    title: '支付失败'
+                                                })
+                                                setTimeout(() => {
+                                                    wx.navigateTo({
+                                                        url: '../user/dispatchOrder'
+                                                    })
+                                                },1000)
+                                            }
+                                        })
+                                    }
+                                })
                         }else {
+                            var sendTimeId = null;
+                            switch(that.foodSendTime) {
+                                case '暂停配送':
+                                    sendTimeId = 0;
+                                    break;
+                                case '周一':
+                                    sendTimeId = 1;
+                                    break;
+                                case '周二':
+                                    sendTimeId = 2;
+                                    break;
+                                case '周三':
+                                    sendTimeId = 3;
+                                    break;
+                                case '周四':
+                                    sendTimeId = 4;
+                                    break;
+                                case '周五':
+                                    sendTimeId = 5;
+                                    break;
+                                case '周六':
+                                    sendTimeId = 6;
+                                    break;
+                                case '周日':
+                                    sendTimeId = 7;
+                                    break;
+                            }
                             orderData = {
                                 coupon_id: that.couponChecked?that.couponInfo.id:'', //优惠券id  （和积分抵扣二选一）
                                 deduct: that.integralChecked?'1': '0', //是否积分抵扣 1是使用 0是不使用
                                 remark: that.textAreaMsg, //备注留言
-                                week: that.foodSendTime,
-                                number_express: that.foodNum
+                                week: sendTimeId,
+                                number_express: that.foodNum,
+                                address_id: that.receiverInfo.id
                             }
-                        }
-                        wepy.Api.createDeliveryOrder(orderData)
-                            .then((res) => {
-                                if(res.code == 1) {
-                                    //创建订单成功，调取微信支付
-                                    wx.requestPayment({
-                                        timeStamp: res.result.timeStamp,
-                                        nonceStr: res.result.nonceStr,
-                                        package: res.result.package,
-                                        signType: 'MD5',
-                                        paySign: res.result.paySign,
-                                        success (data) {
-                                            if(data.errMsg == 'requestPayment:ok') {
+                            wepy.Api.createAutoOrder(orderData)
+                                .then((res) => {
+                                    if(res.code == 1) {
+                                        //创建订单成功，调取微信支付
+                                        wx.requestPayment({
+                                            timeStamp: res.result.timeStamp,
+                                            nonceStr: res.result.nonceStr,
+                                            package: res.result.package,
+                                            signType: 'MD5',
+                                            paySign: res.result.paySign,
+                                            success (data) {
+                                                if(data.errMsg == 'requestPayment:ok') {
+                                                    wx.showToast({
+                                                        title: '支付成功'
+                                                    })
+                                                    setTimeout(() => {
+                                                       wx.reLaunch({
+                                                           url: '../../../pages/fridge'
+                                                       })
+                                                    },1000)
+                                                }
+
+                                            },
+                                            fail (err) {
                                                 wx.showToast({
-                                                    title: '支付成功'
+                                                    icon: 'none',
+                                                    title: '支付失败'
                                                 })
-                                                setTimeout(() => {
-                                                   wx.navigateTo({
-                                                       url: '../user/dispatchOrder'
-                                                   })
-                                                },1000)
                                             }
-
-                                        },
-                                        fail (err) {
-                                            wx.showToast({
-                                                icon: 'none',
-                                                title: '支付失败'
-                                            })
-                                            setTimeout(() => {
-                                                wx.navigateTo({
-                                                    url: '../user/dispatchOrder'
-                                                })
-                                            },1000)
-                                        }
-                                    })
-                                }
-                            })
-
+                                        })
+                                    }
+                                })
+                        }
                     }
                 }else {
                     //自提

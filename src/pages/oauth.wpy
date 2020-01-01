@@ -7,13 +7,17 @@
 <script>
     import wepy from 'wepy';
     export default class oauth extends wepy.page {
+        data = {
+            goodsId: null,
+            order_no: null,
+            isFollow: false
+        }
         async getUserInfo(e) {
             //授权登录
             let that = this;
             if(e.detail.errMsg == "getUserInfo:ok") {
                 let msg_login = await wepy.login({})
                 let wxResult = await wepy.getUserInfo({lang: 'zh_CN'});
-                console.log(msg_login.code)
                 let result = await wepy.Api.user_login({
                     code: msg_login.code,
                     iv: wxResult.iv,
@@ -23,9 +27,34 @@
                     wepy.Utils.setStorage('token', result.token);
                     that.$parent.globalData.is_oauth = true;
                     that.$apply();
-                    wx.navigateBack({ detail: 1 });
+                    if(that.goodsId && that.order_no) {
+                        if(that.isFollow) {
+                            wx.navigateTo({
+                                url: '../packageA/pages/group/groupOrderDetail?goodsId='+that.goodsId+'&order_no='+that.order_no+'&isFollow=true'
+                            })
+                        }else {
+                            wx.navigateTo({
+                                url: '../packageA/pages/group/groupOrderDetail?goodsId='+that.goodsId+'&order_no='+that.order_no
+                            })
+                        }
+
+                    }else {
+                        wx.navigateBack({ detail: 1 });
+                    }
                 }
             }
+        }
+        onLoad(options) {
+            console.log('11',options)
+            if(options.goodsId && options.order_no) {
+                this.goodsId = options.goodsId;
+                this.order_no = options.order_no;
+
+            }
+            if(options.isFollow) {
+                this.isFollow = true;
+            }
+            this.$apply();
         }
     }
 </script>

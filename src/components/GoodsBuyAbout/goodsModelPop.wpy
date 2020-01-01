@@ -227,12 +227,12 @@ export default class GoodsModelPop extends wepy.component {
                     spec_id = item.spec_id;
                 }
             })
-
             let data = {
                 goods_id: goodsInfo.goods_id, //商品id
                 spec_id, //规格id
                 attribute, //属性id 多属性&拼接
-                number: this.selectedGoodsInfo.num
+                number: this.selectedGoodsInfo.num,
+                type: goodsInfo.type
             }
             wepy.Api.addGoodsToShoppingCart(data)
                 .then((res) => {
