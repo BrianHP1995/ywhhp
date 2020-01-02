@@ -1,44 +1,22 @@
 <template>
     <view class="FridgeOrder">
-        <view class="no_order" wx:if="{{!hasOrder}}">
+        <view class="no_order" wx:if="{{hasOrder}}">
             <image src="../../common/images/no_order.png" mode="widthFix"/>
             <view>您暂时还没有订单哦~</view>
         </view>
         <view class="orderList" wx:else>
-            <view class="order_item pos-r" bindtap="linkOrderDetail">
-                <view class="order_img pos-a">
-                    <image src="../../common/images/5.jpg" mode="widthFix"></image>
-                    <!-- 配送方式-配送-自取 -->
-                    <view class="order_way pos-a c-fff font-s24 t-c">配送</view>
-                </view>
-                <view class="order_info">
-                    <view class="info_title font-bold c-000 font-s32">桃胶皂角米燕窝</view>
-                    <view class="info_address font-s26 c-999">湖北省武汉市江汉区</view>
-                    <view class="info_price font-bold">￥181</view>
-                    <view class="info_time pos-r font-s26 c-999">
-                        2019-11-04 11:13:19
-                        <view class="order_statu pos-a">等待发货</view>
+            <repeat for="{{fridgeOrderList}}">
+                <view class="orderItem pos-r" data-item="{{item}}" @tap="linkOrderDetail">
+                    <view class="title font-s34 c-333 font-bold">{{item.title}}</view>
+                    <view class='font-s28 c-666'>{{item.type}}</view>
+                    <view class="time font-s30 c-666">
+                        <text>下单</text>
+                        <text>2019/05/16</text>
+                        <text>15:01</text>
                     </view>
-                    <view class="info_num pos-a font-s26 c-333">x 1</view>
+                    <view class="status c-999 font-s34 pos-a">{{item.status}}<image class="display-ib" src="../../common/images/row_main.png" mode="widthFix"></image></view>
                 </view>
-            </view>
-            <view class="order_item pos-r" bindtap="linkOrderDetail">
-                <view class="order_img pos-a">
-                    <image src="../../common/images/5.jpg" mode="widthFix"></image>
-                    <!-- 配送方式-配送-自取 -->
-                    <view class="order_way pos-a c-fff font-s24 t-c">配送</view>
-                </view>
-                <view class="order_info">
-                    <view class="info_title font-bold c-000 font-s32">桃胶皂角米燕窝</view>
-                    <view class="info_address font-s26 c-999">湖北省武汉市江汉区</view>
-                    <view class="info_price font-bold">￥181</view>
-                    <view class="info_time pos-r font-s26 c-999">
-                        2019-11-04 11:13:19
-                        <view class="order_statu pos-a">等待发货</view>
-                    </view>
-                    <view class="info_num pos-a font-s26 c-333">x 1</view>
-                </view>
-            </view>
+            </repeat>
         </view>
     </view>
 </template>
@@ -55,7 +33,20 @@
         	enablePullDownRefresh: false,
         }
         data = {
-            hasOrder: false
+            hasOrder: false,
+            fridgeOrderList: [{
+                title: '限时专享|金奖',
+                type: '拼团入库',
+                status: '拼团成功'
+            }]
+        }
+        methods = {
+            linkOrderDetail(e) {
+                let that = this;
+                wx.navigateTo({
+                    url: '../group/groupOrderDetail'
+                })
+            }
         }
     }
 </script>
@@ -81,50 +72,25 @@
         }
         .orderList {
             padding: 0 30rpx;
-            .order_item {
-                padding: 40rpx 0;
-                padding-left: 230rpx;
+            .orderItem {
                 border-bottom: 2rpx solid #eee;
-                // padding-bottom: 40rpx;
-                .order_img {
-                    width: 210rpx;
-                    top: 30rpx;
-                    left: 0rpx;
-                    overflow: hidden;
-                    .order_way {
-                        top: 0;
-                        left: -17rpx;
-                        border-radius: 26rpx;
-                        background: #fd4349;
-                        width: 94rpx;
-                        height: 46rpx;
-                        line-height: 46rpx;
-                        padding-left: 10rpx;
+                padding: 32rpx 0rpx;
+                .title {
+                   margin-bottom: 8rpx;
+                }
+                .time {
+                    margin-top: 8rpx;
+                    text {
+                        margin-right: 6rpx;
                     }
                 }
-                .order_info {
-                    .info_address {
-                        margin-top: 10rpx;
-                        margin-bottom: 10rpx;
-                    }
-                    .info_price {
-                        color: #d62500;
-                    }
-                    .info_time {
-                        margin-top: 45rpx;
-                        .order_statu {
-                            right: 0;
-                            top: -6rpx;
-                            background: #fea3a3;
-                            color: #fff;
-                            padding: 10rpx 14rpx;
-                            font-size: 24rpx;
-                            border-radius: 6rpx;
-                        }
-                    }
-                    .info_num {
-                        right: 24rpx;
-                        top: 120rpx;
+                .status {
+                    right: 0rpx;
+                    top: 32rpx;
+                    image {
+                        width: 16rpx;
+                        vertical-align: middle;
+                        margin-left: 10rpx;
                     }
                 }
             }

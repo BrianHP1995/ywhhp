@@ -79,10 +79,25 @@
                 this.getGroupGoodsList();
             },
             linkGroupBuyDetail(e) {
-                let goodsId = e.currentTarget.dataset.item.goods_id;
-                wx.navigateTo({
-                    url: '../packageA/pages/group/groupBuyDetail?goodsId='+goodsId
+                wepy.Utils.isLogin({
+                    callbackOk: () => {
+                        //已经登录
+                        let goodsId = e.currentTarget.dataset.item.goods_id;
+                        wx.navigateTo({
+                            url: '../packageA/pages/group/groupBuyDetail?goodsId='+goodsId
+                        })
+                    },
+                    callbackErr: () => {
+                        //未登录
+                        wepy.Utils.showModal({
+                            content: '你还未登录，登录后可获得完整体验',
+                            callback: () => {
+                                wepy.navigateTo({url: './oauth'})
+                            }
+                        })
+                    }
                 })
+                
             }
         }
 

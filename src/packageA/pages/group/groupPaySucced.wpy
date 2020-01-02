@@ -36,7 +36,7 @@
         methods = {
             goGroupDetail() {
                 wx.navigateTo({
-                    url: './groupOrderDetail'
+                    url: './groupOrderDetail?order_no='+that.group_order_no+'&goodsId='+that.goodsId
                 })
             },
             onShareAppMessage(ops) {

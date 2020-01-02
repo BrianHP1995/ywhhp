@@ -24,7 +24,7 @@
             <view class="stock_list">
                 <view class="no_fridge_order" wx:if="{{!autoMaticGoods.length>0}}">
                     <view class="no_order_txt">您暂无订单奥~</view>
-                    <view class="no_order_img"><image src="../common/images/logo.png" mode="widthFix"></image></view>
+                    <view class="no_order_img"><image src="../common/images/logo_bot.png" mode="widthFix"></image></view>
                 </view>
                 <repeat for="{{autoMaticGoods}}">
                     <view class="pro_box">
@@ -56,7 +56,7 @@
             <view class="stock_list">
                 <view class="no_fridge_order" wx:if="{{!ordinaryGoods.length>0}}">
                     <view class="no_order_txt">您暂无订单奥~</view>
-                    <view class="no_order_img"><image src="../common/images/logo.png" mode="widthFix"></image></view>
+                    <view class="no_order_img"><image src="../common/images/logo_bot.png" mode="widthFix"></image></view>
                 </view>
                 <repeat for="{{ordinaryGoods}}">
                     <view class="pro_box" bindtap="openModelPop" data-bean='{{item}}'>
