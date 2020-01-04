@@ -84,7 +84,7 @@
                         //已经登录
                         let goodsId = e.currentTarget.dataset.item.goods_id;
                         wx.navigateTo({
-                            url: '../packageA/pages/group/groupBuyDetail?goodsId='+goodsId
+                            url: '../packageA/pages/group/groupOrder?goodsId='+goodsId
                         })
                     },
                     callbackErr: () => {

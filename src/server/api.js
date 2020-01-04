@@ -91,8 +91,8 @@ export default class Api{
     createAutoOrder(params) {
         return this.request.wxRequest_token(params, 'order/createAutoOrder')
     }
-    
-    
+
+
     //获取配送订单列表
     getDispatchOrderList(params) {
         return this.request.wxRequest_token({}, 'member/getOrder')
@@ -120,7 +120,7 @@ export default class Api{
     createFoodsOrder(params) {
         return this.request.wxRequest_token(params, 'order/createAutoOrder')
     }
-    //拼团相关
+    /** 拼团相关 */
     getGroupGoodsList(params) {
         return this.request.wxRequest_token(params, 'open/getGroupGoodsList')
     }
@@ -135,5 +135,11 @@ export default class Api{
     }
     joinGroupOrder(params) {
         return this.request.wxRequest_token(params, 'groupgoods/joinGroupOrder')
+    }
+    getGroupOrderList(params) {
+        return this.request.wxRequest_token(params, 'member/getGroupOrder')
+    }
+    getGroupOrderDetail(params) {
+        return this.request.wxRequest_token(params, 'member/getGroupOrderDetail')
     }
 }

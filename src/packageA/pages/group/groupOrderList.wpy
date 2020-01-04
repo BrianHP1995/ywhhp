@@ -1,0 +1,150 @@
+<template>
+    <view class="groupOrderList">
+        <view class="no_order" wx:if="{{hasOrder}}">
+            <image src="../../common/images/no_order.png" mode="widthFix"/>
+            <view>您暂时还没有订单哦~</view>
+        </view>
+        <view class="orderList" wx:else>
+            <repeat for="{{groupOrderList}}">
+                <view class="orderItem pos-r" data-item="{{item}}" @tap="linkOrderDetail">
+                    <view class="title font-s34 c-333 font-bold">{{item.title}}</view>
+                    <view class='font-s28 c-666'>拼团入库</view>
+                    <view class="time font-s30 c-666">
+                        <text>下单</text>
+                        <text>{{item.createtime}}</text>
+                    </view>
+                    <view class="status c-999 font-s34 pos-a">{{item.status}}<image class="display-ib" src="../../common/images/row_main.png" mode="widthFix"></image></view>
+                    <view class="payStatus font-s30 pos-a">{{item.item_status}}</view>
+                </view>
+            </repeat>
+        </view>
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class FridgeOrder extends wepy.page {
+        config = {
+        	navigationBarTitleText: '入库订单',
+        	navigationBarTextStyle: 'black',
+        	navigationBarBackgroundColor: '#fff',
+        	usingComponents: {
+        	},
+        	enablePullDownRefresh: false,
+        }
+        data = {
+            hasOrder: false,
+            groupOrderList: []
+        }
+        async getGroupOrderList() {
+            let that = this;
+            let result = await wepy.Api.getGroupOrderList({});
+            if(result.code == 1) {
+                that.groupOrderList = result.result;
+                that.groupOrderList.forEach(item => {
+                    let time = wepy.Utils.dateStamp(item.createtime);
+
+                    item.createtime = time;
+                    switch(item.item_status) {
+                        case 0:
+                            item.item_status = '未支付';
+                            break;
+                        case 1:
+                            item.item_status = '已支付';
+                            break;
+                        case 2:
+                            item.item_status = '已完成';
+                            break;
+                        case 3:
+                            item.item_status = '退款成功';
+                            break;
+                        case 4:
+                            item.item_status = '退款失败';
+                            break;
+                    }
+                    switch(item.status) {
+                        case 0:
+                            item.status = '拼团中';
+                            break;
+                        case 1:
+                            item.status = '拼团成功';
+                            break;
+                        case 2:
+                            item.status = '拼团失败';
+                            break;
+                        case 3:
+                            item.status = '退款中';
+                            break;
+                    }
+                })
+                that.$apply();
+            }
+        }
+        onLoad(options) {
+            this.getGroupOrderList();
+        }
+        methods = {
+            linkOrderDetail(e) {
+                let that = this;
+                let goods_id = e.currentTarget.dataset.item.goods_id;
+                let group_order_no = e.currentTarget.dataset.item.group_order_no;
+                let id = e.currentTarget.dataset.item.id;
+                wx.navigateTo({
+                    url: '../group/groupOrderDetail?goodsId='+goods_id+'&order_no='+group_order_no+'&id='+id
+                })
+            }
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+    .groupOrderList {
+        .no_order{
+            width: 100%;
+            position: fixed;
+            height: 100%;
+            background: #f8f8f8;
+            text-align: center;
+            font-size: 30rpx;
+            color: #666;
+            padding: 100rpx 0 0;
+            image{
+                width: 280rpx;
+                margin: 0 auto;
+            }
+            view{
+                margin: 25rpx;
+            }
+        }
+        .orderList {
+            padding: 0 30rpx;
+            .orderItem {
+                border-bottom: 2rpx solid #eee;
+                padding: 32rpx 0rpx;
+                .title {
+                   margin-bottom: 8rpx;
+                }
+                .time {
+                    margin-top: 8rpx;
+                    text {
+                        margin-right: 6rpx;
+                    }
+                }
+                .status {
+                    right: 0rpx;
+                    top: 32rpx;
+                    image {
+                        width: 16rpx;
+                        vertical-align: middle;
+                        margin-left: 10rpx;
+                    }
+                }
+                .payStatus {
+                    right: 26rpx;
+                    top: 78rpx;
+                    color: #f1a93d;
+                }
+            }
+        }
+    }
+</style>

@@ -98,7 +98,7 @@
         	userInfo: {},
         	userList: [
                 {
-        			link: '../packageA/pages/user/fridgeOrder',
+        			link: '../packageA/pages/group/groupOrderList',
         			txt: '入库订单',
         			ico: '../common/images/user/order.png'
         		},

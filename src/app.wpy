@@ -73,7 +73,6 @@
                     'pages/user/editAddress',  //编辑收货地址
                     'pages/user/dispatchOrder', //配送订单
                     'pages/user/dispatchOrderDetail', //配送订单详情页
-                    'pages/user/fridgeOrder',  //入库订单
                     'pages/user/contactService',  //联系客服
                     'pages/user/userSetting',  //系统设置
                     'pages/user/giveOrder',  //赠送记录
@@ -81,9 +80,10 @@
                     'pages/user/userMember',
                     'pages/user/userScore',
                     'pages/user/systemSetting',
-                    'pages/group/groupBuyDetail',  //拼团详情
+                    'pages/group/groupOrder',  //拼团详情
                     'pages/group/groupOrderDetail', //拼团订单详情
                     'pages/group/groupPaySucced', //拼团成功页面
+                    'pages/group/groupOrderList',  //入库订单
                 ]
             }],
         }

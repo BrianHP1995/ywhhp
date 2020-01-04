@@ -77,7 +77,6 @@
             let result = await wepy.Api.getGroupGoodsDetail({goods_id: goodsId})
             if(result.code == 1) {
                 that.groupGoodsDetail = result.result;
-                //that.groupPrice = result.result.goods_list.price_selling;
             }
             that.$apply();
         }
@@ -92,14 +91,11 @@
                     goods_id: that.groupGoodsDetail.goods_id,
                     spec_id: that.groupGoodsDetail.goods_list.spec_id
                 }
-                // wx.navigateTo({
-                //     url: './groupOrderDetail?goodsId='+that.groupGoodsDetail.goods_id
-                // })
                 wepy.Api.createGroupOrder(params)
                     .then(res => {
                         if(res.code == 1) {
                             wx.navigateTo({
-                                url: './groupOrderDetail?order_no='+res.group_order_no+"&goodsId="+ that.groupGoodsDetail.goods_id
+                                url: './groupOrderDetail?order_no='+res.group_order_no+"&goodsId="+ that.groupGoodsDetail.goods_id+"&from=groupOrder"
                             })
                         }else {
                             wx.showToast({

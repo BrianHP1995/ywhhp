@@ -10,7 +10,8 @@
         data = {
             goodsId: null,
             order_no: null,
-            isFollow: false
+            isFollow: false,
+			pageFrom: ''
         }
         async getUserInfo(e) {
             //授权登录
@@ -34,7 +35,7 @@
                             })
                         }else {
                             wx.navigateTo({
-                                url: '../packageA/pages/group/groupOrderDetail?goodsId='+that.goodsId+'&order_no='+that.order_no
+                                url: '../packageA/pages/group/groupOrderDetail?goodsId='+that.goodsId+'&order_no='+that.order_no+'&from='+that.pageFrom
                             })
                         }
 
@@ -45,7 +46,6 @@
             }
         }
         onLoad(options) {
-            console.log('11',options)
             if(options.goodsId && options.order_no) {
                 this.goodsId = options.goodsId;
                 this.order_no = options.order_no;
@@ -54,6 +54,9 @@
             if(options.isFollow) {
                 this.isFollow = true;
             }
+			if(options.from) {
+				this.pageFrom = options.from;
+			}
             this.$apply();
         }
     }
