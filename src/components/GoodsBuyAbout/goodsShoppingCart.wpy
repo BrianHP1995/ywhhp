@@ -4,7 +4,7 @@
             <view class="car_show">
                 <view class="car_tt">
                     <view bindtap="clearCar" class="clearCar">
-                        <image src="http://dayu.brighta.cn/static/minimages/index/clear.png"
+                        <image src="../../common/images/index/clear.png"
                             mode="widthFix" />清空购物车
                     </view>
                 </view>

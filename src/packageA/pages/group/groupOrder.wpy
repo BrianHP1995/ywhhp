@@ -95,7 +95,7 @@
                     .then(res => {
                         if(res.code == 1) {
                             wx.navigateTo({
-                                url: './groupOrderDetail?order_no='+res.group_order_no+"&goodsId="+ that.groupGoodsDetail.goods_id+"&from=groupOrder"
+                                url: './groupOrderPay?order_no='+res.group_order_no+"&goodsId="+ that.groupGoodsDetail.goods_id
                             })
                         }else {
                             wx.showToast({

@@ -84,6 +84,7 @@
                     'pages/group/groupOrderDetail', //拼团订单详情
                     'pages/group/groupPaySucced', //拼团成功页面
                     'pages/group/groupOrderList',  //入库订单
+                    'pages/group/groupOrderPay', //拼团订单支付
                 ]
             }],
         }

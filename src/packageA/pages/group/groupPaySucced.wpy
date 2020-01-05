@@ -25,18 +25,21 @@
         }
         data = {
             group_order_no: null,
-            goodsId: null
+            goodsId: null,
+            id: null
         }
         onLoad(options) {
             this.group_order_no = options.group_order_no;
             this.goodsId = options.goodsId;
+            this.id = options.id;
             this.$apply();
         }
 
         methods = {
             goGroupDetail() {
+                let that = this;
                 wx.navigateTo({
-                    url: './groupOrderDetail?order_no='+that.group_order_no+'&goodsId='+that.goodsId
+                    url: './groupOrderDetail?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&id='+that.id
                 })
             },
             onShareAppMessage(ops) {
@@ -46,7 +49,7 @@
                 }
                 return {
                     title: '一起来拼团',
-                    path: '/packageA/pages/group/groupOrderDetail?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&isFollow=true',
+                    path: '/packageA/pages/group/groupOrderDetail?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&isFollow=true&id='+that.id,
                     success: function(res) {
                         // 转发成功
                         console.log("转发成功:" + JSON.stringify(res));

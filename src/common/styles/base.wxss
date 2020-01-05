@@ -38,6 +38,7 @@ view { margin: 0; padding: 0}
 .c-666 { color: #666; }
 .c-0d { color: #0d0d0d; }
 .c-999 { color: #999; }
+.c-main { color: #e8a439; }
 
 /* 背景色 */
 .bgc-fff { background: #FFFFFF;}

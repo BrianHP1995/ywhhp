@@ -20,36 +20,7 @@
                 </view>
             </view>
 
-            <!-- 拼团人头像 -->
-            <view class="groupMember" wx:if="{{pageFrom != 'groupOrder'}}">
-            	<view class="title font-s38 font-bold">
-            		<p class="c-main" style="margin-right: 16rpx;">拼团中</p>分享给更多的好友组团
-            	</view>
-            	<view class="time c-666 font-s32">还差 <text class="c-main">{{orderDetail.group_number}}人</text> 参团 <p>00:30</p></view>
-            	<view class="member_img">
-                    <repeat for="{{orderDetail.list}}">
-                        <view class="img_wrap">
-                            <image src="{{item.avatar}}" mode="widthFix"></image>
-                            <view class="grouper t-c center-x">团长</view>
-                        </view>
-                    </repeat>
-                    <repeat for="{{orderDetail.group_number - orderDetail.list.length}}">
-                        <view class="img_wrap">
-                            <image src="../../common/images/atavar.png" mode="widthFix"></image>
-                        </view>
-                    </repeat>
-                </view>
-
-            </view>
-
         	<view class="buy_bot_box">
-        		<!-- <view class="order_details">
-        			<view class="order_details_tt">订单详情</view>
-        			<view class="order_list">
-        				<view>限时专享 | {{groupGoodsDetail.title}}</view>
-        				<view>￥{{groupGoodsDetail.goods_list.price_selling}}</view>
-        			</view>
-        		</view> -->
         		<view class="all_buy">
                <view class="all_buy_tt"><image class="display-ib v-middle" src="../../common/images/tips.png" mode="widthFix"/>【全民参与】</view>
                <view class="all_buy_txt">
@@ -66,11 +37,10 @@
         		</view>
         	</view>
         	<view class="add_btn_box">
-        		<button bindtap="submitOrder" class="add_address_btn" wx:if="{{pageFrom == 'groupOrder' || orderDetail.item_status == 0 || isFollow}}">
+        		<button bindtap="submitOrder" class="add_address_btn">
                     <image src="../../common/images/weixin.png" mode="widthFix" />
-                    <text wx:if="{{!isFollow && orderDetail.item_status != 0}}">微信支付￥{{groupTotalPrice}}</text>
-                    <text wx:if="{{isFollow && orderDetail.item_status != 0}}">马上跟团￥{{groupTotalPrice}}</text>
-                    <text wx:if="{{orderDetail.item_status == 0}}">继续支付￥{{groupTotalPrice}}</text>
+                    <text>微信支付￥{{groupTotalPrice}}</text>
+                    
                 </button>
                 <!-- <button bindtap="followGroupOrder" class="add_address_btn" wx:else><image src="../../common/images/weixin.png" mode="widthFix" />马上跟团￥{{groupTotalPrice}}</button> -->
         	</view>
@@ -90,45 +60,45 @@
             group_order_no: null,
             groupTotalPrice: null,
             goodsId: null,
-            isFollow: false,
+            // isFollow: false,
             orderDetail: null,
-            pageFrom: '',
-            id: null
+            // pageFrom: '',
+            // id: null
         }
-        checkUserLogin(options) {
-            let that = this;
-            wepy.Utils.isLogin({
-                callbackOk: () => {
-                    //已经登录
-                    //获取用户信息
-                    that.getGroupGoodsDetail(options.goodsId);
-                    if(options.from) {
-                        that.pageFrom = options.from;
-                        console.log(options)
-                    }
-                    if(options.isFollow) {
-                        that.isFollow = true;
-                    }
-                    if(options.id) {
-                        that.getGroupOrderDetail(options.id);
-                    }
-                    that.$apply();
-                },
-                callbackErr: () => {
-                    //未登录
-                    wepy.Utils.showModal({
-                        content: '你还未登录，登录后可获得完整体验',
-                        callback: () => {
-                            if(options.isFollow) {
-                                wepy.navigateTo({url: '../../../pages/oauth?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&isFollow=true'})
-                            }else {
-                                wepy.navigateTo({url: '../../../pages/oauth?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&from='+that.pageFrom})
-                            }
-                        }
-                    })
-                }
-            })
-        }
+        // checkUserLogin(options) {
+        //     let that = this;
+        //     wepy.Utils.isLogin({
+        //         callbackOk: () => {
+        //             //已经登录
+        //             //获取用户信息
+
+        //             if(options.from) {
+        //                 that.pageFrom = options.from;
+        //                 console.log(options)
+        //             }
+        //             if(options.isFollow) {
+        //                 that.isFollow = true;
+        //             }
+        //             if(options.id) {
+        //                 that.getGroupOrderDetail(options.id);
+        //             }
+        //             that.$apply();
+        //         },
+        //         callbackErr: () => {
+        //             //未登录
+        //             wepy.Utils.showModal({
+        //                 content: '你还未登录，登录后可获得完整体验',
+        //                 callback: () => {
+        //                     if(options.isFollow) {
+        //                         wepy.navigateTo({url: '../../../pages/oauth?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&isFollow=true'})
+        //                     }else {
+        //                         wepy.navigateTo({url: '../../../pages/oauth?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&from='+that.pageFrom})
+        //                     }
+        //                 }
+        //             })
+        //         }
+        //     })
+        // }
         async getGroupGoodsDetail(goodsId) {
             let that = this;
 
@@ -139,18 +109,8 @@
             }
             that.$apply();
         }
-        async getGroupOrderDetail(id) {
-            let that = this;
-            let result = await wepy.Api.getGroupOrderDetail({id})
-            if(result.code == 1) {
-                that.orderDetail = result.result;
-                that.id = result.result.id;
-                that.$apply();
-            }
-        }
         onLoad(options) {
-            console.log(options)
-            this.checkUserLogin(options);
+            that.getGroupGoodsDetail(options.goodsId);
             this.group_order_no = options.order_no;
             this.goodsId = options.goodsId;
             this.$apply();
