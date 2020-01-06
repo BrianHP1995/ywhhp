@@ -10,7 +10,7 @@
                         <view class="pro_txt_fr">
                             <view class="pro_detail_tt">限时专享 | {{groupGoodsDetail.title}}</view>
                             <view class="other_tips">存入冰箱库, 永久有效</view>
-                            <view class="price" wx:if="{{!time_stamp_code}}">
+                            <view class="price">
                                 <text class="new_price">￥{{groupGoodsDetail.goods_list.price_selling}}</text>
                                 <text class="mail_tips">不含配送费</text>
                                 <text class="old_price">￥{{groupGoodsDetail.goods_list.price_market}}</text>
@@ -40,9 +40,8 @@
         		<button bindtap="submitOrder" class="add_address_btn">
                     <image src="../../common/images/weixin.png" mode="widthFix" />
                     <text>微信支付￥{{groupTotalPrice}}</text>
-                    
+
                 </button>
-                <!-- <button bindtap="followGroupOrder" class="add_address_btn" wx:else><image src="../../common/images/weixin.png" mode="widthFix" />马上跟团￥{{groupTotalPrice}}</button> -->
         	</view>
     </view>
 </template>
@@ -60,45 +59,7 @@
             group_order_no: null,
             groupTotalPrice: null,
             goodsId: null,
-            // isFollow: false,
-            orderDetail: null,
-            // pageFrom: '',
-            // id: null
         }
-        // checkUserLogin(options) {
-        //     let that = this;
-        //     wepy.Utils.isLogin({
-        //         callbackOk: () => {
-        //             //已经登录
-        //             //获取用户信息
-
-        //             if(options.from) {
-        //                 that.pageFrom = options.from;
-        //                 console.log(options)
-        //             }
-        //             if(options.isFollow) {
-        //                 that.isFollow = true;
-        //             }
-        //             if(options.id) {
-        //                 that.getGroupOrderDetail(options.id);
-        //             }
-        //             that.$apply();
-        //         },
-        //         callbackErr: () => {
-        //             //未登录
-        //             wepy.Utils.showModal({
-        //                 content: '你还未登录，登录后可获得完整体验',
-        //                 callback: () => {
-        //                     if(options.isFollow) {
-        //                         wepy.navigateTo({url: '../../../pages/oauth?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&isFollow=true'})
-        //                     }else {
-        //                         wepy.navigateTo({url: '../../../pages/oauth?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&from='+that.pageFrom})
-        //                     }
-        //                 }
-        //             })
-        //         }
-        //     })
-        // }
         async getGroupGoodsDetail(goodsId) {
             let that = this;
 
@@ -110,7 +71,7 @@
             that.$apply();
         }
         onLoad(options) {
-            that.getGroupGoodsDetail(options.goodsId);
+            this.getGroupGoodsDetail(options.goodsId);
             this.group_order_no = options.order_no;
             this.goodsId = options.goodsId;
             this.$apply();
@@ -118,95 +79,38 @@
         methods = {
             submitOrder() {
                 let that = this;
-                /*
-                    isFollow(false): false-微信支付
-                              true -马上跟团
-                */
-                if(!that.isFollow) {
-                    wepy.Api.groupOrderPay({group_order_no: that.group_order_no})
-                        .then(res => {
-                            if(res.code == 1) {
-                                //创建订单成功，调取微信支付
-                                wx.requestPayment({
-                                    timeStamp: res.result.timeStamp,
-                                    nonceStr: res.result.nonceStr,
-                                    package: res.result.package,
-                                    signType: 'MD5',
-                                    paySign: res.result.paySign,
-                                    success (data) {
-                                        if(data.errMsg == 'requestPayment:ok') {
-                                            wx.showToast({
-                                                title: '支付成功'
-                                            })
-                                            setTimeout(() => {
-                                               wx.navigateTo({
-                                                   url: './groupPaySucced?group_order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&id='+that.id
-                                               })
-                                            },1000)
-                                        }
-
-                                    },
-                                    fail (err) {
+                wepy.Api.groupOrderPay({group_order_no: that.group_order_no})
+                    .then(res => {
+                        if(res.code == 1) {
+                            //创建订单成功，调取微信支付
+                            wx.requestPayment({
+                                timeStamp: res.result.timeStamp,
+                                nonceStr: res.result.nonceStr,
+                                package: res.result.package,
+                                signType: 'MD5',
+                                paySign: res.result.paySign,
+                                success (data) {
+                                    if(data.errMsg == 'requestPayment:ok') {
                                         wx.showToast({
-                                            icon: 'none',
-                                            title: '支付失败'
+                                            title: '支付成功'
                                         })
+                                        setTimeout(() => {
+                                           wx.navigateTo({
+                                               url: './groupPaySucced?group_order_no='+that.group_order_no+'&goodsId='+that.goodsId
+                                           })
+                                        },1000)
                                     }
-                                })
-                            }
-                        })
-                }else {
-                    wepy.Api.joinGroupOrder({group_order_no: that.group_order_no})
-                        .then(res => {
-                            if(res.code ==  1) {
-                                wepy.Api.groupOrderPay({group_order_no: res.group_order_no})
-                                    .then(res => {
-                                        if(res.code == 1) {
-                                            //创建订单成功，调取微信支付
-                                            wx.requestPayment({
-                                                timeStamp: res.result.timeStamp,
-                                                nonceStr: res.result.nonceStr,
-                                                package: res.result.package,
-                                                signType: 'MD5',
-                                                paySign: res.result.paySign,
-                                                success (data) {
-                                                    if(data.errMsg == 'requestPayment:ok') {
-                                                        wx.showToast({
-                                                            title: '拼团成功！'
-                                                        })
-                                                        setTimeout(function() {
-                                                            wx.reLaunch({
-                                                                url: './groupOrderList'
-                                                            })
-                                                        }, 1000);
-                                                    }
 
-                                                },
-                                                fail (err) {
-                                                    wx.showToast({
-                                                        icon: 'none',
-                                                        title: '支付失败'
-                                                    })
-                                                }
-                                            })
-                                        }
+                                },
+                                fail (err) {
+                                    wx.showToast({
+                                        icon: 'none',
+                                        title: '支付失败'
                                     })
-
-                            }else {
-                                wx.showToast({
-                                    title: res.msg,
-                                    icon: 'none'
-                                })
-                            }
-                        })
-                        .catch(err => {
-                            wx.showToast({
-                                title: err,
-                                icon: 'none'
+                                }
                             })
-                        })
-                }
-
+                        }
+                    })
             },
         }
     }

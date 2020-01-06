@@ -10,7 +10,7 @@
                         <view class="pro_txt_fr">
                             <view class="pro_detail_tt">限时专享 | {{groupGoodsDetail.title}}</view>
                             <view class="other_tips">存入冰箱库, 永久有效</view>
-                            <view class="price" wx:if="{{!time_stamp_code}}">
+                            <view class="price">
                                 <text class="new_price">￥{{groupGoodsDetail.goods_list.price_selling}}</text>
                                 <text class="mail_tips">不含配送费</text>
                                 <text class="old_price">￥{{groupGoodsDetail.goods_list.price_market}}</text>
@@ -21,11 +21,15 @@
             </view>
 
             <!-- 拼团人头像 -->
-            <view class="groupMember" wx:if="{{pageFrom != 'groupOrder'}}">
+            <view class="groupMember">
             	<view class="title font-s38 font-bold">
-            		<p class="c-main" style="margin-right: 16rpx;">拼团中</p>分享给更多的好友组团
+            		<p wx:if="{{orderDetail.status == 0}}" class="c-main" style="margin-right: 16rpx;">拼团中</p>
+                    <p wx:if="{{orderDetail.status == 2}}" class="c-main" style="margin-right: 16rpx;">拼团失败</p>
+                    <p wx:if="{{orderDetail.status == 1}}" class="c-main" style="margin-right: 16rpx;">拼团成功</p>
+                    <p wx:if="{{orderDetail.status == 3}}" class="c-main" style="margin-right: 16rpx;">退款中</p>
+                    分享给更多的好友组团
             	</view>
-            	<view class="time c-666 font-s32">还差 <text class="c-main">{{orderDetail.group_number}}人</text> 参团 <p>00:30</p></view>
+            	<view wx:if="{{orderDetail.status == 0}}" class="time c-666 font-s32">还差 <text class="c-main">{{orderDetail.group_number}}人</text> 参团 <p>{{countDownTime}}</p></view>
             	<view class="member_img">
                     <repeat for="{{orderDetail.list}}">
                         <view class="img_wrap">
@@ -43,13 +47,6 @@
             </view>
 
         	<view class="buy_bot_box">
-        		<!-- <view class="order_details">
-        			<view class="order_details_tt">订单详情</view>
-        			<view class="order_list">
-        				<view>限时专享 | {{groupGoodsDetail.title}}</view>
-        				<view>￥{{groupGoodsDetail.goods_list.price_selling}}</view>
-        			</view>
-        		</view> -->
         		<view class="all_buy">
                <view class="all_buy_tt"><image class="display-ib v-middle" src="../../common/images/tips.png" mode="widthFix"/>【全民参与】</view>
                <view class="all_buy_txt">
@@ -66,13 +63,12 @@
         		</view>
         	</view>
         	<view class="add_btn_box">
-        		<button bindtap="submitOrder" class="add_address_btn" wx:if="{{pageFrom == 'groupOrder' || orderDetail.item_status == 0 || isFollow}}">
+        		<button bindtap="submitOrder" class="add_address_btn" wx:if="{{pageFrom == 'share'}}">
                     <image src="../../common/images/weixin.png" mode="widthFix" />
-                    <text wx:if="{{!isFollow && orderDetail.item_status != 0}}">微信支付￥{{groupTotalPrice}}</text>
-                    <text wx:if="{{isFollow && orderDetail.item_status != 0}}">马上跟团￥{{groupTotalPrice}}</text>
-                    <text wx:if="{{orderDetail.item_status == 0}}">继续支付￥{{groupTotalPrice}}</text>
+                    <text wx:if="{{orderDetail.role == 1 && orderDetail.item_status == 0}}">继续支付￥{{groupTotalPrice}}</text>
+                    <text wx:if="{{orderDetail.role == 0 && orderDetail.item_status != 0}}">马上跟团￥{{groupTotalPrice}}</text>
                 </button>
-                <!-- <button bindtap="followGroupOrder" class="add_address_btn" wx:else><image src="../../common/images/weixin.png" mode="widthFix" />马上跟团￥{{groupTotalPrice}}</button> -->
+                <button open-type="share" class="add_address_btn" wx:if="{{pageFrom == 'detail'}}">邀请好友</button>
         	</view>
     </view>
 </template>
@@ -90,28 +86,44 @@
             group_order_no: null,
             groupTotalPrice: null,
             goodsId: null,
-            isFollow: false,
             orderDetail: null,
             pageFrom: '',
-            id: null
+            countDownInterval: null,
+            countDownTime: ""
         }
-        checkUserLogin(options) {
+        MillisecondToDate(time) {  //将剩余时间转化为时分秒
+            let that = this;
+            if (null != time && "" != time && time>=0) {
+                if (time > 60 && time < 3600) {
+                    time = "00小时"+that.setTime(parseInt(time/60)) + "分钟" + that.setTime(time%60) + "秒";
+                } else if (time >= 3600) {
+                    time = that.setTime(parseInt(time/3600)) + "小时" + that.setTime(parseInt(parseInt(time%3600)/60)) + "分钟" + that.setTime(parseInt(time%3600)%60) + "秒";
+                } else {
+                    time = "00小时00分钟" + that.setTime(time) + "秒";
+                }
+            }else {
+                clearInterval(that.countDownInterval);
+                return '已结束'
+            }
+            return time;
+        }
+        setTime(val) {  //小于十的做补零操作
+            if(val < 10) {
+                return "0" + val;
+            }else {
+                return val;
+            }
+        }
+
+        checkUserLogin(options) {  //检测登录
             let that = this;
             wepy.Utils.isLogin({
                 callbackOk: () => {
-                    //已经登录
-                    //获取用户信息
-                    that.getGroupGoodsDetail(options.goodsId);
-                    if(options.from) {
-                        that.pageFrom = options.from;
-                        console.log(options)
-                    }
-                    if(options.isFollow) {
-                        that.isFollow = true;
-                    }
-                    if(options.id) {
-                        that.getGroupOrderDetail(options.id);
-                    }
+                    that.group_order_no = options.order_no;
+                    that.goodsId = options.goodsId;
+                    that.pageFrom = options.from;
+                    that.getGroupGoodsDetail(options.goodsId); //获取商品详情
+                    that.getGroupOrderDetail(options.order_no); //获取拼团订单详情
                     that.$apply();
                 },
                 callbackErr: () => {
@@ -119,11 +131,8 @@
                     wepy.Utils.showModal({
                         content: '你还未登录，登录后可获得完整体验',
                         callback: () => {
-                            if(options.isFollow) {
-                                wepy.navigateTo({url: '../../../pages/oauth?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&isFollow=true'})
-                            }else {
-                                wepy.navigateTo({url: '../../../pages/oauth?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&from='+that.pageFrom})
-                            }
+                            wepy.navigateTo({url: '../../../pages/oauth?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&from='+options.from})
+
                         }
                     })
                 }
@@ -131,7 +140,6 @@
         }
         async getGroupGoodsDetail(goodsId) {
             let that = this;
-
             let result = await wepy.Api.getGroupGoodsDetail({goods_id: goodsId})
             if(result.code == 1) {
                 that.groupGoodsDetail = result.result;
@@ -139,30 +147,33 @@
             }
             that.$apply();
         }
-        async getGroupOrderDetail(id) {
+        async getGroupOrderDetail(order_no) {
             let that = this;
-            let result = await wepy.Api.getGroupOrderDetail({id})
+            let result = await wepy.Api.getGroupOrderDetail({id: order_no})
             if(result.code == 1) {
                 that.orderDetail = result.result;
-                that.id = result.result.id;
+                /*
+                    拼团倒计时入参：
+                        2小时-（当前时间-拼团订单创建时间）
+                */
+                that.countDownInterval = setInterval(() => {
+                    var time = parseInt(new Date().getTime()/1000) - result.result.createtime;
+                    that.countDownTime = MillisecondToDate(3600*2 - time);
+                },1000)
                 that.$apply();
             }
         }
         onLoad(options) {
-            console.log(options)
             this.checkUserLogin(options);
-            this.group_order_no = options.order_no;
-            this.goodsId = options.goodsId;
-            this.$apply();
         }
         methods = {
             submitOrder() {
                 let that = this;
                 /*
-                    isFollow(false): false-微信支付
-                              true -马上跟团
+                    pageFrom: detail-微信支付
+                              share -马上跟团
                 */
-                if(!that.isFollow) {
+                if(that.pageFrom == 'detail') {
                     wepy.Api.groupOrderPay({group_order_no: that.group_order_no})
                         .then(res => {
                             if(res.code == 1) {
@@ -180,7 +191,7 @@
                                             })
                                             setTimeout(() => {
                                                wx.navigateTo({
-                                                   url: './groupPaySucced?group_order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&id='+that.id
+                                                   url: './groupPaySucced?group_order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&role=1'
                                                })
                                             },1000)
                                         }
@@ -195,7 +206,7 @@
                                 })
                             }
                         })
-                }else {
+                }else if(that.pageFrom == 'share'){
                     wepy.Api.joinGroupOrder({group_order_no: that.group_order_no})
                         .then(res => {
                             if(res.code ==  1) {
@@ -215,8 +226,11 @@
                                                             title: '拼团成功！'
                                                         })
                                                         setTimeout(function() {
-                                                            wx.reLaunch({
-                                                                url: './groupOrderList'
+                                                            // wx.reLaunch({
+                                                            //     url: './groupOrderList'
+                                                            // })
+                                                            wx.navigateTo({
+                                                                url: './groupPaySucced?group_order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&role=0'
                                                             })
                                                         }, 1000);
                                                     }
@@ -248,6 +262,25 @@
                 }
 
             },
+            onShareAppMessage(ops) {
+                const that = this
+                if (ops.from === 'button') {
+                    // 来自页面内转发按钮
+                }
+                return {
+                    title: '一起来拼团',
+                    path: '/packageA/pages/group/groupOrderDetail?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&from=share',
+                    success: function(res) {
+                        // 转发成功
+                        console.log("转发成功:" + JSON.stringify(res));
+                    },
+                    fail: function(res) {
+                        // 转发失败
+                        console.log("转发失败:" + JSON.stringify(res));
+                    }
+                }
+
+            }
         }
     }
 </script>

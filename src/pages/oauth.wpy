@@ -10,8 +10,7 @@
         data = {
             goodsId: null,
             order_no: null,
-            isFollow: false,
-			pageFrom: ''
+			pageFrom: null
         }
         async getUserInfo(e) {
             //授权登录
@@ -29,16 +28,9 @@
                     that.$parent.globalData.is_oauth = true;
                     that.$apply();
                     if(that.goodsId && that.order_no) {
-                        if(that.isFollow) {
-                            wx.navigateTo({
-                                url: '../packageA/pages/group/groupOrderDetail?goodsId='+that.goodsId+'&order_no='+that.order_no+'&isFollow=true'
-                            })
-                        }else {
-                            wx.navigateTo({
-                                url: '../packageA/pages/group/groupOrderDetail?goodsId='+that.goodsId+'&order_no='+that.order_no+'&from='+that.pageFrom
-                            })
-                        }
-
+                        wx.navigateTo({
+                            url: '../packageA/pages/group/groupOrderDetail?goodsId='+that.goodsId+'&order_no='+that.order_no+'&from='+that.pageFrom
+                        })
                     }else {
                         wx.navigateBack({ detail: 1 });
                     }
@@ -50,9 +42,6 @@
                 this.goodsId = options.goodsId;
                 this.order_no = options.order_no;
 
-            }
-            if(options.isFollow) {
-                this.isFollow = true;
             }
 			if(options.from) {
 				this.pageFrom = options.from;
