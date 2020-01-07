@@ -2,7 +2,7 @@
     <view id="groupOrderDetail">
             <view class="buy_top_box">
                 <view class="pro_details_box pos-r">
-                    <view class="pro_tag pos-a">二人团</view>
+                    <view class="pro_tag pos-a">{{group_number}}人团</view>
                     <view class="pro_details">
                         <view class="pro_img_fl">
                             <image src="{{groupGoodsDetail.logo}}" />
@@ -36,6 +36,10 @@
         			<view class="all_buy_txt">若活动结束, 拼团未成功时, 预付款将原路返回</view>
         		</view>
         	</view>
+            <!-- <view class="goods_detail">
+                <image wx:for="{{groupGoodsDetail.image}}" wx:key="index" mode="widthFix" style="margin-top: -16rpx;"
+                    src="{{item}}" />
+            </view> -->
         	<view class="add_btn_box">
         		<button bindtap="submitOrder" class="add_address_btn">
                     <image src="../../common/images/weixin.png" mode="widthFix" />
@@ -59,6 +63,7 @@
             group_order_no: null,
             groupTotalPrice: null,
             goodsId: null,
+            group_number: null
         }
         async getGroupGoodsDetail(goodsId) {
             let that = this;
@@ -66,6 +71,7 @@
             let result = await wepy.Api.getGroupGoodsDetail({goods_id: goodsId})
             if(result.code == 1) {
                 that.groupGoodsDetail = result.result;
+                that.group_number = wepy.Utils.SectionToChinese(that.groupGoodsDetail.group_number);
                 that.groupTotalPrice = result.result.goods_list.price_selling;
             }
             that.$apply();
@@ -146,12 +152,17 @@
 
         }
     }
+    .goods_detail {
+        padding: 20rpx;
+    }
     	.add_btn_box {
+            position: fixed;
+            bottom: 0;
     		padding: 20rpx;
     		box-sizing: border-box;
     		border-top: 1px solid #e5e5e5;
     		width: 100%;
-
+            background: #fff;
     		button {
     			background: #51a938;
     			font-size: 32rpx;

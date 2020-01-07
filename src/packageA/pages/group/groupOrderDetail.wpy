@@ -2,7 +2,7 @@
     <view id="groupOrderDetail">
             <view class="buy_top_box">
                 <view class="pro_details_box pos-r">
-                    <view class="pro_tag pos-a">二人团</view>
+                    <view class="pro_tag pos-a">{{group_number}}人团</view>
                     <view class="pro_details">
                         <view class="pro_img_fl">
                             <image src="{{groupGoodsDetail.logo}}" />
@@ -29,12 +29,19 @@
                     <p wx:if="{{orderDetail.status == 3}}" class="c-main" style="margin-right: 16rpx;">退款中</p>
                     分享给更多的好友组团
             	</view>
-            	<view wx:if="{{orderDetail.status == 0}}" class="time c-666 font-s32">还差 <text class="c-main">{{orderDetail.group_number}}人</text> 参团 <p>{{countDownTime}}</p></view>
+            	<view wx:if="{{orderDetail.status == 0}}" class="time c-666 font-s32 display-flex">
+                    <view class="">
+                        还差 <text class="c-main">{{orderDetail.group_number-orderDetail.list.length}}人</text> 参团
+                    </view>
+                    <view class="time_count_down">
+                        <text>{{countDownTime.hour}}</text> : <text>{{countDownTime.minute}}</text> : <text>{{countDownTime.second}}</text>
+                    </view>
+                </view>
             	<view class="member_img">
                     <repeat for="{{orderDetail.list}}">
                         <view class="img_wrap">
                             <image src="{{item.avatar}}" mode="widthFix"></image>
-                            <view class="grouper t-c center-x">团长</view>
+                            <view class="grouper t-c center-x" wx:if="{{item.role == 1}}">团长</view>
                         </view>
                     </repeat>
                     <repeat for="{{orderDetail.group_number - orderDetail.list.length}}">
@@ -62,13 +69,21 @@
         			<view class="all_buy_txt">若活动结束, 拼团未成功时, 预付款将原路返回</view>
         		</view>
         	</view>
+            <!-- <view class="goods_detail">
+                <image wx:for="{{groupGoodsDetail.image}}" wx:key="index" mode="widthFix" style="margin-top: -16rpx;"
+                    src="{{item}}" />
+            </view> -->
         	<view class="add_btn_box">
-        		<button bindtap="submitOrder" class="add_address_btn" wx:if="{{pageFrom == 'share'}}">
+        		<button bindtap="submitOrder" class="add_address_btn" wx:if="{{pageFrom == 'detail' && orderDetail.item_status == 0 && orderDetail.status == 1}}">
                     <image src="../../common/images/weixin.png" mode="widthFix" />
-                    <text wx:if="{{orderDetail.role == 1 && orderDetail.item_status == 0}}">继续支付￥{{groupTotalPrice}}</text>
-                    <text wx:if="{{orderDetail.role == 0 && orderDetail.item_status != 0}}">马上跟团￥{{groupTotalPrice}}</text>
+                    <text>继续支付￥{{groupTotalPrice}}</text>
                 </button>
-                <button open-type="share" class="add_address_btn" wx:if="{{pageFrom == 'detail'}}">邀请好友</button>
+                <button bindtap="submitFollowOrder" class="add_address_btn" wx:if="{{pageFrom == 'share' && orderDetail.status == 0}}">
+                    <image src="../../common/images/weixin.png" mode="widthFix" />
+                    <text>马上跟团￥{{groupTotalPrice}}</text>
+                </button>
+                <button open-type="share" class="add_address_btn" wx:if="{{pageFrom == 'detail' && orderDetail.status == 0 && orderDetail.item_status == 1}}">邀请好友</button>
+                <button @tap="goGroupBuy" class="add_address_btn open" wx:if="{{pageFrom == 'detail' && orderDetail.status != 0}}">继续开团</button>
         	</view>
     </view>
 </template>
@@ -89,23 +104,38 @@
             orderDetail: null,
             pageFrom: '',
             countDownInterval: null,
-            countDownTime: ""
+            countDownTime: "",
+            group_number: null
         }
+
         MillisecondToDate(time) {  //将剩余时间转化为时分秒
             let that = this;
+            var hour,minute,second;
             if (null != time && "" != time && time>=0) {
-                if (time > 60 && time < 3600) {
-                    time = "00小时"+that.setTime(parseInt(time/60)) + "分钟" + that.setTime(time%60) + "秒";
-                } else if (time >= 3600) {
-                    time = that.setTime(parseInt(time/3600)) + "小时" + that.setTime(parseInt(parseInt(time%3600)/60)) + "分钟" + that.setTime(parseInt(time%3600)%60) + "秒";
-                } else {
-                    time = "00小时00分钟" + that.setTime(time) + "秒";
-                }
+            	if (time > 60 && time < 3600) {
+            		hour = '00';
+            		minute = that.setTime(parseInt(time/60));
+            		second = that.setTime(time%60);
+            	} else if (time >= 3600) {
+            		hour = that.setTime(parseInt(time/3600));
+            		minute = that.setTime(parseInt(parseInt(time%3600)/60));
+            		second = that.setTime(parseInt(time%3600)%60);
+            	} else {
+            		hour = '00';
+            		minute = '00';
+            		second = that.setTime(time);
+            	}
             }else {
-                clearInterval(that.countDownInterval);
-                return '已结束'
+            	clearInterval(that.countDownInterval);
+                that.countDownInterval = null;
+                that.$apply();
+            	return '已结束'
             }
-            return time;
+            return {
+            	hour,
+            	minute,
+            	second
+            };
         }
         setTime(val) {  //小于十的做补零操作
             if(val < 10) {
@@ -119,12 +149,10 @@
             let that = this;
             wepy.Utils.isLogin({
                 callbackOk: () => {
-                    that.group_order_no = options.order_no;
-                    that.goodsId = options.goodsId;
-                    that.pageFrom = options.from;
+
                     that.getGroupGoodsDetail(options.goodsId); //获取商品详情
                     that.getGroupOrderDetail(options.order_no); //获取拼团订单详情
-                    that.$apply();
+
                 },
                 callbackErr: () => {
                     //未登录
@@ -149,118 +177,145 @@
         }
         async getGroupOrderDetail(order_no) {
             let that = this;
-            let result = await wepy.Api.getGroupOrderDetail({id: order_no})
+            let result = await wepy.Api.getGroupOrderDetail({group_order_no: order_no})
             if(result.code == 1) {
                 that.orderDetail = result.result;
+
+                //阿拉伯数字转汉字
+                that.group_number = wepy.Utils.SectionToChinese(that.orderDetail.group_number);
+
                 /*
                     拼团倒计时入参：
                         2小时-（当前时间-拼团订单创建时间）
                 */
-                that.countDownInterval = setInterval(() => {
-                    var time = parseInt(new Date().getTime()/1000) - result.result.createtime;
-                    that.countDownTime = MillisecondToDate(3600*2 - time);
-                },1000)
+                if(result.result.status == 0) {
+                    that.countDownInterval = setInterval(() => {
+                        console.log('计时')
+                        var time = parseInt(new Date().getTime()/1000) - result.result.createtime;
+                        that.countDownTime = that.MillisecondToDate(3600*2 - time);
+                        that.$apply();
+                        console.log(that.countDownTime.hour,that.countDownTime)
+                    },1000)
+                }
+
                 that.$apply();
             }
         }
         onLoad(options) {
+            this.group_order_no = options.order_no;
+            this.goodsId = options.goodsId;
+            this.pageFrom = options.from;
+            this.$apply();
             this.checkUserLogin(options);
         }
+        onUnload() {
+            clearInterval(this.countDownInterval);
+            this.countDownInterval = null;
+        }
+        onHide() {
+            clearInterval(this.countDownInterval);
+            this.countDownInterval = null;
+        }
         methods = {
+            goGroupBuy() {
+                wx.reLaunch({
+                    url: '../../../pages/groupBuy'
+                })
+            },
             submitOrder() {
                 let that = this;
                 /*
                     pageFrom: detail-微信支付
                               share -马上跟团
                 */
-                if(that.pageFrom == 'detail') {
-                    wepy.Api.groupOrderPay({group_order_no: that.group_order_no})
-                        .then(res => {
-                            if(res.code == 1) {
-                                //创建订单成功，调取微信支付
-                                wx.requestPayment({
-                                    timeStamp: res.result.timeStamp,
-                                    nonceStr: res.result.nonceStr,
-                                    package: res.result.package,
-                                    signType: 'MD5',
-                                    paySign: res.result.paySign,
-                                    success (data) {
-                                        if(data.errMsg == 'requestPayment:ok') {
-                                            wx.showToast({
-                                                title: '支付成功'
-                                            })
-                                            setTimeout(() => {
-                                               wx.navigateTo({
-                                                   url: './groupPaySucced?group_order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&role=1'
-                                               })
-                                            },1000)
-                                        }
-
-                                    },
-                                    fail (err) {
+                wepy.Api.groupOrderPay({group_order_no: that.group_order_no})
+                    .then(res => {
+                        if(res.code == 1) {
+                            //创建订单成功，调取微信支付
+                            wx.requestPayment({
+                                timeStamp: res.result.timeStamp,
+                                nonceStr: res.result.nonceStr,
+                                package: res.result.package,
+                                signType: 'MD5',
+                                paySign: res.result.paySign,
+                                success (data) {
+                                    if(data.errMsg == 'requestPayment:ok') {
                                         wx.showToast({
-                                            icon: 'none',
-                                            title: '支付失败'
+                                            title: '支付成功'
+                                        })
+                                        setTimeout(() => {
+                                           wx.navigateTo({
+                                               url: './groupPaySucced?group_order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&role=1'
+                                           })
+                                        },1000)
+                                    }
+
+                                },
+                                fail (err) {
+                                    wx.showToast({
+                                        icon: 'none',
+                                        title: '支付失败'
+                                    })
+                                }
+                            })
+                        }
+                    })
+
+            },
+            submitFollowOrder() {
+                let that = this;
+                wepy.Api.joinGroupOrder({group_order_no: that.group_order_no})
+                    .then(res => {
+                        if(res.code ==  1) {
+                            wepy.Api.groupOrderPay({group_order_no: res.group_order_no})
+                                .then(res => {
+                                    if(res.code == 1) {
+                                        //创建订单成功，调取微信支付
+                                        wx.requestPayment({
+                                            timeStamp: res.result.timeStamp,
+                                            nonceStr: res.result.nonceStr,
+                                            package: res.result.package,
+                                            signType: 'MD5',
+                                            paySign: res.result.paySign,
+                                            success (data) {
+                                                if(data.errMsg == 'requestPayment:ok') {
+                                                    wx.showToast({
+                                                        title: '拼团成功！'
+                                                    })
+                                                    setTimeout(function() {
+                                                        // wx.reLaunch({
+                                                        //     url: './groupOrderList'
+                                                        // })
+                                                        wx.navigateTo({
+                                                            url: './groupPaySucced?group_order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&role=0'
+                                                        })
+                                                    }, 1000);
+                                                }
+
+                                            },
+                                            fail (err) {
+                                                wx.showToast({
+                                                    icon: 'none',
+                                                    title: '支付失败'
+                                                })
+                                            }
                                         })
                                     }
                                 })
-                            }
-                        })
-                }else if(that.pageFrom == 'share'){
-                    wepy.Api.joinGroupOrder({group_order_no: that.group_order_no})
-                        .then(res => {
-                            if(res.code ==  1) {
-                                wepy.Api.groupOrderPay({group_order_no: res.group_order_no})
-                                    .then(res => {
-                                        if(res.code == 1) {
-                                            //创建订单成功，调取微信支付
-                                            wx.requestPayment({
-                                                timeStamp: res.result.timeStamp,
-                                                nonceStr: res.result.nonceStr,
-                                                package: res.result.package,
-                                                signType: 'MD5',
-                                                paySign: res.result.paySign,
-                                                success (data) {
-                                                    if(data.errMsg == 'requestPayment:ok') {
-                                                        wx.showToast({
-                                                            title: '拼团成功！'
-                                                        })
-                                                        setTimeout(function() {
-                                                            // wx.reLaunch({
-                                                            //     url: './groupOrderList'
-                                                            // })
-                                                            wx.navigateTo({
-                                                                url: './groupPaySucced?group_order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&role=0'
-                                                            })
-                                                        }, 1000);
-                                                    }
 
-                                                },
-                                                fail (err) {
-                                                    wx.showToast({
-                                                        icon: 'none',
-                                                        title: '支付失败'
-                                                    })
-                                                }
-                                            })
-                                        }
-                                    })
-
-                            }else {
-                                wx.showToast({
-                                    title: res.msg,
-                                    icon: 'none'
-                                })
-                            }
-                        })
-                        .catch(err => {
+                        }else {
                             wx.showToast({
-                                title: err,
+                                title: res.msg,
                                 icon: 'none'
                             })
+                        }
+                    })
+                    .catch(err => {
+                        wx.showToast({
+                            title: err,
+                            icon: 'none'
                         })
-                }
-
+                    })
             },
             onShareAppMessage(ops) {
                 const that = this
@@ -290,6 +345,21 @@
         padding: 10px 15px;
         .time {
             margin-top: 20rpx;
+            .time_count_down {
+                margin-left: 16rpx;
+                text {
+                    display: inline-block;
+                    background: -webkit-linear-gradient(top, #999, #888, #333);
+                    color: #fff;
+                    // padding: 8rpx 5rpx;
+                    border-radius: 5rpx;
+                    width: 46rpx;
+                    height: 48rpx;
+                    vertical-align: middle;
+                    text-align: center;
+                    line-height: 48rpx;
+                }
+            }
         }
         .member_img {
             margin-top: 24rpx;
@@ -315,12 +385,17 @@
 
         }
     }
+    .goods_detail {
+        padding: 20rpx;
+    }
     	.add_btn_box {
+            position: fixed;
+            bottom: 0rpx;
     		padding: 20rpx;
     		box-sizing: border-box;
     		border-top: 1px solid #e5e5e5;
     		width: 100%;
-
+            background: #fff;
     		button {
     			background: #51a938;
     			font-size: 32rpx;
@@ -337,6 +412,13 @@
     				width: 36rpx;
     				margin-right: 15rpx;
     			}
+                &.open {
+                    font-size: 36rpx;
+                    padding: 12rpx 0;
+                    letter-spacing: 6rpx;
+                    background: ;
+                    background: #e8a439;
+                }
     		}
     	}
 

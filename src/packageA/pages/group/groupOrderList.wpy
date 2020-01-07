@@ -88,9 +88,8 @@
                 let that = this;
                 let goods_id = e.currentTarget.dataset.item.goods_id;
                 let group_order_no = e.currentTarget.dataset.item.group_order_no;
-                let id = e.currentTarget.dataset.item.id;
                 wx.navigateTo({
-                    url: '../group/groupOrderDetail?goodsId='+goods_id+'&order_no='+group_order_no+'&id='+id
+                    url: '../group/groupOrderDetail?goodsId='+goods_id+'&order_no='+group_order_no+'&from=detail'
                 })
             }
         }

@@ -38,15 +38,17 @@
             }
         }
         onLoad(options) {
+
             if(options.goodsId && options.order_no) {
                 this.goodsId = options.goodsId;
                 this.order_no = options.order_no;
-
+                this.$apply();
             }
 			if(options.from) {
 				this.pageFrom = options.from;
+                this.$apply();
 			}
-            this.$apply();
+
         }
     }
 </script>

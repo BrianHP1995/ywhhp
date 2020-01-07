@@ -6,7 +6,7 @@
         </view>
         <!-- 拼团详情 -->
         <view class="but_detail">
-            <view class="buy_tt font-s32 pos-r">{{groupGoodsDetail.title}}
+            <view class="buy_tt font-s32 pos-r">限时专享 | {{groupGoodsDetail.title}}
                 <view class="group_num c-fff font-s24 display-ib">{{groupGoodsDetail.group_number}}人团</view>
             </view>
             <view class="mail_tips font-s26">下单需另付配送费</view>
@@ -34,6 +34,10 @@
                     <view class="order display-ib c-fff t-c">4</view>若2小时内拼团不成功，全额退款
                 </view>
             </view>
+        </view>
+        <view class="goods_detail">
+            <image wx:for="{{groupGoodsDetail.image}}" wx:key="index" mode="widthFix" style="margin-top: -16rpx;"
+                src="{{item}}" />
         </view>
         <!-- 已开团用户 -->
         <!-- <view class="group_opend">
@@ -69,7 +73,7 @@
         data = {
             goods_id: '',
             groupGoodsDetail: {},
-            //groupPrice: null
+
         }
         async getGroupGoodsDetail(goodsId) {
             let that = this;
@@ -157,7 +161,9 @@
                 }
             }
         }
-
+        .goods_detail {
+            padding: 20rpx;
+        }
         .buy_rules {
             background: #f2f7fa;
             padding: 20rpx 30rpx;

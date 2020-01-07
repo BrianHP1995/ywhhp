@@ -54,7 +54,7 @@
                 }
                 return {
                     title: '一起来拼团',
-                    path: '/packageA/pages/group/groupOrderDetail?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'from=share',
+                    path: '/packageA/pages/group/groupOrderDetail?order_no='+that.group_order_no+'&goodsId='+that.goodsId+'&from=share',
                     success: function(res) {
                         // 转发成功
                         console.log("转发成功:" + JSON.stringify(res));

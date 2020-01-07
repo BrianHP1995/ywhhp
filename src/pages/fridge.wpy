@@ -31,12 +31,13 @@
                         <view class="pro_img">
                             <image src="{{item.goods_logo}}" mode="widthFix"/>
                         </view>
-                        <view class="pro_cont bgc-fff display-flex">
+                        <view class="pro_cont bgc-fff">
                             <view class="pro_tt font-bold font-s26">{{item.goods_title}}</view>
                             <view class="pro_num">{{item.total}}杯</view>
+                            <!-- <view class="pro_num">3</view> -->
                         </view>
                         <view class="stock_option t-c font-s24 c-fff">
-                            <view class="delivery_time_box t-c" bindtap="selDeliveryTime">
+                            <view class="delivery_time_box t-c" bindtap="selDeliveryTime" data-item="{{item}}">
                                 <view class="delivery_time_txt display-flex">配送时间<view class="value">{{ item.express_time }}</view></view>
                                 <view class="delivery_time_sel">
                                     <image class="timeImg" src="../common/images/index/give_time.png" mode="widthFix" />
@@ -207,12 +208,14 @@
             }
             let result = await wepy.Api.updateIceBox(params);
             if(result.code == 1) {
+                that.getFridgeGoods();
                 wx.showToast({
                     title: '修改成功'
                 })
             }else {
                 wx.showToast({
-                    title: '修改失败，请重新选择'
+                    title: '修改失败，请重新选择',
+                    icon: 'none'
                 })
             }
         }
@@ -225,8 +228,6 @@
                     wx.getStorage({
                         key: 'addressInfo',
                         success(res) {
-                            // that.addressInfo = res.data;
-                            // that.$apply();
                             that.updateIceBox(res.data.id);
                             wx.removeStorage({key: 'addressInfo'});
                             wx.removeStorage({key: 'from'});
@@ -253,7 +254,8 @@
             closeShowTips(){
                 this.showTips = false;
             },
-            selDeliveryTime() {
+            selDeliveryTime(e) {
+                this.choosedGoodsId = e.currentTarget.dataset.item.id;
                 this.showDeliveryTime = true;
             },
             selDeliveryAdr(e) {
@@ -341,24 +343,25 @@
         .delivery_time_box {
             display: flex;
             align-items: center;
-            background: #f1a93d;
+            // background: #f1a93d;
             padding: 16rpx 12rpx;
-            justify-content: space-between;
+            // justify-content: space-between;
             margin-bottom: 4rpx;
-
+            // font-weight: bold;
+            color: #333;
             .delivery_time_txt {
                 font-size: 30rpx;
                 .value {
-                    margin-left: 36rpx;
+                    margin-left: 44rpx;
                 }
             }
 
-            .delivery_time_sel {;
+            .delivery_time_sel {
                 text-align: center;
                 font-size: 28rpx;
-                display: flex;
-                align-items: center;
-
+                // display: flex;
+                // align-items: center;
+                margin-left: 14rpx;
                 image {
                     display: inline-block;
                 }
@@ -422,6 +425,8 @@
         				.pro_num {
         					font-size: 29rpx;
         					color: #ab4638;
+                            margin-top: 8rpx;
+                            text-align: right;
         				}
         			}
                     .stock_option {
