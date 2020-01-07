@@ -27,6 +27,11 @@
                     wepy.Utils.setStorage('token', result.token);
                     that.$parent.globalData.is_oauth = true;
                     that.$apply();
+                    if(that.pageFrom == 'fridge') {
+                        wx.reLaunch({
+                            url: './fridge'
+                        })
+                    }
                     if(that.goodsId && that.order_no) {
                         wx.navigateTo({
                             url: '../packageA/pages/group/groupOrderDetail?goodsId='+that.goodsId+'&order_no='+that.order_no+'&from='+that.pageFrom
@@ -34,6 +39,7 @@
                     }else {
                         wx.navigateBack({ detail: 1 });
                     }
+
                 }
             }
         }

@@ -38,14 +38,16 @@
                         </view>
                         <view class="stock_option t-c font-s24 c-fff">
                             <view class="delivery_time_box t-c" bindtap="selDeliveryTime" data-item="{{item}}">
-                                <view class="delivery_time_txt display-flex">配送时间<view class="value">{{ item.express_time }}</view></view>
+                                <view class="delivery_time_txt">配送时间</view>
                                 <view class="delivery_time_sel">
+                                    <view class="value">{{ item.express_time }}</view>
                                     <image class="timeImg" src="../common/images/index/give_time.png" mode="widthFix" />
                                 </view>
                             </view>
                             <view class="delivery_time_box t-c" bindtap="selDeliveryAdr" data-item="{{item}}">
-                                <view class="delivery_time_txt display-flex">配送地址<view class="value">{{item.addressLable}}</view></view>
+                                <view class="delivery_time_txt">配送地址</view>
                                 <view class="delivery_time_sel">
+                                    <view class="value">{{item.addressLable}}</view>
                                     <image class="adrImg" src="../common/images/index/back.png" mode="widthFix" />
                                 </view>
                             </view>
@@ -123,7 +125,7 @@
                     wepy.Utils.showModal({
                         content: '你还未登录，登录后可获得完整体验',
                         callback: () => {
-                            wepy.navigateTo({url: './oauth'})
+                            wepy.navigateTo({url: './oauth?from=fridge'})
                         }
                     })
                 }
@@ -343,27 +345,28 @@
         .delivery_time_box {
             display: flex;
             align-items: center;
-            // background: #f1a93d;
-            padding: 16rpx 12rpx;
-            // justify-content: space-between;
+            padding: 16rpx 15rpx;
             margin-bottom: 4rpx;
-            // font-weight: bold;
             color: #333;
+            justify-content: space-between;
             .delivery_time_txt {
                 font-size: 30rpx;
-                .value {
-                    margin-left: 44rpx;
-                }
+
             }
 
             .delivery_time_sel {
                 text-align: center;
                 font-size: 28rpx;
-                // display: flex;
-                // align-items: center;
                 margin-left: 14rpx;
+                padding-bottom: 3rpx;
+                .value {
+                    display: inline-block;
+                    vertical-align: middle;
+                }
                 image {
                     display: inline-block;
+                    margin-left: 16rpx;
+                    vertical-align: middle;
                 }
                 .timeImg {
                     width: 30rpx;
