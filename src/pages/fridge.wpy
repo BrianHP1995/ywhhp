@@ -68,7 +68,7 @@
                         </view>
                         <view class="pro_cont bgc-fff display-flex">
                             <view class="pro_tt font-bold font-s26">{{item.goods_title}}</view>
-                            <view class="pro_num">{{item.total}}杯</view>
+                            <view class="pro_num">1杯</view>
                         </view>
                     </view>
                 </repeat>

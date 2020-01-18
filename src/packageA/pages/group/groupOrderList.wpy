@@ -42,7 +42,7 @@
             if(result.code == 1) {
                 that.groupOrderList = result.result;
                 that.groupOrderList.forEach(item => {
-                    let time = wepy.Utils.dateStamp(item.createtime);
+                    let time = wepy.Utils.dateStamp(item.createtime*1000);
 
                     item.createtime = time;
                     switch(item.item_status) {
