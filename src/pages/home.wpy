@@ -227,6 +227,7 @@
             this.getGoodsList();
             this.isNewUserPopShow = this.$parent.globalData.isNewUserPopShow;
             this.$apply();
+            console.log('1212',this.$parent.globalData.userInfo)
         }
         //为了授权返回后可以请求到数据
         onShow() {

@@ -100,9 +100,12 @@
         methods = {
             giveFriends() {
                 //微信送好友  -- 暂不开放
-                wx.showToast({
-                    icon: 'none',
-                    title: '该功能暂未开放'
+                // wx.showToast({
+                //     icon: 'none',
+                //     title: '该功能暂未开放'
+                // })
+                wx.navigateTo({
+                    url: '../packageA/pages/send/selectExpressType'
                 })
             },
             sureOrder() {

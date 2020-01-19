@@ -1,0 +1,124 @@
+<template>
+    <view class="bgf0f0f0">
+        <image style="width:100%;height:auto" src="../../common/images/give_firends_bg.jpg"
+            mode="widthFix" />
+        <view class="give_friend_List">
+            <view class="giveList" wx:for="{{ giveList }}" wx:key="index" data-index="{{index}}" bindtap="giveSure">
+                <view class="give_cont">
+                    <view class="give_tt">{{ item.tt }}</view>
+                    <view class="give_txt van-multi-ellipsis--l2">{{ item.txt }}</view>
+                    <image src="{{ item.imgUrl }}" mode="widthFix" />
+                </view>
+            </view>
+        </view>
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    export default class GiveFriends extends wepy.page {
+        config = {
+            'navigationBarTitleText': '送心意',
+            'navigationBarBackgroundColor': '#fff',
+            'navigationBarTextStyle': 'black',
+            'usingComponents': {
+
+            }
+        }
+        components = {
+
+        }
+        data = {
+            giveList: [{
+                    tt: '连心意',
+                    txt: '送你一杯燕窝，小小心意，愿欢喜~',
+                    imgUrl: '../../common/images/give_friend_03.jpg'
+                },
+                {
+                    tt: '特别爱',
+                    txt: '不管我对么庸俗，但我给你的爱，一定是最特别~',
+                    imgUrl: '../../common/images/give_friend_05.jpg'
+                },
+                {
+                    tt: '古风爱',
+                    txt: '唯你眉眼浅浅笑，河山万里总是晴~',
+                    imgUrl: '../../common/images/give_friend_09.jpg'
+                },
+                {
+                    tt: '仪式感',
+                    txt: '因为你生活中每件小事变的有仪式感~',
+                    imgUrl: '../../common/images/give_friend_10.jpg'
+                }
+            ],
+            code: null,
+        }
+        onLoad(e) {
+        }
+
+        methods = {
+            giveSure(e) {
+                const that = this;
+                wepy.navigateTo({
+                    url: './sendSure'
+                })
+            }
+        }
+    }
+</script>
+
+<style lang="less" scoped>
+    .bgf0f0f0 {
+        position: absolute;
+        width: 100%;
+        min-height: 100%;
+        background: #f0f0f0;
+        height: auto;
+
+        .give_friend_List {
+            position: relative;
+            top: -80rpx;
+            z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 15rpx;
+
+            .giveList {
+                padding: 15rpx;
+                width: 50%;
+                box-sizing: border-box;
+
+                .give_cont {
+                    background: #fff;
+                    padding: 35rpx 30rpx;
+                    // height: 360rpx;
+                    margin-bottom: 70rpx;
+                    box-shadow: 0 0 5px 3px rgba(0, 0, 0, 0.08);
+                    position: relative;
+
+                    image {
+                        width: 240rpx;
+                        position: absolute;
+                        bottom: 20rpx;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        z-index: 2;
+                    }
+
+                    .give_tt {
+                        font-size: 30rpx;
+                        color: #000;
+                    }
+
+                    .give_txt {
+                        font-size: 24rpx;
+                        margin-top: 15rpx;
+                        color: #000;
+						height: 86rpx;
+                    }
+                }
+
+            }
+        }
+    }
+</style>

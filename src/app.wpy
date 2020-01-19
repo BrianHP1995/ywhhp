@@ -85,12 +85,14 @@
                     'pages/group/groupPaySucced', //拼团成功页面
                     'pages/group/groupOrderList',  //入库订单
                     'pages/group/groupOrderPay', //拼团订单支付
+                    'pages/send/selectExpressType', //选择赠送的心愿语
+                    'pages/send/sendSure', //确认赠送
                 ]
             }],
         }
 
         globalData = {
-            userInfo: null,
+            userInfo: '2342',
             is_oauth: false,
             isNewUserPopShow: true
         }
@@ -100,12 +102,17 @@
             this.use('requestfix');
             this.use('promisify');
         }
-
         onLaunch(options) {
             let that = this;
             wepy.Utils.isLogin({
                 callbackOk: () => {
                     that.globalData.is_oauth = true;
+                    //that.getUserInfo();
+                    let result = wepy.Api.getUserInfo({});
+                    if(result.code == 1) {
+                        console.log(result.result)
+                        that.globalData.userInfo = result.result;
+                    }
                 },
                 callbackErr: () => {
                 }
